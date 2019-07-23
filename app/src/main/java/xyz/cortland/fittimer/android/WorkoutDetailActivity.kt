@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
-import kotlinx.android.synthetic.main.activity_item_detail.*
+import kotlinx.android.synthetic.main.activity_workout_detail.*
 
 /**
  * An activity representing a single Item detail screen. This
@@ -17,7 +17,7 @@ class WorkoutDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_item_detail)
+        setContentView(R.layout.activity_workout_detail)
         setSupportActionBar(detail_toolbar)
 
         fab.setOnClickListener { view ->

@@ -2,21 +2,25 @@ package xyz.cortland.fittimer.android
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
-import android.support.design.widget.Snackbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Chronometer
 import android.widget.TextView
 
-import kotlinx.android.synthetic.main.activity_item_list.*
-import kotlinx.android.synthetic.main.item_list_content.view.*
-import kotlinx.android.synthetic.main.item_list.*
-import kotlinx.android.synthetic.main.item_list_content.*
+import kotlinx.android.synthetic.main.activity_workout_list.*
+import kotlinx.android.synthetic.main.workout_list_content.view.*
+import kotlinx.android.synthetic.main.workout_list.*
+import kotlinx.android.synthetic.main.workout_list_content.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
+
+import xyz.cortland.fittimer.android.model.Workout
 
 /**
  * An activity representing a list of Pings. This activity
@@ -40,7 +44,7 @@ class WorkoutListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_item_list)
+        setContentView(R.layout.activity_workout_list)
 
         setSupportActionBar(toolbar)
         toolbar.title = title
@@ -55,7 +59,7 @@ class WorkoutListActivity : AppCompatActivity() {
 
         setupRecyclerView(item_list)
 
-        var allItems = DummyContent.ITEMS
+        var allItems = WorkoutContent.ITEMS
 
         var semaphores = ArrayList<Semaphore>(allItems.size)
 
@@ -66,7 +70,7 @@ class WorkoutListActivity : AppCompatActivity() {
 
             for (cell in allItems) {
 
-                var secondsRemaining = cell.id.toInt()
+                var secondsRemaining = cell.seconds.toInt()
                 secondsRemaining -= 1
                 id_text.text = secondsRemaining.toString()
 
@@ -79,17 +83,17 @@ class WorkoutListActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = SimpleWorkoutRecyclerViewAdapter(this, DummyContent.ITEMS, twoPane)
+        recyclerView.adapter = WorkoutRecyclerViewAdapter(this, WorkoutContent.ITEMS, false)
     }
 
-    class SimpleWorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity, private val values: List<DummyContent.DummyItem>, private val twoPane: Boolean) :
-        RecyclerView.Adapter<SimpleWorkoutRecyclerViewAdapter.ViewHolder>() {
+    class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity, private val values: List<Workout>, private val twoPane: Boolean) :
+        RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
 
         private val onClickListener: View.OnClickListener
 
         init {
             onClickListener = View.OnClickListener { v ->
-                val item = v.tag as DummyContent.DummyItem
+                val item = v.tag as Workout
                 if (twoPane) {
                     val fragment = WorkoutDetailFragment().apply {
                         arguments = Bundle().apply {
@@ -110,14 +114,35 @@ class WorkoutListActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_list_content, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
             return ViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
             holder.idView.text = item.id
-            holder.contentView.text = item.content
+            holder.workoutView.text = item.workout
+            holder.secondsView.text = item.seconds
+
+            holder.playButton.setOnClickListener {
+
+                var s = holder.secondsView.text.toString()
+                var secondsRemaining = s.toInt() * 1000
+                println("Seconds Remaining: ${secondsRemaining.toLong()}")
+                var countdownTimer = object: CountDownTimer(secondsRemaining.toLong(), 1000) {
+
+                    override fun onFinish() {
+                        holder.secondsView.text = s
+                    }
+
+                    override fun onTick(millisUntilFinished: Long) {
+                        var seconds = millisUntilFinished / 1000
+                        holder.secondsView.text = seconds.toString()
+                    }
+                }
+                countdownTimer.start()
+
+            }
 
             with(holder.itemView) {
                 tag = item
@@ -128,8 +153,10 @@ class WorkoutListActivity : AppCompatActivity() {
         override fun getItemCount() = values.size
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val idView: TextView = view.id_text
-            val contentView: TextView = view.content
+            var idView: TextView = view.id_text
+            var secondsView: TextView = view.seconds
+            var workoutView: TextView = view.workout
+            var playButton: Button = view.single_play_button
         }
     }
 
