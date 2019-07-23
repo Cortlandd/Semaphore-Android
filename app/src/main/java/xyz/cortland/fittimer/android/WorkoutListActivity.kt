@@ -9,18 +9,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Chronometer
 import android.widget.TextView
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import kotlinx.android.synthetic.main.workout_list.*
-import kotlinx.android.synthetic.main.workout_list_content.*
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
 
 import xyz.cortland.fittimer.android.model.Workout
+import java.lang.Exception
+
 
 /**
  * An activity representing a list of Pings. This activity
@@ -37,10 +37,6 @@ class WorkoutListActivity : AppCompatActivity() {
      * device.
      */
     private var twoPane: Boolean = false
-
-
-
-    //var semaphores = ArrayList<Semaphore>(allItems.size)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,25 +55,29 @@ class WorkoutListActivity : AppCompatActivity() {
 
         setupRecyclerView(item_list)
 
-        var allItems = WorkoutContent.ITEMS
+        play_all_button.setOnClickListener {
 
-        var semaphores = ArrayList<Semaphore>(allItems.size)
 
-        // Start the first workout with permission from semaphore`
-        //semaphores[0] = Semaphore(1)
+            for (i in 0 until item_list.childCount) {
 
-        play_all_button.setOnClickListener { view ->
+                var seconds = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById(R.id.seconds) as TextView
 
-            for (cell in allItems) {
+                val s = seconds.text.toString()
+                val secondsRemaining = s.toInt() * 1000
+                println("Seconds Remaining: ${secondsRemaining.toLong()}")
+                val countdownTimer = object: CountDownTimer(secondsRemaining.toLong(), 1000) {
 
-                var secondsRemaining = cell.seconds.toInt()
-                secondsRemaining -= 1
-                id_text.text = secondsRemaining.toString()
+                    override fun onFinish() {
+                        seconds.text = s
+                    }
 
-                if (secondsRemaining == 0) {
-                    break
+                    override fun onTick(millisUntilFinished: Long) {
+                        val sec = millisUntilFinished / 1000
+                        // Physically able to see the countdown happen
+                        seconds.text = sec.toString()
+                    }
                 }
-
+                countdownTimer.start()
             }
         }
     }
@@ -86,8 +86,7 @@ class WorkoutListActivity : AppCompatActivity() {
         recyclerView.adapter = WorkoutRecyclerViewAdapter(this, WorkoutContent.ITEMS, false)
     }
 
-    class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity, private val values: List<Workout>, private val twoPane: Boolean) :
-        RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
+    class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity, private val values: List<Workout>, private val twoPane: Boolean) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
 
         private val onClickListener: View.OnClickListener
 
@@ -126,10 +125,10 @@ class WorkoutListActivity : AppCompatActivity() {
 
             holder.playButton.setOnClickListener {
 
-                var s = holder.secondsView.text.toString()
-                var secondsRemaining = s.toInt() * 1000
+                val s = holder.secondsView.text.toString()
+                val secondsRemaining = s.toInt() * 1000
                 println("Seconds Remaining: ${secondsRemaining.toLong()}")
-                var countdownTimer = object: CountDownTimer(secondsRemaining.toLong(), 1000) {
+                val countdownTimer = object: CountDownTimer(secondsRemaining.toLong(), 1000) {
 
                     override fun onFinish() {
                         holder.secondsView.text = s
@@ -158,71 +157,11 @@ class WorkoutListActivity : AppCompatActivity() {
             var workoutView: TextView = view.workout
             var playButton: Button = view.single_play_button
         }
-    }
 
-    private class WorkerThread(private val semaphores: Array<Semaphore>, private val index: Int) : Thread() {
-
-        private val condition: Condition
-        private var progress: Int = 0
-        private var isSuspended = false
-        private val lock: ReentrantLock
-
-        init {
-            lock = ReentrantLock()
-            condition = lock.newCondition()
-        }
-
-        /**
-         * We use Semaphores here to coordinate the threads because the Semaphore in java is not 'fully-bracketed',
-         * which means the thread to release a permit does not have to be the one that has acquired
-         * the permit in the first place.
-         * We can utilise this feature of Semaphore to let one thread to release a permit for the next thread.
-         */
-        override fun run() {
-            val currentSemaphore = semaphores[index]
-            val nextSemaphore = semaphores[(index + 1) % semaphores.size]
-
-            try {
-                while (true) {
-                    currentSemaphore.acquire()
-
-                    lock.lock()
-                    while (isSuspended) {
-                        condition.await()
-                    }
-                    lock.unlock()
-                    //Thread.sleep(300) // we use a sleep call to mock some lengthy work.
-//                    if (progressBarHandler != null) {
-//                        val message = progressBarHandler!!.obtainMessage()
-//                        message.arg1 = (progress += 10)
-//                        progressBarHandler!!.sendMessage(message)
-//                    }
-
-                    nextSemaphore.release()
-
-                    if (progress == 100) {
-                        progress = -10
-                    }
-                }
-
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-
-        }
-
-        fun resumePlay() {
-            lock.lock()
-            isSuspended = false
-            condition.signal()
-            lock.unlock()
-        }
-
-        fun pausePlay() {
-            lock.lock()
-            isSuspended = true
-            lock.unlock()
+        fun playAll() {
+            println("Play button")
         }
     }
+
 
 }
