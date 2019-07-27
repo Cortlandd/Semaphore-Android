@@ -1,4 +1,4 @@
-package xyz.cortland.fittimer.android
+package xyz.cortland.fittimer.android.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,6 +6,8 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_workout_detail.*
+import xyz.cortland.fittimer.android.R
+import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
 
 /**
  * An activity representing a single Item detail screen. This

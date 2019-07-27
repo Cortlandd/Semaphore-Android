@@ -1,30 +1,19 @@
-package xyz.cortland.fittimer.android
+package xyz.cortland.fittimer.android.activities
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
+import android.support.v7.widget.helper.ItemTouchHelper
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
-import kotlinx.android.synthetic.main.workout_list_content.view.*
 import kotlinx.android.synthetic.main.workout_list.*
+import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutRecyclerViewAdapter
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
-import java.util.concurrent.Semaphore
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.ReentrantLock
 
-import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.model.WorkoutModel
-import java.lang.Exception
 
 
 /**
@@ -69,6 +58,24 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts, false)
         item_list.adapter = workoutAdapter
 
+        val itemTouchCallback = object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+
+            override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                mWorkouts.removeAt(position)
+                item_list!!.adapter?.notifyItemRemoved(position)
+                removeWorkoutItem(viewHolder.itemView.id)
+            }
+
+        }
+
+        val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
+        itemTouchHelper.attachToRecyclerView(item_list)
+
         fab.setOnClickListener {
             val newWorkoutFragment = NewWorkoutDialogFragment()
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
@@ -77,6 +84,17 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     }
     private fun setupRecyclerView(recyclerView: RecyclerView) {
 
+    }
+
+    /**
+     * Used to remove swiped Workouts
+     * @param id: The id of the book
+     */
+    fun removeWorkoutItem(id: Int) {
+        val dbHelper = WorkoutDatabase(this, null)
+        val db = dbHelper.writableDatabase
+        db.delete(WorkoutDatabase.TABLE_NAME, WorkoutDatabase.COLUMN_ID + "=" + id, null)
+        db.close()
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
-    tools:context=".WorkoutListActivity">
+    tools:context=".activities.WorkoutListActivity">
 
     <android.support.design.widget.AppBarLayout
             android:id="@+id/app_bar"

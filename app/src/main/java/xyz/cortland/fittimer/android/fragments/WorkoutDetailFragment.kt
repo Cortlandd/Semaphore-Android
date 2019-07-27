@@ -1,4 +1,4 @@
-package xyz.cortland.fittimer.android
+package xyz.cortland.fittimer.android.fragments
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,8 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import kotlinx.android.synthetic.main.workout_detail.view.*
-import xyz.cortland.fittimer.android.database.WorkoutDatabase
-import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.model.WorkoutModel
 
 /**

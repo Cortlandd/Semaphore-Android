@@ -10,7 +10,7 @@
               android:divider="?android:attr/dividerHorizontal"
               android:orientation="horizontal"
               android:showDividers="middle"
-              tools:context=".WorkoutListActivity">
+              tools:context=".activities.WorkoutListActivity">
 
     <!--
     This layout is a two-pane layout for the Items
@@ -27,7 +27,7 @@
                                             android:layout_marginLeft="16dp"
                                             android:layout_marginRight="16dp"
                                             app:layoutManager="LinearLayoutManager"
-                                            tools:context="xyz.cortland.fittimer.android.WorkoutListActivity"
+                                            tools:context="xyz.cortland.fittimer.android.activities.WorkoutListActivity"
                                             tools:listitem="@layout/workout_list_content"/>
 
     <FrameLayout
