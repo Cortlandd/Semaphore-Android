@@ -1,6 +1,7 @@
 package xyz.cortland.fittimer.android
 
 import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.model.WorkoutModel
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -16,11 +17,13 @@ object WorkoutContent {
      * An array of sample (dummy) items.
      */
     val ITEMS: MutableList<Workout> = ArrayList()
+    val WORKOUT_ITEMS: MutableList<WorkoutModel> = ArrayList()
 
     /**
      * A map of sample (dummy) items, by ID.
      */
     val ITEM_MAP: MutableMap<String, Workout> = HashMap()
+    val WORKOUT_ITEMS_MAP: MutableMap<String, WorkoutModel> = HashMap()
 
     private val COUNT = 25
 

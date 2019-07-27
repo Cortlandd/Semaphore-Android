@@ -3,6 +3,7 @@ package xyz.cortland.fittimer.android
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -14,11 +15,15 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import kotlinx.android.synthetic.main.workout_list.*
+import xyz.cortland.fittimer.android.adapter.WorkoutRecyclerViewAdapter
+import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
 
 import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.model.WorkoutModel
 import java.lang.Exception
 
 
@@ -30,13 +35,19 @@ import java.lang.Exception
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-class WorkoutListActivity : AppCompatActivity() {
+class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWorkoutDialogListener {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private var twoPane: Boolean = false
+
+    var workoutAdapter: WorkoutRecyclerViewAdapter? = null
+
+    val dbHandler = WorkoutDatabase(this, null)
+
+    val mWorkouts: ArrayList<WorkoutModel> = ArrayList<WorkoutModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,114 +64,31 @@ class WorkoutListActivity : AppCompatActivity() {
             twoPane = true
         }
 
-        setupRecyclerView(item_list)
+        val dbHandler = WorkoutDatabase(this, null)
+        mWorkouts.addAll(dbHandler.allWorkoutsList())
+        workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts, false)
+        item_list.adapter = workoutAdapter
 
-        play_all_button.setOnClickListener {
-
-
-            for (i in 0 until item_list.childCount) {
-
-                var seconds = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById(R.id.seconds) as TextView
-
-                val s = seconds.text.toString()
-                val secondsRemaining = s.toInt() * 1000
-                println("Seconds Remaining: ${secondsRemaining.toLong()}")
-                val countdownTimer = object: CountDownTimer(secondsRemaining.toLong(), 1000) {
-
-                    override fun onFinish() {
-                        seconds.text = s
-                    }
-
-                    override fun onTick(millisUntilFinished: Long) {
-                        val sec = millisUntilFinished / 1000
-                        // Physically able to see the countdown happen
-                        seconds.text = sec.toString()
-                    }
-                }
-                countdownTimer.start()
-            }
+        fab.setOnClickListener {
+            val newWorkoutFragment = NewWorkoutDialogFragment()
+            newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
-    }
 
+    }
     private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = WorkoutRecyclerViewAdapter(this, WorkoutContent.ITEMS, false)
+
     }
 
-    class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity, private val values: List<Workout>, private val twoPane: Boolean) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
+    override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
+        dbHandler.addWorkout(workout)
+        mWorkouts.clear()
+        mWorkouts.addAll(dbHandler.allWorkoutsList())
+        workoutAdapter?.notifyDataSetChanged()
+        dialog.dismiss()
+    }
 
-        private val onClickListener: View.OnClickListener
-
-        init {
-            onClickListener = View.OnClickListener { v ->
-                val item = v.tag as Workout
-                if (twoPane) {
-                    val fragment = WorkoutDetailFragment().apply {
-                        arguments = Bundle().apply {
-                            putString(WorkoutDetailFragment.ARG_ITEM_ID, item.id)
-                        }
-                    }
-                    parentActivity.supportFragmentManager
-                        .beginTransaction()
-                        .replace(R.id.item_detail_container, fragment)
-                        .commit()
-                } else {
-                    val intent = Intent(v.context, WorkoutDetailActivity::class.java).apply {
-                        putExtra(WorkoutDetailFragment.ARG_ITEM_ID, item.id)
-                    }
-                    v.context.startActivity(intent)
-                }
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = values[position]
-            holder.idView.text = item.id
-            holder.workoutView.text = item.workout
-            holder.secondsView.text = item.seconds
-
-            holder.playButton.setOnClickListener {
-
-                val s = holder.secondsView.text.toString()
-                val secondsRemaining = s.toInt() * 1000
-                println("Seconds Remaining: ${secondsRemaining.toLong()}")
-                val countdownTimer = object: CountDownTimer(secondsRemaining.toLong(), 1000) {
-
-                    override fun onFinish() {
-                        holder.secondsView.text = s
-                    }
-
-                    override fun onTick(millisUntilFinished: Long) {
-                        var seconds = millisUntilFinished / 1000
-                        holder.secondsView.text = seconds.toString()
-                    }
-                }
-                countdownTimer.start()
-
-            }
-
-            with(holder.itemView) {
-                tag = item
-                setOnClickListener(onClickListener)
-            }
-        }
-
-        override fun getItemCount() = values.size
-
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            var idView: TextView = view.id_text
-            var secondsView: TextView = view.seconds
-            var workoutView: TextView = view.workout
-            var playButton: Button = view.single_play_button
-        }
-
-        fun playAll() {
-            println("Play button")
-        }
+    override fun onCancelClick(dialog: DialogFragment) {
+        dialog.dismiss()
     }
 
 
