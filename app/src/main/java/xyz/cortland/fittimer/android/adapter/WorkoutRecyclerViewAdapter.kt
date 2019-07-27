@@ -14,13 +14,26 @@ import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
 
-class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity, private val mWorkouts: List<WorkoutModel>, private val twoPane: Boolean) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
+class WorkoutRecyclerViewAdapter() : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
+    var workoutList: List<WorkoutModel> = ArrayList()
     var counterList: List<WorkoutModel> = ArrayList()
     var playingIndividual: Boolean = false
     var countdownTimer: CountDownTimer? = null
     var remainingTimeIndividual: Long? = null
+    var mWorkouts: List<WorkoutModel>? = null
+    var parentActivity: WorkoutListActivity? = null
+
+    constructor(parentActivity: WorkoutListActivity?, mWorkouts: List<WorkoutModel>): this() {
+        this.parentActivity = parentActivity
+        this.mWorkouts = mWorkouts
+    }
+
+    constructor(workoutList: List<WorkoutModel>, counterList: List<WorkoutModel>) : this() {
+        this.workoutList = workoutList
+        this.counterList = counterList
+    }
 
     init {
         onClickListener = View.OnClickListener { v ->
@@ -38,11 +51,11 @@ class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val workout = mWorkouts[position]
-        holder.workoutView.text = workout.workoutName
-        holder.secondsView.text = workout.seconds.toString()
+        val workout = mWorkouts?.get(position)
+        holder.workoutView.text = workout?.workoutName
+        holder.secondsView.text = workout?.seconds.toString()
 
-        val dbHandler = WorkoutDatabase(parentActivity, null)
+        val dbHandler = WorkoutDatabase(this.parentActivity!!, null)
         val cursor = dbHandler.getAllWorkouts()
         if (!cursor!!.moveToPosition(position)) {
             return
@@ -56,7 +69,7 @@ class WorkoutRecyclerViewAdapter(private val parentActivity: WorkoutListActivity
         }
     }
 
-    override fun getItemCount() = mWorkouts.size
+    override fun getItemCount() = mWorkouts!!.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var secondsView: TextView = view.seconds

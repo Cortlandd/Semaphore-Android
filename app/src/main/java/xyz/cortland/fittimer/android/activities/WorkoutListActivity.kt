@@ -30,7 +30,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
-    private var twoPane: Boolean = false
+    //private var twoPane: Boolean = false
 
     var workoutAdapter: WorkoutRecyclerViewAdapter? = null
 
@@ -45,17 +45,17 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-        if (item_detail_container != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
-            twoPane = true
-        }
+//        if (item_detail_container != null) {
+//            // The detail container view will be present only in the
+//            // large-screen layouts (res/values-w900dp).
+//            // If this view is present, then the
+//            // activity should be in two-pane mode.
+//            twoPane = true
+//        }
 
         val dbHandler = WorkoutDatabase(this, null)
         mWorkouts.addAll(dbHandler.allWorkoutsList())
-        workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts, false)
+        workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts)
         item_list.adapter = workoutAdapter
 
         val itemTouchCallback = object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
