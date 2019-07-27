@@ -42,10 +42,7 @@ class WorkoutDetailActivity : AppCompatActivity() {
             // using a fragment transaction.
             val fragment = WorkoutDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putString(
-                        WorkoutDetailFragment.ARG_ITEM_ID,
-                        intent.getStringExtra(WorkoutDetailFragment.ARG_ITEM_ID)
-                    )
+                    putParcelable(WorkoutDetailFragment.ARG_ITEM_ID, intent.getParcelableExtra("arg_parcel_workout"))
                 }
             }
 

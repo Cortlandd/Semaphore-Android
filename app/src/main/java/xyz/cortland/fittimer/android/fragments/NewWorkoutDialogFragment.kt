@@ -81,7 +81,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             .setPositiveButton("Save") { dialog, id ->
                 println("Seconds $secondsValue")
                 println("Workout $workoutValue")
-                newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(secondsValue, workoutValue))
+                newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue))
             }
             .setNegativeButton("Close") { dialog, id ->
                 newWorkoutDialogListener?.onCancelClick(this)

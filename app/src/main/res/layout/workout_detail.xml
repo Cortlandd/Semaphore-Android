@@ -3,7 +3,7 @@
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/item_detail"
+    android:id="@+id/item_detail_seconds"
     android:hint="Seconds Shown Here"
     android:textAlignment="center"
     style="?android:attr/textAppearanceLarge"

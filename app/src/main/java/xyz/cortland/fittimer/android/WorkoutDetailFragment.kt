@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import kotlinx.android.synthetic.main.workout_detail.view.*
+import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.model.WorkoutModel
 
 /**
  * A fragment representing a single Item detail screen.
@@ -20,7 +22,7 @@ class WorkoutDetailFragment : Fragment() {
     /**
      * The dummy content this fragment is presenting.
      */
-    private var item: Workout? = null
+    private var item: WorkoutModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,8 +32,8 @@ class WorkoutDetailFragment : Fragment() {
                 // Load the dummy content specified by the fragment
                 // arguments. In a real-world scenario, use a Loader
                 // to load content from a content provider.
-                item = WorkoutContent.ITEM_MAP[it.getString(ARG_ITEM_ID)]
-                activity?.toolbar_layout?.title = item?.workout
+                item = it.getParcelable(ARG_ITEM_ID)
+                activity?.toolbar_layout?.title = item?.workoutName
             }
         }
     }
@@ -41,7 +43,7 @@ class WorkoutDetailFragment : Fragment() {
 
         // Show the dummy content as text in a TextView.
         item?.let {
-            rootView.item_detail.text = it.seconds
+            rootView.item_detail_seconds.text = it.seconds.toString()
         }
 
         return rootView
@@ -52,6 +54,6 @@ class WorkoutDetailFragment : Fragment() {
          * The fragment argument representing the item ID that this fragment
          * represents.
          */
-        const val ARG_ITEM_ID = "item_id"
+        const val ARG_ITEM_ID = "workout_id"
     }
 }

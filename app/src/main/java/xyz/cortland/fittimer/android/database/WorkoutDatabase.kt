@@ -53,6 +53,24 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         return db.execSQL("DELETE FROM $TABLE_NAME WHERE $COLUMN_ID='$id'")
     }
 
+    fun getWorkoutById(id: Int): WorkoutModel {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT FROM $TABLE_NAME WHERE $COLUMN_ID='$id'", null)
+        val workout = WorkoutModel()
+        if (cursor.moveToFirst()) {
+            do {
+                workout.id = cursor.getInt(cursor.getColumnIndex(COLUMN_ID))
+                workout.seconds = cursor.getInt(cursor.getColumnIndex(COLUMN_SECONDS))
+                workout.workoutName = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUT))
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+
+        return workout
+    }
+
     fun allWorkoutsList(): List<WorkoutModel> {
         val workouts: ArrayList<WorkoutModel> = ArrayList()
         val selectQuery = "SELECT * FROM $TABLE_NAME"
