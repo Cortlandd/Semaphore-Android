@@ -5,11 +5,14 @@ import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.widget.Button
+import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list.*
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutRecyclerViewAdapter
+import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 
@@ -37,6 +40,12 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     val dbHandler = WorkoutDatabase(this, null)
 
     val mWorkouts: ArrayList<WorkoutModel> = ArrayList<WorkoutModel>()
+
+    var countdownPlayAll: CountDownTimer? = null
+
+    var playingAll: Boolean = false
+
+    var playAllButton: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +85,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
         itemTouchHelper.attachToRecyclerView(item_list)
 
+        setupView()
+
         fab.setOnClickListener {
             val newWorkoutFragment = NewWorkoutDialogFragment()
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
@@ -95,6 +106,50 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         val db = dbHelper.writableDatabase
         db.delete(WorkoutDatabase.TABLE_NAME, WorkoutDatabase.COLUMN_ID + "=" + id, null)
         db.close()
+    }
+
+    fun setupView() {
+
+        playAllButton = findViewById(R.id.play_all_button)
+
+        playAllButton!!.setOnClickListener {
+            validatePlayAll()
+        }
+
+    }
+
+    fun validatePlayAll() {
+        if (!playingAll) {
+            if (mWorkouts.size > 0) {
+                mWorkouts.get(0).isCount = true
+
+                var playingIndiv = false
+
+                for (i in mWorkouts.indices) {
+                    if (mWorkouts.get(i).isPlaying!!) {
+                        playingIndiv = true
+                    }
+                }
+
+                if (!playingIndiv) {
+                    playingAll = true
+                    workoutAdapter?.notifyDataSetChanged()
+                    playAllButton!!.setText("Stop All")
+                } else {
+                    Toast.makeText(this, "First Stop Playing Individual", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            playingAll = false
+            countdownPlayAll?.cancel()
+            playAllButton!!.setText("Play All")
+            for (i in mWorkouts.indices) {
+                mWorkouts.get(i).isCount = false
+            }
+            workoutAdapter?.notifyDataSetChanged()
+        }
+
+
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {

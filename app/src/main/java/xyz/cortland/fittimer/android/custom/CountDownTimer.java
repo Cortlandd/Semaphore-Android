@@ -83,8 +83,8 @@ public abstract class CountDownTimer {
      * Do not call it from inside CountDownTimer threads
      */
     public final void cancel() {
-        mHandler.removeMessages(MSG);
         mCancelled = true;
+        mHandler.removeMessages(MSG);
     }
 
     /**
