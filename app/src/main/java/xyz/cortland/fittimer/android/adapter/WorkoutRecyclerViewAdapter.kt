@@ -111,7 +111,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
                         } else {
                             holder.secondsView.text = mWorkouts.get(position).seconds.toString()
-                            cancel()
+                            cancel() // May have to run on different thread?
                         }
                     }
 
