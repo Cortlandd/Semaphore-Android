@@ -24,10 +24,10 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var newWorkoutDialogListener: NewWorkoutDialogListener? = null
 
     companion object {
-        fun newInstance(layoutTitle: Int): NewWorkoutDialogFragment {
+        fun newInstance(workout: WorkoutModel): NewWorkoutDialogFragment {
             val newWorkoutDialogFragment = NewWorkoutDialogFragment()
             var args = Bundle()
-            args.putInt("arg_workout", layoutTitle)
+            args.putParcelable("arg_workout", workout)
             newWorkoutDialogFragment.arguments = args
             return newWorkoutDialogFragment
         }
@@ -35,7 +35,6 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(this.activity!!)
-        builder.setTitle("Add Workout")
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
         val seconds = dialogView!!.findViewById<EditText>(R.id.seconds_text)
@@ -77,10 +76,18 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         })
 
+        val workout: WorkoutModel? = arguments?.getParcelable("arg_workout")
+
+        if (workout == null) {
+            builder.setTitle("Add Workout")
+        } else {
+            builder.setTitle("Edit Workout")
+            seconds.setText(workout.seconds.toString())
+            workoutText.setText(workout.workoutName)
+        }
+
         builder.setView(dialogView)
             .setPositiveButton("Save") { dialog, id ->
-                println("Seconds $secondsValue")
-                println("Workout $workoutValue")
                 newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue))
             }
             .setNegativeButton("Close") { dialog, id ->

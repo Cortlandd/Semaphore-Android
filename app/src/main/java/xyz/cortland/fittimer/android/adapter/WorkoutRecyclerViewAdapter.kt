@@ -26,11 +26,15 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
     var countdownTimer: CountDownTimer? = null
     var remainingTimeIndividual: Long? = null
 
+    var workoutId: Int? = null
+
     init {
         onClickListener = View.OnClickListener { v ->
             val item = v.tag as WorkoutModel
+            workoutId = v.id
             val intent = Intent(v.context, WorkoutDetailActivity::class.java).apply {
                 putExtra("arg_parcel_workout", item)
+                putExtra("arg_workout_id", workoutId!!)
             }
             v.context.startActivity(intent)
         }
@@ -52,8 +56,6 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         if (!cursor!!.moveToPosition(position)) {
             return
         }
-        holder.itemView.id = cursor.getInt(cursor.getColumnIndex(WorkoutDatabase.COLUMN_ID))
-        cursor.close()
 
         var seconds = mWorkouts[position].seconds
         seconds = seconds?.times(1000)
@@ -145,6 +147,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
 
         with(holder.itemView) {
+            holder.itemView.id = cursor.getInt(cursor.getColumnIndex(WorkoutDatabase.COLUMN_ID))
+            cursor.close()
             tag = workout
             setOnClickListener(onClickListener)
         }

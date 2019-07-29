@@ -1,13 +1,23 @@
 package xyz.cortland.fittimer.android.fragments
 
+import android.content.ContentValues
+import android.content.Context
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.Snackbar
+import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_workout_detail.*
+import kotlinx.android.synthetic.main.workout_detail.*
 import kotlinx.android.synthetic.main.workout_detail.view.*
 import xyz.cortland.fittimer.android.R
+import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
+import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
 
 /**
@@ -19,9 +29,12 @@ import xyz.cortland.fittimer.android.model.WorkoutModel
 class WorkoutDetailFragment : Fragment() {
 
     /**
-     * The dummy content this fragment is presenting.
+     * The Workout Content this fragment is presenting.
      */
     private var item: WorkoutModel? = null
+    private var workoutId: Int? = null
+    var editButton: FloatingActionButton? = null
+    var secondsView: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +45,7 @@ class WorkoutDetailFragment : Fragment() {
                 // arguments. In a real-world scenario, use a Loader
                 // to load content from a content provider.
                 item = it.getParcelable(ARG_ITEM_ID)
+                workoutId = it.getInt(ARG_WORKOUT_ID)
                 activity?.toolbar_layout?.title = item?.workoutName
             }
         }
@@ -40,9 +54,11 @@ class WorkoutDetailFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.workout_detail, container, false)
 
-        // Show the dummy content as text in a TextView.
+        secondsView = rootView.findViewById(R.id.item_detail_seconds)
+
+        // Show the Workout content as text in a TextView.
         item?.let {
-            rootView.item_detail_seconds.text = it.seconds.toString()
+            secondsView?.text = it.seconds.toString()
         }
 
         return rootView
@@ -53,6 +69,7 @@ class WorkoutDetailFragment : Fragment() {
          * The fragment argument representing the item ID that this fragment
          * represents.
          */
-        const val ARG_ITEM_ID = "workout_id"
+        const val ARG_ITEM_ID = "workout"
+        const val ARG_WORKOUT_ID = "workout_id"
     }
 }

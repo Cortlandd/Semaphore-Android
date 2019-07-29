@@ -93,8 +93,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
 
     }
-    private fun setupRecyclerView(recyclerView: RecyclerView) {
 
+    override fun onResume() {
+        super.onResume()
+        item_list.adapter?.notifyDataSetChanged()
     }
 
     /**

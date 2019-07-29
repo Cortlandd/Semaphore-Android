@@ -8,7 +8,7 @@ data class WorkoutModel(
     var seconds: Int?,
     var workoutName: String?): Parcelable {
 
-    var id: Int? = 0
+    var id: Int? = null
     var isPlaying: Boolean? = false
     var isCount: Boolean? = false
     var remainingSeconds: Long? = 0

@@ -1,13 +1,18 @@
 package xyz.cortland.fittimer.android.activities
 
+import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.R
+import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
+import xyz.cortland.fittimer.android.model.WorkoutModel
 
 /**
  * An activity representing a single Item detail screen. This
@@ -15,16 +20,30 @@ import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
  * item details are presented side-by-side with a list of items
  * in a [WorkoutListActivity].
  */
-class WorkoutDetailActivity : AppCompatActivity() {
+class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWorkoutDialogListener {
+
+    var workout: WorkoutModel? = null
+    var workoutId: Int? = null
+
+    var fragment: WorkoutDetailFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_detail)
         setSupportActionBar(detail_toolbar)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        workout = intent.getParcelableExtra("arg_parcel_workout")
+        workoutId = intent.getIntExtra("arg_workout_id", 0)
+
+        fab_edit_workout.setOnClickListener { view ->
+
+            if (workout != null) {
+                val newWorkoutFragment = NewWorkoutDialogFragment.newInstance(workout!!)
+                newWorkoutFragment.show(supportFragmentManager, "ModifyWorkout")
+            } else {
+                Snackbar.make(view, "Something is wrong", Snackbar.LENGTH_LONG).setAction("Action", null).show()
+            }
+
         }
 
         // Show the Up button in the action bar.
@@ -42,16 +61,41 @@ class WorkoutDetailActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
-            val fragment = WorkoutDetailFragment().apply {
+            fragment = WorkoutDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(WorkoutDetailFragment.ARG_ITEM_ID, intent.getParcelableExtra("arg_parcel_workout"))
+                    putInt(WorkoutDetailFragment.ARG_WORKOUT_ID, intent.getIntExtra("arg_workout_id", 0))
                 }
             }
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.item_detail_container, fragment)
+                .add(R.id.item_detail_container, fragment!!)
                 .commit()
         }
+    }
+
+    override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
+        updateWorkoutItem(workoutId!!, workout)
+        dialog.dismiss()
+        this.finish()
+    }
+
+    /**
+     * Used to remove swiped Workouts
+     * @param id: The id of the book
+     */
+    private fun updateWorkoutItem(id: Int, workout: WorkoutModel) {
+        val dbHelper = WorkoutDatabase(this, null)
+        val db = dbHelper.writableDatabase
+        val values = ContentValues()
+        values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
+        values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
+        db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + id, null)
+        db.close()
+    }
+
+    override fun onCancelClick(dialog: DialogFragment) {
+        dialog.dismiss()
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
