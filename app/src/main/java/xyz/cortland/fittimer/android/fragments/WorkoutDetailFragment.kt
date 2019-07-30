@@ -33,7 +33,6 @@ class WorkoutDetailFragment : Fragment() {
      */
     private var item: WorkoutModel? = null
     private var workoutId: Int? = null
-    var editButton: FloatingActionButton? = null
     var secondsView: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

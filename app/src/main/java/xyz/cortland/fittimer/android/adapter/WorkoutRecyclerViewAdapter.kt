@@ -47,9 +47,9 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val workout = mWorkouts?.get(position)
-        holder.workoutView.text = workout?.workoutName
-        holder.secondsView.text = workout?.seconds.toString()
+        val workout = mWorkouts.get(position)
+        holder.workoutView.text = workout.workoutName
+        holder.secondsView.text = workout.seconds.toString()
 
         val dbHandler = WorkoutDatabase(this.parentActivity!!, null)
         val cursor = dbHandler.getAllWorkouts()
@@ -71,13 +71,12 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
                 override fun onFinish() {
 
-                    holder.secondsView.text = "${mWorkouts.get(position).seconds}"
-
                     counterList.get(position).isCount = false
 
                     if (position == counterList.size - 1) {
                         parentActivity!!.playingAll = false
-                        parentActivity!!.playAllButton!!.text = "Play All"
+                        parentActivity!!.stopAllButton?.visibility = View.GONE
+                        parentActivity!!.playAllButton?.visibility = View.VISIBLE
                     } else {
                         if (parentActivity!!.playingAll) {
                             counterList.get(position + 1).isCount = true
@@ -86,7 +85,10 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                     }
                 }
 
-            }.start()
+            }
+            thread {
+                parentActivity!!.countdownPlayAll?.start()
+            }.run()
         }
 
         holder.playButton.setOnClickListener {

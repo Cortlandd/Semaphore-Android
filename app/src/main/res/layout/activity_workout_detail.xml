@@ -45,13 +45,15 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab_edit_workout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|start"
-            android:layout_margin="@dimen/fab_margin"
-            app:srcCompat="@android:drawable/ic_menu_edit"
-            app:layout_anchor="@+id/item_detail_container"
-            app:layout_anchorGravity="top|end"/>
+        android:id="@+id/fab_edit_workout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|start"
+        app:borderWidth="0dp"
+        android:backgroundTint="@color/cardview_dark_background"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@android:drawable/ic_menu_edit"
+        app:layout_anchor="@+id/item_detail_container"
+        app:layout_anchorGravity="top|end"/>
 
 </android.support.design.widget.CoordinatorLayout>

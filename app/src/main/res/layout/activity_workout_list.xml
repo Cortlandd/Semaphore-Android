@@ -10,25 +10,45 @@
     tools:context=".activities.WorkoutListActivity">
 
     <android.support.design.widget.AppBarLayout
-            android:id="@+id/app_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay">
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:popupTheme="@style/AppTheme.PopupOverlay"/>
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
 
-    <Button
-        android:id="@+id/play_all_button"
-        android:text="Play All"
+    <LinearLayout
         android:layout_gravity="center_horizontal"
+        android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/play_all_button"
+            android:text="Play All"
+            android:elevation="3dp"
+            android:layout_margin="4dp"
+            android:background="#fff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/stop_all_button"
+            android:text="Stop All"
+            android:elevation="3dp"
+            android:visibility="gone"
+            android:layout_margin="4dp"
+            android:background="#fff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
     <FrameLayout
             android:id="@+id/frameLayout"
@@ -39,12 +59,14 @@
         <include layout="@layout/workout_list"/>
 
         <android.support.design.widget.FloatingActionButton
-                android:id="@+id/fab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end|bottom"
-                android:layout_margin="@dimen/fab_margin"
-                android:src="@android:drawable/ic_input_add" />
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/cardview_dark_background"
+            app:borderWidth="0dp"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@android:drawable/ic_input_add" />
 
     </FrameLayout>
 

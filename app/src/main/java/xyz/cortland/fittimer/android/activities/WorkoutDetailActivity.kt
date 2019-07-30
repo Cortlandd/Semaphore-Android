@@ -76,6 +76,9 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
         updateWorkoutItem(workoutId!!, workout)
+        println("Index: $workoutId")
+        println("Workout time: ${workout.seconds.toString()}")
+        println("workout name: ${workout.workoutName}")
         dialog.dismiss()
         this.finish()
     }
