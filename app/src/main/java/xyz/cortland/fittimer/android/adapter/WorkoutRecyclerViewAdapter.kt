@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_workout_list.*
@@ -17,6 +18,8 @@ import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
 import kotlin.concurrent.thread
+
+
 
 class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
 
@@ -93,6 +96,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
         holder.playButton.setOnClickListener {
 
+            holder.workoutControls.visibility = View.VISIBLE
+
             if (!parentActivity!!.playingAll) {
 
                 if (!playingIndividual) {
@@ -104,7 +109,6 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                 mWorkouts.get(position).isPlaying = true
 
                 it.visibility = View.GONE
-                holder.stopButton.visibility = View.VISIBLE
 
                 countdownTimer = object: CountDownTimer(seconds!!.toLong(), 1000) {
 
@@ -122,8 +126,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                     override fun onFinish() {
                         mWorkouts.get(position).isPlaying = false
                         it.visibility = View.VISIBLE
-                        holder.stopButton.visibility = View.GONE
                         holder.secondsView.text = mWorkouts.get(position).seconds.toString()
+                        holder.workoutControls.visibility = View.GONE
                     }
 
                 }
@@ -137,15 +141,31 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                     Toast.LENGTH_LONG
                 ).show()
             }
-
         }
 
         holder.stopButton.setOnClickListener {
             countdownTimer!!.cancel()
-            it.visibility = View.GONE
             holder.playButton.visibility = View.VISIBLE
             mWorkouts.get(position).isPlaying = false
             holder.secondsView.text = mWorkouts.get(position).seconds.toString()
+            holder.workoutControls.visibility = View.GONE
+            if (holder.resumeButton.visibility == View.VISIBLE) {
+                holder.resumeButton.visibility = View.GONE
+                holder.pauseButton.visibility = View.VISIBLE
+            }
+            notifyItemChanged(position)
+        }
+
+        holder.pauseButton.setOnClickListener {
+            it.visibility = View.GONE
+            holder.resumeButton.visibility = View.VISIBLE
+            countdownTimer!!.pause()
+        }
+
+        holder.resumeButton.setOnClickListener {
+            it.visibility = View.GONE
+            holder.pauseButton.visibility = View.VISIBLE
+            countdownTimer!!.resume()
         }
 
         with(holder.itemView) {
@@ -156,13 +176,16 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
     }
 
-    override fun getItemCount() = mWorkouts!!.size
+    override fun getItemCount() = mWorkouts.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var secondsView: TextView = view.seconds
         var workoutView: TextView = view.workout
         var playButton: Button = view.single_play_button
         var stopButton: Button = view.single_stop_button
+        var pauseButton: Button = view.single_pause_button
+        var resumeButton: Button = view.single_resume_button
+        var workoutControls: LinearLayout = view.workout_controls
     }
 
 }

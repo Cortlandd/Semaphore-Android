@@ -12,6 +12,7 @@ data class WorkoutModel(
     var isPlaying: Boolean? = false
     var isCount: Boolean? = false
     var remainingSeconds: Long? = 0
+    var expanded: Boolean? = false
 
     constructor(): this(null, null)
 
