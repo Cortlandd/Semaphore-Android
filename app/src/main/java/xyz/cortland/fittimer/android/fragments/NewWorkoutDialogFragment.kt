@@ -38,6 +38,8 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     var workoutImage: ImageView? = null
 
+    var workoutImagePlaceholder: ImageView? = null
+
     var imagePath: String? = null
 
     var workoutValue: String? = ""
@@ -74,9 +76,15 @@ class NewWorkoutDialogFragment: DialogFragment() {
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
         val searchGalleryButton = dialogView.findViewById<Button>(R.id.search_gallery_button)
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
+        workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
 
         giphyView.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
         giphyView.setSelectedCallback {
+
+            // Make images visible
+            workoutImage!!.visibility = View.VISIBLE
+            workoutImagePlaceholder!!.visibility = View.GONE
+
             gifImageLocation = it.path?.toString()
             Glide.with(this).load(it).into(workoutImage!!)
             galleryImageLocation = null
@@ -143,9 +151,13 @@ class NewWorkoutDialogFragment: DialogFragment() {
             seconds.setText(workout.seconds.toString())
             workoutText.setText(workout.workoutName)
             if (workout.workoutImage != null) {
+                workoutImage!!.visibility = View.VISIBLE
+                workoutImagePlaceholder!!.visibility = View.GONE
                 Glide.with(this).load(Uri.fromFile(File(workout.workoutImage))).into(workoutImage!!)
                 workoutImageValue = workout.workoutImage
-                println(workout.workoutImage)
+            } else {
+                workoutImage!!.visibility = View.GONE
+                workoutImagePlaceholder!!.visibility = View.VISIBLE
             }
         }
 
@@ -174,16 +186,13 @@ class NewWorkoutDialogFragment: DialogFragment() {
     private fun validateImagePath() {
         when {
             gifImageLocation == null && imagePath == null -> {
-                println("Both null")
                 workoutImageValue = null
             }
             imagePath != null -> {
-                println("Gif image null")
                 saveSelectedImage(imagePath!!)
                 workoutImageValue = galleryImageLocation
             }
             gifImageLocation != null -> {
-                println("Gif image NOT null")
                 workoutImageValue = gifImageLocation
             }
         }
@@ -246,6 +255,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
                     }
 
                     imagePath = ImageFilePath.getPath(this.activity!!, uri)
+
+                    workoutImage!!.visibility = View.VISIBLE
+                    workoutImagePlaceholder!!.visibility = View.GONE
 
                     try {
                         Glide.with(this).load(uri).into(workoutImage!!)

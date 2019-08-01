@@ -100,6 +100,7 @@
 
                 <TextView
                     android:text="Image"
+                    android:visibility="gone"
                     android:textSize="42sp"
                     android:textColor="@color/cardview_dark_background"
                     android:layout_width="wrap_content"
@@ -107,7 +108,15 @@
 
                 <ImageView
                     android:id="@+id/selected_image"
-                    android:src="@drawable/bliss"
+                    android:visibility="gone"
+                    android:scaleType="fitXY"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp" />
+
+                <ImageView
+                    android:id="@+id/selected_image_placeholder"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/placeholder_image2"
                     android:layout_width="match_parent"
                     android:layout_height="200dp" />
 

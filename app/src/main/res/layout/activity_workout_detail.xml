@@ -28,7 +28,7 @@
             <ImageView
                 android:id="@+id/workout_image_detail"
                 android:translationZ="0dp"
-                android:src="@drawable/bliss"
+                android:src="@drawable/placeholder_image2"
                 android:scaleType="fitXY"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
