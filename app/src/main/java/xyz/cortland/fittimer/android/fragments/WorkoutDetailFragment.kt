@@ -1,24 +1,19 @@
 package xyz.cortland.fittimer.android.fragments
 
-import android.content.ContentValues
-import android.content.Context
+
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_workout_detail.*
-import kotlinx.android.synthetic.main.workout_detail.*
-import kotlinx.android.synthetic.main.workout_detail.view.*
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
-import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import java.io.File
 
 /**
  * A fragment representing a single Item detail screen.
@@ -56,8 +51,12 @@ class WorkoutDetailFragment : Fragment() {
         secondsView = rootView.findViewById(R.id.item_detail_seconds)
 
         // Show the Workout content as text in a TextView.
-        item?.let {
-            secondsView?.text = it.seconds.toString()
+        item.let {
+            secondsView?.text = it?.seconds.toString()
+            if (it?.workoutImage != null) {
+                Glide.with(activity!!).load(File(it.workoutImage)).into(activity!!.workout_image_detail)
+            }
+
         }
 
         return rootView

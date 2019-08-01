@@ -1,10 +1,10 @@
 package xyz.cortland.fittimer.android.activities
 
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
+import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
@@ -20,6 +20,7 @@ import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import java.io.File
 
 
 /**
@@ -80,9 +81,14 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
+                var image = mWorkouts.get(position).workoutImage
                 mWorkouts.removeAt(position)
                 item_list!!.adapter?.notifyItemRemoved(position)
                 removeWorkoutItem(viewHolder.itemView.id)
+                if (image != null) {
+                    var df = File(image)
+                    df.delete()
+                }
             }
 
         }
@@ -131,7 +137,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     }
 
-    fun validatePlayAll() {
+    private fun validatePlayAll() {
         if (!playingAll) {
             stopAllButton?.visibility = View.VISIBLE
             playAllButton?.visibility = View.GONE
