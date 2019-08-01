@@ -5,55 +5,144 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_margin="10dp"
-        android:layout_gravity="center_horizontal"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <TextView
-            android:text="Seconds"
-            android:textSize="42sp"
-            android:textColor="@color/cardview_dark_background"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <EditText
-            android:hint="0"
-            android:id="@+id/seconds_text"
-            android:inputType="number"
-            android:digits="1234567890"
-            android:textSize="24sp"
-            android:layout_gravity="center_horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <LinearLayout
+                android:id="@+id/gif_search_view"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    </LinearLayout>
+                <Button
+                    android:id="@+id/close_giphysearch_button"
+                    android:padding="10dp"
+                    android:text="Close Giphy Search"
+                    android:elevation="3dp"
+                    android:textColor="@color/cardview_dark_background"
+                    android:layout_margin="4dp"
+                    android:background="#fff"
+                    android:layout_gravity="end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
-    <LinearLayout
-        android:layout_margin="10dp"
-        android:orientation="vertical"
-        android:layout_gravity="center_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+                <xyz.klinker.giphy.GiphyView
+                    android:id="@+id/search_giphy_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-        <TextView
-            android:text="Workout"
-            android:textSize="42sp"
-            android:textColor="@color/cardview_dark_background"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                </xyz.klinker.giphy.GiphyView>
 
-        <EditText
-            android:id="@+id/workout_text"
-            android:hint="Workout"
-            android:layout_gravity="center_horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            </LinearLayout>
 
-    </LinearLayout>
+            <LinearLayout
+                android:layout_margin="10dp"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
+                <TextView
+                    android:text="Seconds"
+                    android:textSize="42sp"
+                    android:textColor="@color/cardview_dark_background"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
+                <EditText
+                    android:hint="0"
+                    android:id="@+id/seconds_text"
+                    android:inputType="number"
+                    android:digits="1234567890"
+                    android:textSize="24sp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_margin="10dp"
+                android:orientation="vertical"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="Workout"
+                    android:textSize="42sp"
+                    android:textColor="@color/cardview_dark_background"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <EditText
+                    android:id="@+id/workout_text"
+                    android:hint="Workout"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_margin="10dp"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="Image"
+                    android:textSize="42sp"
+                    android:textColor="@color/cardview_dark_background"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <ImageView
+                    android:id="@+id/selected_image"
+                    android:src="@drawable/bliss"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp" />
+
+                <LinearLayout
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:id="@+id/search_gallery_button"
+                        android:text="Gallery"
+                        android:elevation="3dp"
+                        android:textColor="@color/cardview_dark_background"
+                        android:layout_margin="5dp"
+                        android:background="#fff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:id="@+id/search_giphy_button"
+                        android:text="Search Gif"
+                        android:textColor="@color/cardview_dark_background"
+                        android:elevation="3dp"
+                        android:layout_margin="5dp"
+                        android:background="#fff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

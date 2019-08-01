@@ -3,9 +3,9 @@ package xyz.cortland.fittimer.android.activities
 import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.app.DialogFragment
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
+import androidx.fragment.app.DialogFragment
+import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.R
@@ -76,9 +76,6 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
         updateWorkoutItem(workoutId!!, workout)
-        println("Index: $workoutId")
-        println("Workout time: ${workout.seconds.toString()}")
-        println("workout name: ${workout.workoutName}")
         dialog.dismiss()
         this.finish()
     }
@@ -93,6 +90,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         val values = ContentValues()
         values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
+        values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
         db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + id, null)
         db.close()
     }

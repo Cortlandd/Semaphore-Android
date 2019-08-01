@@ -25,7 +25,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_SECONDS + " INTEGER, " +
                 COLUMN_WORKOUT + " TEXT, " +
-                COLUMN_WORKOUTIMAGE + " BLOB" + ");"
+                COLUMN_WORKOUTIMAGE + " TEXT" + ");"
         )
     }
 
@@ -38,6 +38,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         val values = ContentValues()
         values.put(COLUMN_SECONDS, workoutModel.seconds)
         values.put(COLUMN_WORKOUT, workoutModel.workoutName)
+        values.put(COLUMN_WORKOUTIMAGE, workoutModel.workoutImage)
         val db = this.writableDatabase
         db.insert(TABLE_NAME, null, values)
         db.close()
@@ -62,6 +63,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
                 workout.id = cursor.getInt(cursor.getColumnIndex(COLUMN_ID))
                 workout.seconds = cursor.getInt(cursor.getColumnIndex(COLUMN_SECONDS))
                 workout.workoutName = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUT))
+                workout.workoutImage = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUTIMAGE))
             } while (cursor.moveToNext())
         }
 
@@ -81,7 +83,8 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
             do {
                 val seconds = cursor.getInt(cursor.getColumnIndex(COLUMN_SECONDS))
                 val workoutName = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUT))
-                val workout: WorkoutModel = WorkoutModel(seconds = seconds, workoutName = workoutName)
+                val workoutImage = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUTIMAGE))
+                val workout: WorkoutModel = WorkoutModel(seconds = seconds, workoutName = workoutName, workoutImage = workoutImage)
                 workouts.add(workout)
             } while (cursor.moveToNext())
         }

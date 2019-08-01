@@ -1,14 +1,12 @@
 package xyz.cortland.fittimer.android.adapter
 
 import android.content.Intent
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.R
@@ -17,11 +15,12 @@ import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import java.io.File
 import kotlin.concurrent.thread
 
 
 
-class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
+class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : androidx.recyclerview.widget.RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
     var counterList: List<WorkoutModel> = ArrayList()
@@ -53,6 +52,11 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         val workout = mWorkouts.get(position)
         holder.workoutView.text = workout.workoutName
         holder.secondsView.text = workout.seconds.toString()
+        if (workout.workoutImage != null) {
+            Glide.with(parentActivity!!).load(File(workout.workoutImage)).into(holder.workoutImage)
+        } else {
+            holder.workoutImage.visibility = View.GONE
+        }
 
         val dbHandler = WorkoutDatabase(this.parentActivity!!, null)
         val cursor = dbHandler.getAllWorkouts()
@@ -63,6 +67,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         var seconds = mWorkouts[position].seconds
         seconds = seconds?.times(1000)
 
+        // TODO: Show controls for playing all
         if (counterList[position].isCount!!) {
             parentActivity!!.countdownPlayAll = object: CountDownTimer(seconds!!.toLong(), 1000) {
 
@@ -185,6 +190,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         var stopButton: Button = view.single_stop_button
         var pauseButton: Button = view.single_pause_button
         var resumeButton: Button = view.single_resume_button
+        var workoutImage: ImageView = view.workout_image
         var workoutControls: LinearLayout = view.workout_controls
     }
 
