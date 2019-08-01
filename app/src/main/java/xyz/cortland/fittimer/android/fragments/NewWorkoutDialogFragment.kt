@@ -19,6 +19,8 @@ import xyz.klinker.giphy.GiphyView
 import java.lang.ClassCastException
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import xyz.cortland.fittimer.android.utils.ImageFilePath
 import java.io.File
@@ -33,14 +35,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
     private val IMAGE_PICK_CODE = 1000
 
     var gifImageLocation: String? = null
-
     var galleryImageLocation: String? = null
+    var imagePath: String? = null
 
     var workoutImage: ImageView? = null
-
     var workoutImagePlaceholder: ImageView? = null
-
-    var imagePath: String? = null
 
     var workoutValue: String? = ""
     var secondsValue: Int? = 0
