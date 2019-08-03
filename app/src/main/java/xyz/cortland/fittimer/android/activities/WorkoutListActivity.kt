@@ -1,12 +1,15 @@
 package xyz.cortland.fittimer.android.activities
 
+import android.os.Build
 import android.os.Bundle
+import android.view.Menu
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ItemTouchHelper
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
 
@@ -122,7 +125,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         db.close()
     }
 
-    fun setupView() {
+    private fun setupView() {
 
         playAllButton = findViewById<Button>(R.id.play_all_button)
         stopAllButton = findViewById<Button>(R.id.stop_all_button)
@@ -193,5 +196,19 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         dialog.dismiss()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.settings_menu -> {
+                Toast.makeText(this, "Settings menu Clicked", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        return true
+    }
 
 }

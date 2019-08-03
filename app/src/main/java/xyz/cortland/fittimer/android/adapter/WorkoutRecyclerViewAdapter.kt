@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
 import android.widget.*
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_workout_list.*
@@ -15,6 +16,7 @@ import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.utils.SlideAnimationUtil
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -39,6 +41,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                 putExtra("arg_workout_id", workoutId!!)
             }
             v.context.startActivity(intent)
+            parentActivity!!.overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
         }
     }
 
@@ -65,6 +68,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             holder.workoutControls.visibility = View.GONE
             holder.resumeButton.visibility = View.GONE
             holder.pauseButton.visibility = View.VISIBLE
+            holder.workoutImage.visibility = View.VISIBLE
 
             holder.workoutView.text = workout.workoutName
             holder.secondsView.text = workout.seconds.toString()

@@ -2,11 +2,13 @@ package xyz.cortland.fittimer.android.activities
 
 import android.content.ContentValues
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
+import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
@@ -109,6 +111,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
                 // http://developer.android.com/design/patterns/navigation.html#up-vs-back
 
                 navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+                this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
                 true
             }
             else -> super.onOptionsItemSelected(item)
