@@ -11,6 +11,7 @@ data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workout
     var isCount: Boolean? = false
     var remainingSeconds: Long? = 0
     var expanded: Boolean? = false
+    var isDefaultState: Boolean? = true
 
     constructor(): this(null, null, null)
 

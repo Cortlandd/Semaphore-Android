@@ -29,6 +29,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 
+// TODO: Implemented an EditWorkoutDialogFragment Dialog Class
 class NewWorkoutDialogFragment: DialogFragment() {
 
     //image pick code
@@ -43,7 +44,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     var workoutValue: String? = ""
     var secondsValue: Int? = 0
-    var workoutImageValue: String? = ""
+    var workoutImageValue: String? = null
+
+    var workout: WorkoutModel? = null
 
     interface NewWorkoutDialogListener {
         fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel)
@@ -141,19 +144,19 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         })
 
-        val workout: WorkoutModel? = arguments?.getParcelable("arg_workout")
+        workout = arguments?.getParcelable("arg_workout")
 
         if (workout == null) {
             builder.setTitle("Add Workout")
         } else {
             builder.setTitle("Edit Workout")
-            seconds.setText(workout.seconds.toString())
-            workoutText.setText(workout.workoutName)
-            if (workout.workoutImage != null) {
+            seconds.setText(workout?.seconds.toString())
+            workoutText.setText(workout?.workoutName)
+            if (workout?.workoutImage != null) {
                 workoutImage!!.visibility = View.VISIBLE
                 workoutImagePlaceholder!!.visibility = View.GONE
-                Glide.with(this).load(Uri.fromFile(File(workout.workoutImage))).into(workoutImage!!)
-                workoutImageValue = workout.workoutImage
+                Glide.with(this).load(Uri.fromFile(File(workout?.workoutImage))).into(workoutImage!!)
+                workoutImageValue = workout?.workoutImage
             } else {
                 workoutImage!!.visibility = View.GONE
                 workoutImagePlaceholder!!.visibility = View.VISIBLE
@@ -184,14 +187,24 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     private fun validateImagePath() {
         when {
-            gifImageLocation == null && imagePath == null -> {
-                workoutImageValue = null
-            }
-            imagePath != null -> {
+            // For New Workouts
+            imagePath != null && gifImageLocation == null -> {
+                println("For New Workouts")
                 saveSelectedImage(imagePath!!)
                 workoutImageValue = galleryImageLocation
             }
-            gifImageLocation != null -> {
+            gifImageLocation != null && imagePath == null -> {
+                println("For New Workouts")
+                workoutImageValue = gifImageLocation
+            }
+            // For Existing Workouts
+            imagePath != null && workoutImageValue != workout?.workoutImage -> {
+                println("For Existing Workouts")
+                saveSelectedImage(imagePath!!)
+                workoutImageValue = galleryImageLocation
+            }
+            gifImageLocation != null  && workoutImageValue != workout?.workoutImage -> {
+                println("For Existing Workouts")
                 workoutImageValue = gifImageLocation
             }
         }

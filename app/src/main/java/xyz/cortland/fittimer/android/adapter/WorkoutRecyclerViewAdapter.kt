@@ -50,13 +50,6 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val workout = mWorkouts.get(position)
-        holder.workoutView.text = workout.workoutName
-        holder.secondsView.text = workout.seconds.toString()
-        if (workout.workoutImage != null) {
-            Glide.with(parentActivity!!).load(File(workout.workoutImage)).into(holder.workoutImage)
-        } else {
-            holder.workoutImage.visibility = View.GONE
-        }
 
         val dbHandler = WorkoutDatabase(this.parentActivity!!, null)
         val cursor = dbHandler.getAllWorkouts()
@@ -67,8 +60,30 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         var seconds = mWorkouts[position].seconds
         seconds = seconds?.times(1000)
 
+        if (mWorkouts.get(position).isDefaultState!!) {
+            holder.stopButton.visibility = View.VISIBLE
+            holder.workoutControls.visibility = View.GONE
+            holder.resumeButton.visibility = View.GONE
+            holder.pauseButton.visibility = View.VISIBLE
+
+            holder.workoutView.text = workout.workoutName
+            holder.secondsView.text = workout.seconds.toString()
+            if (workout.workoutImage != null) {
+                Glide.with(parentActivity!!).load(File(workout.workoutImage)).into(holder.workoutImage)
+            } else {
+                holder.workoutImage.visibility = View.GONE
+            }
+
+        } else {
+            return
+        }
+
         // TODO: Show controls for playing all
         if (counterList[position].isCount!!) {
+
+            holder.stopButton.visibility = View.GONE
+            holder.workoutControls.visibility = View.VISIBLE
+
             parentActivity!!.countdownPlayAll = object: CountDownTimer(seconds!!.toLong(), 1000) {
 
                 override fun onTick(millisUntilFinished: Long) {
@@ -85,6 +100,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                         parentActivity!!.playingAll = false
                         parentActivity!!.stopAllButton?.visibility = View.GONE
                         parentActivity!!.playAllButton?.visibility = View.VISIBLE
+                        notifyDataSetChanged()
+                        mWorkouts.get(position).isDefaultState = true
                     } else {
                         if (parentActivity!!.playingAll) {
                             counterList.get(position + 1).isCount = true

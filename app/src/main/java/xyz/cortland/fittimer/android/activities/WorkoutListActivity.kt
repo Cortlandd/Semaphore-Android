@@ -41,7 +41,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var workoutAdapter: WorkoutRecyclerViewAdapter? = null
 
-    val dbHandler = WorkoutDatabase(this, null)
+    var dbHandler = WorkoutDatabase(this, null)
 
     val mWorkouts: ArrayList<WorkoutModel> = ArrayList<WorkoutModel>()
 
@@ -68,7 +68,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 //            twoPane = true
 //        }
 
-        val dbHandler = WorkoutDatabase(this, null)
         mWorkouts.addAll(dbHandler.allWorkoutsList())
         workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts)
         item_list.adapter = workoutAdapter
@@ -164,6 +163,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             countdownPlayAll?.cancel()
             for (i in mWorkouts.indices) {
                 mWorkouts.get(i).isCount = false
+                mWorkouts.get(i).isDefaultState = true
             }
             workoutAdapter?.notifyDataSetChanged()
         }
@@ -176,6 +176,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         countdownPlayAll?.cancel()
         for (i in mWorkouts.indices) {
             mWorkouts.get(i).isCount = false
+            mWorkouts.get(i).isDefaultState = true
         }
         workoutAdapter?.notifyDataSetChanged()
     }
