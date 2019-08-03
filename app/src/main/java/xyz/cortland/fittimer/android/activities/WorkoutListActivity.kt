@@ -1,5 +1,6 @@
 package xyz.cortland.fittimer.android.activities
 
+import android.animation.LayoutTransition
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -137,6 +138,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             stopPlayingAll()
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            frameLayout.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
+        }
+
     }
 
     private fun validatePlayAll() {
@@ -172,7 +177,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
     }
 
-    fun stopPlayingAll() {
+    private fun stopPlayingAll() {
         stopAllButton?.visibility = View.GONE
         playAllButton?.visibility = View.VISIBLE
         playingAll = false

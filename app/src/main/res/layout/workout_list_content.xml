@@ -29,17 +29,37 @@
                 android:layout_margin="@dimen/text_margin"
                 android:textAppearance="?attr/textAppearanceListItem"/>
 
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/seconds"
+                    android:layout_centerInParent="true"
+                    android:hint="Sec"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <ProgressBar
+                    android:id="@+id/workout_progress_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_centerInParent="true"
+                    android:progressDrawable="@drawable/drawable_circle_green"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="100"
+                    android:rotation="-90"
+                    android:padding="10dp"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp" />
+
+            </RelativeLayout>
+
             <Button
                 android:id="@+id/single_play_button"
                 android:text="Play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <TextView
-                android:id="@+id/seconds"
-                android:hint="Seconds"
-                android:textAppearance="?attr/textAppearanceListItem"
-                android:layout_margin="@dimen/text_margin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

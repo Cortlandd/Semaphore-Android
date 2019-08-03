@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
+import android.view.animation.DecelerateInterpolator
 import android.widget.*
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_workout_list.*
@@ -52,7 +53,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val workout = mWorkouts.get(position)
+        val workout = mWorkouts[position]
 
         val dbHandler = WorkoutDatabase(this.parentActivity!!, null)
         val cursor = dbHandler.getAllWorkouts()
@@ -78,6 +79,10 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                 holder.workoutImage.visibility = View.GONE
             }
 
+            // Mostly for Play All
+            holder.workoutProgressBar.max = seconds!! / 1000
+            holder.workoutProgressBar.progress = seconds / 1000
+
         } else {
             return
         }
@@ -85,35 +90,38 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         // TODO: Show controls for playing all
         if (counterList[position].isCount!!) {
 
-            holder.stopButton.visibility = View.GONE
             holder.workoutControls.visibility = View.VISIBLE
+            holder.stopButton.visibility = View.GONE
 
-            parentActivity!!.countdownPlayAll = object: CountDownTimer(seconds!!.toLong(), 1000) {
+            holder.workoutProgressBar.max = seconds / 1000
+
+            parentActivity!!.countdownPlayAll = object: CountDownTimer(seconds.toLong(), 1000) {
 
                 override fun onTick(millisUntilFinished: Long) {
                     if (parentActivity!!.playingAll) {
                         holder.secondsView.text = "${millisUntilFinished / 1000}"
+                        holder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
                     }
                 }
 
                 override fun onFinish() {
-
                     counterList.get(position).isCount = false
 
                     if (position == counterList.size - 1) {
+                        // Happens when Play All is finished
                         parentActivity!!.playingAll = false
                         parentActivity!!.stopAllButton?.visibility = View.GONE
                         parentActivity!!.playAllButton?.visibility = View.VISIBLE
                         notifyDataSetChanged()
-                        mWorkouts.get(position).isDefaultState = true
                     } else {
                         if (parentActivity!!.playingAll) {
                             counterList.get(position + 1).isCount = true
+                            // Might be used for animation
+                            //notifyItemChanged(position)
                             notifyDataSetChanged()
                         }
                     }
                 }
-
             }
             thread {
                 parentActivity!!.countdownPlayAll?.start()
@@ -136,12 +144,13 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
                 it.visibility = View.GONE
 
-                countdownTimer = object: CountDownTimer(seconds!!.toLong(), 1000) {
+                countdownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
                         if (mWorkouts.get(position).isPlaying!!) {
                             holder.secondsView.text = "${millisUntilFinished / 1000}"
                             mWorkouts.get(position).remainingSeconds = millisUntilFinished
+                            holder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
 
                         } else {
                             holder.secondsView.text = mWorkouts.get(position).seconds.toString()
@@ -154,6 +163,9 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                         it.visibility = View.VISIBLE
                         holder.secondsView.text = mWorkouts.get(position).seconds.toString()
                         holder.workoutControls.visibility = View.GONE
+
+                        // Set the progress ring back to default
+                        holder.workoutProgressBar.progress = seconds / 1000
                     }
 
                 }
@@ -213,6 +225,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         var resumeButton: Button = view.single_resume_button
         var workoutImage: ImageView = view.workout_image
         var workoutControls: LinearLayout = view.workout_controls
+        var workoutProgressBar: ProgressBar = view.workout_progress_bar
     }
 
 }
