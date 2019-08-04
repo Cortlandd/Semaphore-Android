@@ -71,8 +71,7 @@
                     app:np_min="1"
                     app:np_selectedTextColor="@color/colorPrimary"
                     app:np_textColor="@color/colorPrimary"
-                    app:np_textSize="20sp"
-                    app:np_value="1" />
+                    app:np_textSize="20sp" />
 
             </LinearLayout>
 

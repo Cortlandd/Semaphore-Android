@@ -116,16 +116,6 @@ class NewWorkoutDialogFragment: DialogFragment() {
             }
         }
 
-        secondsValue = numberPicker!!.value
-
-        numberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
-            if (oldVal == newVal) {
-                secondsValue = oldVal
-            } else {
-                secondsValue = newVal
-            }
-        }
-
         // TODO: Implement text requirement
         workoutText.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -156,6 +146,12 @@ class NewWorkoutDialogFragment: DialogFragment() {
                 workoutImage!!.visibility = View.GONE
                 workoutImagePlaceholder!!.visibility = View.VISIBLE
             }
+        }
+
+        secondsValue = numberPicker!!.value
+
+        numberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+            secondsValue = newVal
         }
 
         builder.setView(dialogView)
