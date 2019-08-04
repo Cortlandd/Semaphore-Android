@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import xyz.cortland.fittimer.android.utils.ImageFilePath
 import java.io.File
 import java.io.FileInputStream
@@ -38,6 +39,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var gifImageLocation: String? = null
     var galleryImageLocation: String? = null
     var imagePath: String? = null
+    var mGlobalPreferences: GlobalPreferences? = null
 
     var workoutImage: ImageView? = null
     var workoutImagePlaceholder: ImageView? = null
@@ -68,6 +70,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
         val builder = AlertDialog.Builder(this.activity!!)
+        mGlobalPreferences = GlobalPreferences(this.activity!!)
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
         val seconds = dialogView!!.findViewById<EditText>(R.id.seconds_text)
@@ -165,6 +168,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         builder.setView(dialogView)
             .setPositiveButton("Save") { dialog, id ->
+                mGlobalPreferences!!.setWorkoutModified(true)
                 validateImagePath()
                 newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue))
             }

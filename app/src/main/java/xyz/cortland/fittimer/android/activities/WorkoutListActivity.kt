@@ -24,6 +24,7 @@ import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import java.io.File
 
 
@@ -45,7 +46,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var workoutAdapter: WorkoutRecyclerViewAdapter? = null
 
-    var dbHandler = WorkoutDatabase(this, null)
+    var dbHandler: WorkoutDatabase? = null
 
     val mWorkouts: ArrayList<WorkoutModel> = ArrayList<WorkoutModel>()
 
@@ -57,6 +58,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var stopAllButton: Button? = null
 
+    var mGlobalPreferences: GlobalPreferences? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_list)
@@ -64,15 +67,11 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-//        if (item_detail_container != null) {
-//            // The detail container view will be present only in the
-//            // large-screen layouts (res/values-w900dp).
-//            // If this view is present, then the
-//            // activity should be in two-pane mode.
-//            twoPane = true
-//        }
+        dbHandler = WorkoutDatabase(this, null)
 
-        mWorkouts.addAll(dbHandler.allWorkoutsList())
+        mGlobalPreferences = GlobalPreferences(this)
+
+        mWorkouts.addAll(dbHandler!!.allWorkoutsList())
         workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts)
         item_list.adapter = workoutAdapter
 
@@ -101,18 +100,20 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         setupView()
 
-        fab.setOnClickListener {
-            val newWorkoutFragment = NewWorkoutDialogFragment()
-            newWorkoutFragment.show(supportFragmentManager, "newWorkout")
-        }
-
     }
 
     override fun onResume() {
         super.onResume()
-        mWorkouts.clear()
-        mWorkouts.addAll(dbHandler.allWorkoutsList())
-        workoutAdapter!!.notifyDataSetChanged()
+
+        // Used for Editing Workouts
+        if (mGlobalPreferences!!.isWorkoutModified()) {
+            mWorkouts.clear()
+            mWorkouts.addAll(dbHandler!!.allWorkoutsList())
+            workoutAdapter!!.notifyDataSetChanged()
+            mGlobalPreferences!!.setWorkoutModified(edited = false)
+        } else {
+            return
+        }
     }
 
     /**
@@ -136,6 +137,11 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
         stopAllButton!!.setOnClickListener {
             stopPlayingAll()
+        }
+
+        fab.setOnClickListener {
+            val newWorkoutFragment = NewWorkoutDialogFragment()
+            newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -190,9 +196,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
-        dbHandler.addWorkout(workout)
+        dbHandler!!.addWorkout(workout)
         mWorkouts.clear()
-        mWorkouts.addAll(dbHandler.allWorkoutsList())
+        mWorkouts.addAll(dbHandler!!.allWorkoutsList())
         workoutAdapter?.notifyDataSetChanged()
         dialog.dismiss()
     }
