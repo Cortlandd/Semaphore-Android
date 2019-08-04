@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import com.shawnlin.numberpicker.NumberPicker
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import xyz.cortland.fittimer.android.utils.ImageFilePath
 import java.io.File
@@ -43,9 +44,10 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     var workoutImage: ImageView? = null
     var workoutImagePlaceholder: ImageView? = null
+    var numberPicker: NumberPicker? = null
 
     var workoutValue: String? = ""
-    var secondsValue: Int? = 0
+    var secondsValue: Int? = null
     var workoutImageValue: String? = null
 
     var workout: WorkoutModel? = null
@@ -73,13 +75,13 @@ class NewWorkoutDialogFragment: DialogFragment() {
         mGlobalPreferences = GlobalPreferences(this.activity!!)
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
-        val seconds = dialogView!!.findViewById<EditText>(R.id.seconds_text)
-        val workoutText = dialogView.findViewById<EditText>(R.id.workout_text)
+        val workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
         val giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
         val searchGiphyButton = dialogView.findViewById<Button>(R.id.search_giphy_button)
         val searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
         val searchGalleryButton = dialogView.findViewById<Button>(R.id.search_gallery_button)
+        numberPicker = dialogView.findViewById(R.id.number_picker)
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
         workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
 
@@ -114,27 +116,17 @@ class NewWorkoutDialogFragment: DialogFragment() {
             }
         }
 
-        seconds.addTextChangedListener(object: TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (s.toString() != "") {
-                    secondsValue = Integer.parseInt(s.toString())
-                } else {
-                    return
-                }
+        secondsValue = numberPicker!!.value
 
+        numberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+            if (oldVal == newVal) {
+                secondsValue = oldVal
+            } else {
+                secondsValue = newVal
             }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (s.toString() != "") {
-                    secondsValue = Integer.parseInt(s.toString())
-                } else {
-                    return
-                }
-            }
+        }
 
-        })
-
+        // TODO: Implement text requirement
         workoutText.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 workoutValue = s.toString()
@@ -153,7 +145,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             builder.setTitle("Add Workout")
         } else {
             builder.setTitle("Edit Workout")
-            seconds.setText(workout?.seconds.toString())
+            numberPicker?.value = workout?.seconds!!
             workoutText.setText(workout?.workoutName)
             if (workout?.workoutImage != null) {
                 workoutImage!!.visibility = View.VISIBLE
@@ -221,7 +213,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         startActivityForResult(intent, IMAGE_PICK_CODE)
     }
 
-    fun saveSelectedImage(path: String): Uri {
+    private fun saveSelectedImage(path: String): Uri {
 
         // Generate random string
         val randomName = java.util.UUID.randomUUID().toString()
