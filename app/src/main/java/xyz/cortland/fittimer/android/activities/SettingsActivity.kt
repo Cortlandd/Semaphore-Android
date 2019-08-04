@@ -53,7 +53,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
             R.id.nav_licenses -> {
                 val opensourceAlert = AlertDialog.Builder(this)
                 val opensourceView = this.layoutInflater.inflate(R.layout.open_source_licenses, null)
-                //opensourceAlert.setTitle("Open Source Licenses")
+                opensourceAlert.setTitle("Open Source Licenses")
                 opensourceAlert.setView(opensourceView)
                 opensourceAlert.setPositiveButton("OK") { dialog, _ ->
                     dialog.dismiss()
