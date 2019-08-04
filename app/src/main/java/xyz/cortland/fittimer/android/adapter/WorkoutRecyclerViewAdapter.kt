@@ -123,9 +123,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                     }
                 }
             }
-            thread {
-                parentActivity!!.countdownPlayAll?.start()
-            }.run()
+            parentActivity!!.countdownPlayAll?.start()
         }
 
         holder.playButton.setOnClickListener {

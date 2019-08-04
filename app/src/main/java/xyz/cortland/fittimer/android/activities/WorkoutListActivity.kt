@@ -84,14 +84,15 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                var image = mWorkouts.get(position).workoutImage
+                val image = mWorkouts.get(position).workoutImage
                 mWorkouts.removeAt(position)
                 item_list!!.adapter?.notifyItemRemoved(position)
                 removeWorkoutItem(viewHolder.itemView.id)
                 if (image != null) {
-                    var df = File(image)
+                    val df = File(image)
                     df.delete()
                 }
+                validateWorkoutCount()
             }
 
         }
@@ -111,6 +112,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             mWorkouts.clear()
             mWorkouts.addAll(dbHandler!!.allWorkoutsList())
             workoutAdapter!!.notifyDataSetChanged()
+            validateWorkoutCount()
             mGlobalPreferences!!.setWorkoutModified(edited = false)
         } else {
             return
@@ -133,6 +135,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         playAllButton = findViewById<Button>(R.id.play_all_button)
         stopAllButton = findViewById<Button>(R.id.stop_all_button)
 
+        validateWorkoutCount()
+
         playAllButton!!.setOnClickListener {
             validatePlayAll()
         }
@@ -153,6 +157,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     private fun validatePlayAll() {
         if (!playingAll) {
+            fab.hide()
             stopAllButton?.visibility = View.VISIBLE
             playAllButton?.visibility = View.GONE
             if (mWorkouts.size > 0) {
@@ -174,6 +179,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
                 }
             }
         } else {
+            fab.show()
             playingAll = false
             countdownPlayAll?.cancel()
             for (i in mWorkouts.indices) {
@@ -185,6 +191,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     }
 
     private fun stopPlayingAll() {
+        if (fab.isOrWillBeHidden) {
+            fab.show()
+        }
         stopAllButton?.visibility = View.GONE
         playAllButton?.visibility = View.VISIBLE
         playingAll = false
@@ -193,7 +202,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             mWorkouts.get(i).isCount = false
             mWorkouts.get(i).isDefaultState = true
         }
-        workoutAdapter?.notifyDataSetChanged()
+        workoutAdapter!!.notifyDataSetChanged()
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
@@ -201,6 +210,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         mWorkouts.clear()
         mWorkouts.addAll(dbHandler!!.allWorkoutsList())
         workoutAdapter?.notifyDataSetChanged()
+        validateWorkoutCount()
         dialog.dismiss()
     }
 
@@ -223,6 +233,14 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
 
         return true
+    }
+
+    fun validateWorkoutCount() {
+        if (mWorkouts.size <= 1 || mWorkouts == null) {
+            playAllButton!!.visibility = View.GONE
+        } else {
+            playAllButton!!.visibility = View.VISIBLE
+        }
     }
 
 }
