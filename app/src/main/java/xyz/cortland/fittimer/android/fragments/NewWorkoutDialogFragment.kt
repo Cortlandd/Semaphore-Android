@@ -168,7 +168,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         return builder.create()
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
             newWorkoutDialogListener = activity as NewWorkoutDialogListener

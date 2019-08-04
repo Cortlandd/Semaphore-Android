@@ -1,6 +1,7 @@
 package xyz.cortland.fittimer.android.activities
 
 import android.animation.LayoutTransition
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -215,7 +216,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.settings_menu -> {
-                Toast.makeText(this, "Settings menu Clicked", Toast.LENGTH_SHORT).show()
+                val i = Intent(this, SettingsActivity::class.java)
+                startActivity(i)
+                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
             }
         }
 
