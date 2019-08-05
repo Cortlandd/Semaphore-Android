@@ -163,6 +163,11 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             if (mWorkouts.size > 0) {
                 mWorkouts.get(0).isCount = true
 
+                for (i in 0 until item_list.childCount) {
+                    val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
+                    playButton.visibility = View.GONE
+                }
+
                 var playingIndiv = false
 
                 for (i in mWorkouts.indices) {
@@ -185,15 +190,14 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             for (i in mWorkouts.indices) {
                 mWorkouts.get(i).isCount = false
                 mWorkouts.get(i).isDefaultState = true
+                val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
+                playButton.visibility = View.VISIBLE
             }
             workoutAdapter?.notifyDataSetChanged()
         }
     }
 
     private fun stopPlayingAll() {
-        if (fab.isOrWillBeHidden) {
-            fab.show()
-        }
         stopAllButton?.visibility = View.GONE
         playAllButton?.visibility = View.VISIBLE
         playingAll = false
@@ -201,6 +205,13 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         for (i in mWorkouts.indices) {
             mWorkouts.get(i).isCount = false
             mWorkouts.get(i).isDefaultState = true
+            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
+            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_stop_button)
+            playButton.visibility = View.VISIBLE
+            stopButton.visibility = View.VISIBLE
+        }
+        if (fab.isOrWillBeHidden) {
+            fab.show()
         }
         workoutAdapter!!.notifyDataSetChanged()
     }
@@ -240,6 +251,16 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             playAllButton!!.visibility = View.GONE
         } else {
             playAllButton!!.visibility = View.VISIBLE
+        }
+    }
+
+    // TODO: Need to do better
+    fun showPlayButtons() {
+        for (i in 0 until item_list.childCount) {
+            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
+            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_stop_button)
+            playButton.visibility = View.VISIBLE
+            stopButton.visibility = View.VISIBLE
         }
     }
 

@@ -112,6 +112,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                         parentActivity!!.playingAll = false
                         parentActivity!!.stopAllButton?.visibility = View.GONE
                         parentActivity!!.playAllButton?.visibility = View.VISIBLE
+                        parentActivity!!.showPlayButtons()
                         notifyDataSetChanged()
                     } else {
                         if (parentActivity!!.playingAll) {
