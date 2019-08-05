@@ -9,6 +9,7 @@ import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.widget.*
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.R
@@ -74,7 +75,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             holder.workoutView.text = workout.workoutName
             holder.secondsView.text = workout.seconds.toString()
             if (workout.workoutImage != null) {
-                Glide.with(parentActivity!!).load(File(workout.workoutImage)).into(holder.workoutImage)
+                Glide.with(parentActivity!!).load(File(workout.workoutImage)).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.workoutImage)
             } else {
                 holder.workoutImage.visibility = View.GONE
             }

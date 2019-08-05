@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -22,7 +23,9 @@ import android.content.pm.PackageManager
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.shawnlin.numberpicker.NumberPicker
+import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import xyz.cortland.fittimer.android.utils.ImageFilePath
 import java.io.File
@@ -45,12 +48,16 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var workoutImage: ImageView? = null
     var workoutImagePlaceholder: ImageView? = null
     var numberPicker: NumberPicker? = null
+    var workoutSpeech: Switch? = null
+    var searchGiphyLayout: LinearLayout? = null
 
     var workoutValue: String? = ""
     var secondsValue: Int? = null
     var workoutImageValue: String? = null
+    var workoutSpeechValue: Int? = 1
 
     var workout: WorkoutModel? = null
+    var workoutId: Int? = null
 
     interface NewWorkoutDialogListener {
         fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel)
@@ -60,10 +67,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var newWorkoutDialogListener: NewWorkoutDialogListener? = null
 
     companion object {
-        fun newInstance(workout: WorkoutModel): NewWorkoutDialogFragment {
+        fun newInstance(workout: WorkoutModel, id: Int): NewWorkoutDialogFragment {
             val newWorkoutDialogFragment = NewWorkoutDialogFragment()
             val args = Bundle()
             args.putParcelable("arg_workout", workout)
+            args.putInt("arg_workout_id", id)
             newWorkoutDialogFragment.arguments = args
             return newWorkoutDialogFragment
         }
@@ -77,10 +85,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
         val workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
         val giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
-        val searchGiphyButton = dialogView.findViewById<Button>(R.id.search_giphy_button)
-        val searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
+        searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
-        val searchGalleryButton = dialogView.findViewById<Button>(R.id.search_gallery_button)
+        workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
         numberPicker = dialogView.findViewById(R.id.number_picker)
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
         workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
@@ -93,27 +100,15 @@ class NewWorkoutDialogFragment: DialogFragment() {
             workoutImagePlaceholder!!.visibility = View.GONE
 
             gifImageLocation = it.path?.toString()
-            Glide.with(this).load(it).into(workoutImage!!)
+            Glide.with(this).load(it).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(workoutImage!!)
             galleryImageLocation = null
             imagePath = null
-            searchGiphyLayout.visibility = View.GONE
-        }
-
-        searchGiphyButton.setOnClickListener {
-            searchGiphyLayout.visibility = View.VISIBLE
+            searchGiphyLayout?.visibility = View.GONE
         }
 
         closeGiphyButton.setOnClickListener {
-            searchGiphyLayout.visibility = View.GONE
+            searchGiphyLayout?.visibility = View.GONE
             giphyView.invalidate()
-        }
-
-        searchGalleryButton.setOnClickListener {
-            if (ActivityCompat.checkSelfPermission(this.activity!!, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), IMAGE_PICK_CODE)
-            } else {
-                pickImageFromGallery()
-            }
         }
 
         // TODO: Implement text requirement
@@ -130,6 +125,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         })
 
         workout = arguments?.getParcelable("arg_workout")
+        workoutId = arguments?.getInt("arg_workout_id")
 
         if (workout == null) {
             builder.setTitle("Add Workout")
@@ -137,15 +133,35 @@ class NewWorkoutDialogFragment: DialogFragment() {
             builder.setTitle("Edit Workout")
             numberPicker?.value = workout?.seconds!!
             workoutText.setText(workout?.workoutName)
+            if (workout?.workoutSpeech == 1) {
+                workoutSpeechValue = 1
+                workoutSpeech!!.isChecked = true
+            } else {
+                workoutSpeechValue = 0
+                workoutSpeech!!.isChecked = false
+            }
+
             if (workout?.workoutImage != null) {
                 workoutImage!!.visibility = View.VISIBLE
                 workoutImagePlaceholder!!.visibility = View.GONE
-                Glide.with(this).load(Uri.fromFile(File(workout?.workoutImage))).into(workoutImage!!)
+                Glide.with(this).load(Uri.fromFile(File(workout?.workoutImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(workoutImage!!)
                 workoutImageValue = workout?.workoutImage
             } else {
                 workoutImage!!.visibility = View.GONE
                 workoutImagePlaceholder!!.visibility = View.VISIBLE
             }
+        }
+
+        workoutSpeech!!.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                workoutSpeechValue = 1
+            } else {
+                workoutSpeechValue = 0
+            }
+        }
+
+        workoutSpeech!!.setOnClickListener {
+            // TODO: Play Voice
         }
 
         secondsValue = numberPicker!!.value
@@ -154,11 +170,18 @@ class NewWorkoutDialogFragment: DialogFragment() {
             secondsValue = newVal
         }
 
+        workoutImage?.setOnClickListener {
+            tapWorkoutImage()
+        }
+        workoutImagePlaceholder?.setOnClickListener {
+            tapPlaceholderImage()
+        }
+
         builder.setView(dialogView)
             .setPositiveButton("Save") { dialog, id ->
                 mGlobalPreferences!!.setWorkoutModified(true)
                 validateImagePath()
-                newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue))
+                newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
             }
             .setNegativeButton("Close") { dialog, id ->
                 newWorkoutDialogListener?.onCancelClick(this)
@@ -264,7 +287,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
                     workoutImagePlaceholder!!.visibility = View.GONE
 
                     try {
-                        Glide.with(this).load(uri).into(workoutImage!!)
+                        Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(workoutImage!!)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -275,6 +298,97 @@ class NewWorkoutDialogFragment: DialogFragment() {
                 }
             }
         }
+    }
+
+    fun tapWorkoutImage() {
+        val builder = AlertDialog.Builder(this.activity!!)
+        if (workout == null) {
+            builder.setTitle("Add Workout Image")
+        } else {
+            builder.setTitle("Edit Workout Image")
+        }
+        val options = arrayOf<String>("Upload Image", "Search GIF", "Remove Current Image")
+        builder.setItems(options) { dialog, which ->
+            when (which) {
+                0 -> { // Gallery Image
+                    if (ActivityCompat.checkSelfPermission(this.activity!!, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), IMAGE_PICK_CODE)
+                    } else {
+                        pickImageFromGallery()
+                    }
+                }
+                1 -> { // Search GIF
+                    searchGiphyLayout?.visibility = View.VISIBLE
+                }
+                2 -> { // Remove Current Image
+                    if (workout != null) {
+                        // Delete File associated from cache
+                        if (workout?.workoutImage != null) {
+                            File(workout?.workoutImage).delete()
+                        }
+                        Glide.with(this.activity!!).clear(workoutImage!!)
+                        // Glide clearing Imageview
+                        // Update in the database
+                        WorkoutDatabase(this.activity!!, null).updateWorkoutImage(workoutId!!)
+                        // Update workout image views
+                        workoutImagePlaceholder!!.visibility = View.VISIBLE
+                        workoutImage!!.visibility = View.GONE
+                        // Preferences to indicate image removed
+                        mGlobalPreferences!!.setCurrentImageRemoved(true)
+                    } else {
+                        val gif = File(gifImageLocation)
+                        if (gif.exists()) {
+                            gif.delete()
+                            Glide.with(this.activity!!).clear(workoutImage!!)
+                        }
+
+                        workoutImage?.visibility = View.GONE
+                        workoutImagePlaceholder?.visibility = View.VISIBLE
+                    }
+
+                }
+            }
+        }.create().show()
+    }
+
+    fun tapPlaceholderImage() {
+        val builder = AlertDialog.Builder(this.activity!!)
+        if (workout?.workoutImage == null) {
+            builder.setTitle("Add Workout Image")
+        } else {
+            builder.setTitle("Edit Workout Image")
+        }
+        val options = arrayOf<String>("Upload Image", "Search GIF")
+        builder.setItems(options) { dialog, which ->
+            when (which) {
+                0 -> { // Gallery Image
+                    if (ActivityCompat.checkSelfPermission(this.activity!!, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), IMAGE_PICK_CODE)
+                    } else {
+                        pickImageFromGallery()
+                    }
+                }
+                1 -> { // Search GIF
+                    searchGiphyLayout?.visibility = View.VISIBLE
+                }
+            }
+        }.create().show()
+    }
+
+    /**
+     * Used to remove Workout Image
+     * @param workout: The workout to be modified
+     */
+    private fun updateWorkoutImage(wid: Int, workout: WorkoutModel) {
+        val dbHelper = WorkoutDatabase(this.activity!!, null)
+        val db = dbHelper.writableDatabase
+        val values = ContentValues()
+        values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
+        values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
+        values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE) // Set the removed workout to null
+        values.put(WorkoutDatabase.COLUMN_WORKOUTSPEECH, workout.workoutSpeech)
+        db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + wid, null)
+        db.close()
     }
 
 

@@ -18,6 +18,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         val COLUMN_SECONDS = "seconds"
         val COLUMN_WORKOUT = "workout"
         val COLUMN_WORKOUTIMAGE = "workoutImage"
+        val COLUMN_WORKOUTSPEECH = "workoutSpeech"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -25,7 +26,8 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_SECONDS + " INTEGER, " +
                 COLUMN_WORKOUT + " TEXT, " +
-                COLUMN_WORKOUTIMAGE + " TEXT" + ");"
+                COLUMN_WORKOUTIMAGE + " TEXT, " +
+                COLUMN_WORKOUTSPEECH + " INTEGER" + ");"
         )
     }
 
@@ -39,6 +41,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         values.put(COLUMN_SECONDS, workoutModel.seconds)
         values.put(COLUMN_WORKOUT, workoutModel.workoutName)
         values.put(COLUMN_WORKOUTIMAGE, workoutModel.workoutImage)
+        values.put(COLUMN_WORKOUTSPEECH, workoutModel.workoutSpeech)
         val db = this.writableDatabase
         db.insert(TABLE_NAME, null, values)
         db.close()
@@ -54,6 +57,14 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         return db.execSQL("DELETE FROM $TABLE_NAME WHERE $COLUMN_ID='$id'")
     }
 
+    fun updateWorkoutImage(wid: Int) {
+        val values = ContentValues()
+        values.putNull(COLUMN_WORKOUTIMAGE) // Set the removed workout to null
+        val db = this.writableDatabase
+        db.update(TABLE_NAME, values, "$COLUMN_ID=$wid", null)
+        db.close()
+    }
+
     fun getWorkoutById(id: Int): WorkoutModel {
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT FROM $TABLE_NAME WHERE $COLUMN_ID='$id'", null)
@@ -64,6 +75,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
                 workout.seconds = cursor.getInt(cursor.getColumnIndex(COLUMN_SECONDS))
                 workout.workoutName = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUT))
                 workout.workoutImage = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUTIMAGE))
+                workout.workoutSpeech = cursor.getInt(cursor.getColumnIndex(COLUMN_WORKOUTSPEECH))
             } while (cursor.moveToNext())
         }
 
@@ -84,7 +96,8 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
                 val seconds = cursor.getInt(cursor.getColumnIndex(COLUMN_SECONDS))
                 val workoutName = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUT))
                 val workoutImage = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUTIMAGE))
-                val workout: WorkoutModel = WorkoutModel(seconds = seconds, workoutName = workoutName, workoutImage = workoutImage)
+                val workoutSpeech = cursor.getInt(cursor.getColumnIndex(COLUMN_WORKOUTSPEECH))
+                val workout: WorkoutModel = WorkoutModel(seconds = seconds, workoutName = workoutName, workoutImage = workoutImage, workoutSpeech = workoutSpeech)
                 workouts.add(workout)
             } while (cursor.moveToNext())
         }

@@ -110,6 +110,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         // Used for Editing Workouts
         if (mGlobalPreferences!!.isWorkoutModified()) {
             mWorkouts.clear()
+            item_list.invalidate()
             mWorkouts.addAll(dbHandler!!.allWorkoutsList())
             workoutAdapter!!.notifyDataSetChanged()
             validateWorkoutCount()
@@ -131,6 +132,12 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     }
 
     private fun setupView() {
+
+        if (mWorkouts.size == 0 || mWorkouts.size == null) {
+            no_workouts_message.visibility = View.VISIBLE
+        } else {
+            no_workouts_message.visibility = View.GONE
+        }
 
         playAllButton = findViewById<Button>(R.id.play_all_button)
         stopAllButton = findViewById<Button>(R.id.stop_all_button)
@@ -247,6 +254,13 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     }
 
     fun validateWorkoutCount() {
+
+        if (mWorkouts.size == 0 || mWorkouts.size == null) {
+            no_workouts_message.visibility = View.VISIBLE
+        } else {
+            no_workouts_message.visibility = View.GONE
+        }
+
         if (mWorkouts.size <= 1 || mWorkouts == null) {
             playAllButton!!.visibility = View.GONE
         } else {

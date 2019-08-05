@@ -15,6 +15,7 @@ import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.utils.GlobalPreferences
 
 /**
  * An activity representing a single Item detail screen. This
@@ -29,10 +30,14 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     var fragment: WorkoutDetailFragment? = null
 
+    var mGlobalPreferences: GlobalPreferences? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_detail)
         setSupportActionBar(detail_toolbar)
+
+        mGlobalPreferences = GlobalPreferences(this)
 
         workout = intent.getParcelableExtra("arg_parcel_workout")
         workoutId = intent.getIntExtra("arg_workout_id", 0)
@@ -40,7 +45,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         fab_edit_workout.setOnClickListener { view ->
 
             if (workout != null) {
-                val newWorkoutFragment = NewWorkoutDialogFragment.newInstance(workout!!)
+                val newWorkoutFragment = NewWorkoutDialogFragment.newInstance(workout!!, workoutId!!)
                 newWorkoutFragment.show(supportFragmentManager, "ModifyWorkout")
             } else {
                 Snackbar.make(view, "Something is wrong", Snackbar.LENGTH_LONG).setAction("Action", null).show()
@@ -84,7 +89,9 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     /**
      * Used to remove swiped Workouts
+     *
      * @param id: The id of the book
+     * @param workout: The workout to be updated
      */
     private fun updateWorkoutItem(id: Int, workout: WorkoutModel) {
         val dbHelper = WorkoutDatabase(this, null)
@@ -92,7 +99,13 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         val values = ContentValues()
         values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
-        values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
+        if (mGlobalPreferences!!.isCurrentImageRemoved()) {
+            values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
+            mGlobalPreferences!!.setCurrentImageRemoved(false)
+        } else {
+            values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
+        }
+        values.put(WorkoutDatabase.COLUMN_WORKOUTSPEECH, workout.workoutSpeech)
         db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + id, null)
         db.close()
     }

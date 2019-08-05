@@ -11,6 +11,8 @@ class GlobalPreferences(context: Context) {
 
     val HAS_WORKOUT_EDITED = "has_workout_edited"
 
+    val HAS_CURRENT_IMAGE_REMOVED = "has_current_image_removed"
+
     init {
         mSharedPreferences = context.getSharedPreferences(GLOBAL_PREFERENCES, Context.MODE_PRIVATE)
     }
@@ -36,6 +38,27 @@ class GlobalPreferences(context: Context) {
      */
     fun isWorkoutModified(): Boolean {
         return mSharedPreferences!!.getBoolean(HAS_WORKOUT_EDITED, false)
+    }
+
+    /**
+     *
+     * Set rather or not the current workout image has been removed
+     *
+     */
+    fun setCurrentImageRemoved(removed: Boolean) {
+        with(mSharedPreferences!!.edit()) {
+            this.putBoolean(HAS_CURRENT_IMAGE_REMOVED, removed)
+            this.apply()
+        }
+    }
+
+    /**
+     *
+     * Get value indicating rather or not the current image has been removed.
+     *
+     */
+    fun isCurrentImageRemoved(): Boolean {
+        return mSharedPreferences!!.getBoolean(HAS_CURRENT_IMAGE_REMOVED, false)
     }
 
     /**

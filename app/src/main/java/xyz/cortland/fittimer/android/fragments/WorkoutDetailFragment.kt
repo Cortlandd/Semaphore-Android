@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
@@ -54,7 +55,7 @@ class WorkoutDetailFragment : Fragment() {
         item.let {
             secondsView?.text = it?.seconds.toString()
             if (it?.workoutImage != null) {
-                Glide.with(activity!!).load(File(it.workoutImage)).into(activity!!.workout_image_detail)
+                Glide.with(activity!!).load(File(it.workoutImage)).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(activity!!.workout_image_detail)
             }
 
         }

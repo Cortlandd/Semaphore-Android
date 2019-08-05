@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workoutImage: String?): Parcelable {
+data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workoutImage: String?, var workoutSpeech: Int?): Parcelable {
 
     var id: Int? = null
     var isPlaying: Boolean? = false
@@ -13,6 +13,6 @@ data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workout
     var expanded: Boolean? = false
     var isDefaultState: Boolean? = true
 
-    constructor(): this(null, null, null)
+    constructor(): this(null, null, null, null)
 
 }
