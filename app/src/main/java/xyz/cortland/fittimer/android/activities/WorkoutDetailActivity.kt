@@ -114,6 +114,12 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         dialog.dismiss()
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+        this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem) =
         when (item.itemId) {
             android.R.id.home -> {

@@ -8,6 +8,10 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.widget.*
+import androidx.transition.AutoTransition
+import androidx.transition.Fade
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.activity_workout_list.*
@@ -195,15 +199,27 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
 
         holder.pauseButton.setOnClickListener {
-            it.visibility = View.GONE
-            holder.resumeButton.visibility = View.VISIBLE
-            countdownTimer!!.pause()
+            if (parentActivity!!.playingAll) {
+                parentActivity!!.countdownPlayAll!!.pause()
+                it.visibility = View.GONE
+                holder.resumeButton.visibility = View.VISIBLE
+            } else {
+                it.visibility = View.GONE
+                holder.resumeButton.visibility = View.VISIBLE
+                countdownTimer!!.pause()
+            }
         }
 
         holder.resumeButton.setOnClickListener {
-            it.visibility = View.GONE
-            holder.pauseButton.visibility = View.VISIBLE
-            countdownTimer!!.resume()
+            if (parentActivity!!.playingAll) {
+                parentActivity!!.countdownPlayAll!!.resume()
+                it.visibility = View.GONE
+                holder.pauseButton.visibility = View.VISIBLE
+            } else {
+                it.visibility = View.GONE
+                holder.pauseButton.visibility = View.VISIBLE
+                countdownTimer!!.resume()
+            }
         }
 
         with(holder.itemView) {

@@ -5,51 +5,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:fitsSystemWindows="true"
+    android:orientation="vertical"
     tools:context=".activities.WorkoutListActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
-        android:background="@android:color/transparent"
-        app:elevation="0dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:background="@android:color/transparent"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
-            app:titleTextColor="@android:color/black"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:titleTextColor="@android:color/black" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
-        android:layout_gravity="center_horizontal"
-        android:orientation="horizontal"
+        android:id="@+id/workout_list_activity"
+        android:animateLayoutChanges="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/play_all_button"
-            android:text="Play All"
-            android:elevation="3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="4dp"
             android:background="#fff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:elevation="3dp"
+            android:text="Play All" />
 
         <Button
             android:id="@+id/stop_all_button"
-            android:text="Stop All"
-            android:elevation="3dp"
-            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="4dp"
             android:background="#fff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:elevation="3dp"
+            android:text="Stop All"
+            android:visibility="gone" />
 
     </LinearLayout>
 
@@ -62,23 +64,23 @@
 
         <TextView
             android:id="@+id/no_workouts_message"
-            android:visibility="gone"
-            android:hint="Tap the Add button below to add workouts."
-            android:layout_gravity="center_horizontal|center_vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:hint="Tap the Add button below to add workouts."
+            android:visibility="gone" />
 
-        <include layout="@layout/workout_list"/>
+        <include layout="@layout/workout_list" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/cardview_dark_background"
-            app:borderWidth="0dp"
             android:layout_gravity="end|bottom"
             android:layout_margin="@dimen/fab_margin"
-            android:src="@android:drawable/ic_input_add" />
+            android:backgroundTint="#706df8"
+            android:src="@android:drawable/ic_menu_add"
+            app:borderWidth="0dp" />
 
     </FrameLayout>
 

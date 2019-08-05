@@ -40,7 +40,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
             R.id.nav_about -> {
                 val aboutAlert = AlertDialog.Builder(this)
                 aboutAlert.setTitle("About")
-                aboutAlert.setMessage("Fit Timer v1.0\nCopyright © Cortland Walker")
+                aboutAlert.setMessage("Fit Timer ${BuildConfig.VERSION_NAME}\nCopyright © Cortland Walker")
                 // TODO: Add contributors
                 // TODO: aboutAlert.setIcon = App Icon
                 aboutAlert.setPositiveButton("OK") { dialog, _ ->

@@ -30,6 +30,7 @@
                 android:title="FAQ" />
             <item
                 android:id="@+id/nav_about"
+                android:iconTint="@color/colorAccent"
                 android:icon="@android:drawable/ic_dialog_info"
                 android:title="About" />
         </menu>

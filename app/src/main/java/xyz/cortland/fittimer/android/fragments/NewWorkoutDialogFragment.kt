@@ -2,7 +2,6 @@ package xyz.cortland.fittimer.android.fragments
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.app.Dialog
 import android.content.ContentValues
 import android.content.Context
@@ -20,8 +19,12 @@ import xyz.klinker.giphy.GiphyView
 import java.lang.ClassCastException
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
+import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.shawnlin.numberpicker.NumberPicker
@@ -48,7 +51,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var workoutImage: ImageView? = null
     var workoutImagePlaceholder: ImageView? = null
     var numberPicker: NumberPicker? = null
-    var workoutSpeech: Switch? = null
+    var workoutSpeech: SwitchCompat? = null
     var searchGiphyLayout: LinearLayout? = null
 
     var workoutValue: String? = ""
@@ -79,7 +82,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
-        val builder = AlertDialog.Builder(this.activity!!)
+        val builder = AlertDialog.Builder(this.activity!!, R.style.AlertDialogTheme)
         mGlobalPreferences = GlobalPreferences(this.activity!!)
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)

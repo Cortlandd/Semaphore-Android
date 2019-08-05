@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#363640</color>
+    <color name="colorPrimaryDark">#27272f</color>
+    <color name="colorAccent">#706df8</color>
+    <color name="light_gray">#BBBABA</color>
+
+    <!-- Switch for dialogs -->
+    <color name="disable_foreground_grey">#42221f1f</color>
+    <color name="disable_thumb_grey">#1c000000</color>
+    <color name="enable_thumb_green">#46bdbf</color>
 </resources>

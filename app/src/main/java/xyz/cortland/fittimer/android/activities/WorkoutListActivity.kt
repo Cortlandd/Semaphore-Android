@@ -61,6 +61,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var mGlobalPreferences: GlobalPreferences? = null
 
+    var itemTouchHelper: ItemTouchHelper? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_list)
@@ -97,8 +99,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         }
 
-        val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
-        itemTouchHelper.attachToRecyclerView(item_list)
+        itemTouchHelper = ItemTouchHelper(itemTouchCallback)
+        itemTouchHelper!!.attachToRecyclerView(item_list)
 
         setupView()
 
@@ -157,7 +159,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            frameLayout.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
+            workout_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
         }
 
     }
@@ -165,6 +167,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     private fun validatePlayAll() {
         if (!playingAll) {
             fab.hide()
+
+            // Disable swiping while playing
+            itemTouchHelper!!.attachToRecyclerView(null)
+
             stopAllButton?.visibility = View.VISIBLE
             playAllButton?.visibility = View.GONE
             if (mWorkouts.size > 0) {
@@ -172,18 +178,20 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
                 for (i in 0 until item_list.childCount) {
                     val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
+                    val item = item_list.findViewHolderForAdapterPosition(i)!!.itemView
+                    item.isEnabled = false
                     playButton.visibility = View.GONE
                 }
 
-                var playingIndiv = false
+                var playingIndividual = false
 
                 for (i in mWorkouts.indices) {
                     if (mWorkouts.get(i).isPlaying!!) {
-                        playingIndiv = true
+                        playingIndividual = true
                     }
                 }
 
-                if (!playingIndiv) {
+                if (!playingIndividual) {
                     playingAll = true
                     workoutAdapter?.notifyDataSetChanged()
                 } else {
@@ -192,12 +200,15 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             }
         } else {
             fab.show()
+            itemTouchHelper!!.attachToRecyclerView(item_list)
             playingAll = false
             countdownPlayAll?.cancel()
             for (i in mWorkouts.indices) {
                 mWorkouts.get(i).isCount = false
                 mWorkouts.get(i).isDefaultState = true
                 val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
+                val item = item_list.findViewHolderForAdapterPosition(i)!!.itemView
+                item.isEnabled = true
                 playButton.visibility = View.VISIBLE
             }
             workoutAdapter?.notifyDataSetChanged()
@@ -209,11 +220,14 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         playAllButton?.visibility = View.VISIBLE
         playingAll = false
         countdownPlayAll?.cancel()
+        itemTouchHelper!!.attachToRecyclerView(item_list)
         for (i in mWorkouts.indices) {
             mWorkouts.get(i).isCount = false
             mWorkouts.get(i).isDefaultState = true
             val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
             val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_stop_button)
+            val item = item_list.findViewHolderForAdapterPosition(i)!!.itemView
+            item.isEnabled = true
             playButton.visibility = View.VISIBLE
             stopButton.visibility = View.VISIBLE
         }
@@ -244,9 +258,13 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.settings_menu -> {
-                val i = Intent(this, SettingsActivity::class.java)
-                startActivity(i)
-                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+                if (playingAll) {
+                    Toast.makeText(this, "Stop All Workouts before changing Settings.", Toast.LENGTH_SHORT).show()
+                } else {
+                    val i = Intent(this, SettingsActivity::class.java)
+                    startActivity(i)
+                    overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+                }
             }
         }
 
