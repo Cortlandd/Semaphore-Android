@@ -262,6 +262,17 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
     }
 
+    // TODO: Figure out if i need this
+    /*
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        if (textToSpeech != null) {
+            textToSpeech?.stop()
+            textToSpeech?.shutdown()
+        }
+    }
+    */
+
     override fun getItemCount() = mWorkouts.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {

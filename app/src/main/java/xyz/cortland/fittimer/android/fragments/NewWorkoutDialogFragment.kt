@@ -401,20 +401,12 @@ class NewWorkoutDialogFragment: DialogFragment() {
         }.create().show()
     }
 
-    /**
-     * Used to remove Workout Image
-     * @param workout: The workout to be modified
-     */
-    private fun updateWorkoutImage(wid: Int, workout: WorkoutModel) {
-        val dbHelper = WorkoutDatabase(this.activity!!, null)
-        val db = dbHelper.writableDatabase
-        val values = ContentValues()
-        values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
-        values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
-        values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE) // Set the removed workout to null
-        values.put(WorkoutDatabase.COLUMN_WORKOUTSPEECH, workout.workoutSpeech)
-        db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + wid, null)
-        db.close()
+    override fun onDestroy() {
+        super.onDestroy()
+        if (textToSpeech != null) {
+            textToSpeech?.stop()
+            textToSpeech?.shutdown()
+        }
     }
 
 
