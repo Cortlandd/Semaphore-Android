@@ -1,6 +1,8 @@
 package xyz.cortland.fittimer.android.adapter
 
 import android.content.Intent
+import android.os.Build
+import android.speech.tts.TextToSpeech
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +10,7 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.widget.*
+import androidx.appcompat.widget.SwitchCompat
 import androidx.transition.AutoTransition
 import androidx.transition.Fade
 import androidx.transition.Transition
@@ -24,6 +27,7 @@ import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
 import xyz.cortland.fittimer.android.utils.SlideAnimationUtil
 import java.io.File
+import java.util.*
 import kotlin.concurrent.thread
 
 
@@ -35,6 +39,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
     var playingIndividual: Boolean = false
     var countdownTimer: CountDownTimer? = null
     var remainingTimeIndividual: Long? = null
+    var textToSpeech: TextToSpeech? = null
 
     var workoutId: Int? = null
 
@@ -53,6 +58,17 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
+        textToSpeech = TextToSpeech(parentActivity!!, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                // TODO: Create preferences for the apps country and set this. Also give users ability to change
+                val language = textToSpeech?.setLanguage(Locale.US)
+                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    println("Language Not Supported.")
+                } else {
+                    println("Language Supported.")
+                }
+            }
+        })
         this.counterList = mWorkouts
         return ViewHolder(view)
     }
@@ -95,6 +111,14 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         // TODO: Show controls for playing all
         if (counterList[position].isCount!!) {
 
+            if (counterList[position].workoutSpeech == 1) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    textToSpeech!!.speak(counterList[position].workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
+                } else {
+                    textToSpeech!!.speak(counterList[position].workoutName, TextToSpeech.QUEUE_FLUSH, null)
+                }
+            }
+
             holder.workoutControls.visibility = View.VISIBLE
             holder.stopButton.visibility = View.GONE
 
@@ -133,6 +157,14 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
 
         holder.playButton.setOnClickListener {
+
+            if (mWorkouts[position].workoutSpeech == 1) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    textToSpeech!!.speak(mWorkouts[position].workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
+                } else {
+                    textToSpeech!!.speak(mWorkouts[position].workoutName, TextToSpeech.QUEUE_FLUSH, null)
+                }
+            }
 
             holder.workoutControls.visibility = View.VISIBLE
 

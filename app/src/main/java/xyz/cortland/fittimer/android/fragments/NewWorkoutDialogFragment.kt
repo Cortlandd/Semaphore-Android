@@ -20,6 +20,8 @@ import java.lang.ClassCastException
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
+import android.speech.tts.TextToSpeech
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
@@ -35,6 +37,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.*
 
 
 // TODO: Implemented an EditWorkoutDialogFragment Dialog Class
@@ -58,6 +61,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var secondsValue: Int? = null
     var workoutImageValue: String? = null
     var workoutSpeechValue: Int? = 1
+    var textToSpeech: TextToSpeech? = null
 
     var workout: WorkoutModel? = null
     var workoutId: Int? = null
@@ -88,12 +92,24 @@ class NewWorkoutDialogFragment: DialogFragment() {
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
         val workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
         val giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
-        searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
+        searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
         workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
         numberPicker = dialogView.findViewById(R.id.number_picker)
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
         workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
+
+        textToSpeech = TextToSpeech(this.activity!!, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                // TODO: Create preferences for the apps country and set this. Also give users ability to change
+                val language = textToSpeech?.setLanguage(Locale.US)
+                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    println("Language Not Supported.")
+                } else {
+                    println("Language Supported.")
+                }
+            }
+        })
 
         giphyView.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
         giphyView.setSelectedCallback {
@@ -136,7 +152,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             builder.setTitle("Edit Workout")
             numberPicker?.value = workout?.seconds!!
             workoutText.setText(workout?.workoutName)
-            if (workout?.workoutSpeech == 1) {
+            if (workout!!.workoutSpeech == 1) {
                 workoutSpeechValue = 1
                 workoutSpeech!!.isChecked = true
             } else {
@@ -165,6 +181,13 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         workoutSpeech!!.setOnClickListener {
             // TODO: Play Voice
+            if (workoutText.text.toString() != "") {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    textToSpeech!!.speak(workoutText.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
+                } else {
+                    textToSpeech!!.speak(workoutText.text.toString(), TextToSpeech.QUEUE_FLUSH, null)
+                }
+            }
         }
 
         secondsValue = numberPicker!!.value
