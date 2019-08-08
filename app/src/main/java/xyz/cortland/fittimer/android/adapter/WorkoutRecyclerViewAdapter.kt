@@ -3,6 +3,7 @@ package xyz.cortland.fittimer.android.adapter
 import android.content.Intent
 import android.os.Build
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +29,7 @@ import xyz.cortland.fittimer.android.model.WorkoutModel
 import xyz.cortland.fittimer.android.utils.SlideAnimationUtil
 import java.io.File
 import java.util.*
+import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
 
@@ -58,17 +60,17 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
-        textToSpeech = TextToSpeech(parentActivity!!, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                // TODO: Create preferences for the apps country and set this. Also give users ability to change
-                val language = textToSpeech?.setLanguage(Locale.US)
-                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    println("Language Not Supported.")
-                } else {
-                    println("Language Supported.")
-                }
-            }
-        })
+//        textToSpeech = TextToSpeech(parentActivity!!, TextToSpeech.OnInitListener { status ->
+//            if (status == TextToSpeech.SUCCESS) {
+//                // TODO: Create preferences for the apps country and set this. Also give users ability to change
+//                val language = textToSpeech?.setLanguage(Locale.US)
+//                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+//                    println("Language Not Supported.")
+//                } else {
+//                    println("Language Supported.")
+//                }
+//            }
+//        })
         this.counterList = mWorkouts
         return ViewHolder(view)
     }
@@ -106,6 +108,24 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
         } else {
             return
+        }
+
+        if (mWorkouts[position].isPlayingAll!!) {
+
+//            if (counterList[position].workoutSpeech == 1) {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    textToSpeech!!.speak(counterList[position].workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
+//                } else {
+//                    textToSpeech!!.speak(counterList[position].workoutName, TextToSpeech.QUEUE_FLUSH, null)
+//                }
+//            }
+
+
+            holder.workoutControls.visibility = View.VISIBLE
+            holder.stopButton.visibility = View.GONE
+
+            holder.workoutProgressBar.max = seconds / 1000
+
         }
 
         // TODO: Show controls for playing all
@@ -260,6 +280,32 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             tag = workout
             setOnClickListener(onClickListener)
         }
+    }
+
+    fun play(position: Int, semaphore: Semaphore) {
+
+        println("Got to play")
+
+        val workout = mWorkouts[position]
+        println("Seconds: ${workout.seconds.toString()}")
+
+        countdownTimer = object: CountDownTimer(3000, 1000) {
+
+            override fun onTick(millisUntilFinished: Long) {
+                workout.isPlayingAll = true
+                Log.d("tekloon", "millisUntilFinished $millisUntilFinished")
+
+            }
+
+            override fun onFinish() {
+                workout.isPlayingAll = false
+                // Maybe release 1
+                semaphore.release()
+                println("Finished countdown")
+            }
+
+        }
+        countdownTimer!!.start()
     }
 
     // TODO: Figure out if i need this

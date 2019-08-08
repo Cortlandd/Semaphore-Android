@@ -27,6 +27,8 @@ import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.model.WorkoutModel
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import java.io.File
+import java.util.concurrent.Semaphore
+import kotlin.concurrent.thread
 
 
 /**
@@ -63,12 +65,16 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var itemTouchHelper: ItemTouchHelper? = null
 
+    var semaphore: Semaphore? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_list)
 
         setSupportActionBar(toolbar)
         toolbar.title = title
+
+        semaphore = Semaphore(1)
 
         dbHandler = WorkoutDatabase(this, null)
 
@@ -147,7 +153,15 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         validateWorkoutCount()
 
         playAllButton!!.setOnClickListener {
-            validatePlayAll()
+            //validatePlayAll()
+            for (i in 0 until mWorkouts.size) {
+                val h = item_list.findViewHolderForAdapterPosition(i)?.adapterPosition
+                thread {
+                    semaphore!!.acquire()
+                }
+                println("Aquired")
+                workoutAdapter?.play(h!!, semaphore!!)
+            }
         }
         stopAllButton!!.setOnClickListener {
             stopPlayingAll()
