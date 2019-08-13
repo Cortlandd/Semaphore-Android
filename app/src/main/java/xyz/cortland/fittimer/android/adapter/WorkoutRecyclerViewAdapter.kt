@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.app.ActivityOptionsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.workout_list_content.view.*
@@ -23,8 +24,6 @@ import xyz.cortland.fittimer.android.model.WorkoutModel
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
-import kotlin.concurrent.thread
-import kotlin.reflect.KProperty
 
 
 class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
@@ -46,8 +45,9 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                 putExtra("arg_parcel_workout", item)
                 putExtra("arg_workout_id", workoutId!!)
             }
-            v.context.startActivity(intent)
-            parentActivity!!.overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+
+            val options = ActivityOptionsCompat.makeSceneTransitionAnimation(parentActivity!!, v, "viewWorkout")
+            v.context.startActivity(intent, options.toBundle())
         }
     }
 

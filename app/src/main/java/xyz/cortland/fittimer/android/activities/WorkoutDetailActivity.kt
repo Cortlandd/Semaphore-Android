@@ -2,12 +2,14 @@ package xyz.cortland.fittimer.android.activities
 
 import android.content.ContentValues
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.R
@@ -84,7 +86,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
         updateWorkoutItem(workoutId!!, workout)
         dialog.dismiss()
-        this.finish()
+        supportFinishAfterTransition()
     }
 
     /**
@@ -116,8 +118,8 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     override fun onBackPressed() {
         super.onBackPressed()
-        navigateUpTo(Intent(this, WorkoutListActivity::class.java))
-        this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+        //navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+        supportFinishAfterTransition()
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
@@ -129,8 +131,8 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
                 //
                 // http://developer.android.com/design/patterns/navigation.html#up-vs-back
 
-                navigateUpTo(Intent(this, WorkoutListActivity::class.java))
-                this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+                //navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+                supportFinishAfterTransition()
                 true
             }
             else -> super.onOptionsItemSelected(item)

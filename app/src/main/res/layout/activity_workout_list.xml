@@ -57,6 +57,7 @@
 
     <FrameLayout
         android:id="@+id/frameLayout"
+        android:transitionName="viewWorkout"
         android:animateLayoutChanges="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

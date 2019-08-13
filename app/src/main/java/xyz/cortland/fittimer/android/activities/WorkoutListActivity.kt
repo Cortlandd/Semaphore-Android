@@ -14,6 +14,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
+import androidx.core.app.ActivityOptionsCompat
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list.*
@@ -107,6 +108,11 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         setupView()
 
+    }
+
+    // TODO: Capture current countdown playing and pause it.
+    override fun onPause() {
+        super.onPause()
     }
 
     override fun onDestroy() {
