@@ -10,6 +10,11 @@ import xyz.cortland.fittimer.android.model.WorkoutModel
 class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?): SQLiteOpenHelper(context, DATABASE_NAME, factory, DATABASE_VERSION) {
 
 
+    // TODO: Fix sqlite memory leak
+    //  Resolve: xyz.cortland.fittimer.android W/SQLiteConnectionPool:
+    //  A SQLiteConnection object for database '/data/user/0/xyz.cortland.fittimer.android/databases/workouts.db'
+    //  was leaked!  Please fix your application to end transactions in progress properly and to close the
+    //  database when it is no longer needed.
     companion object {
         private val DATABASE_VERSION = 1
         private val DATABASE_NAME = "workouts.db"

@@ -8,16 +8,21 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="actionOverflowButtonStyle">@style/MainMenuButtonStyle</item>
     </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:listDivider">@android:color/transparent</item>
     </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
+
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light"/>
+
     <style name="MainMenuButtonStyle" parent="@style/Widget.AppCompat.ActionButton.Overflow">
         <item name="android:color">@android:color/black</item>
     </style>
+
     <style name="WorkoutDialogSwitch" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
         <!-- active thumb and track color (30% transparency) -->
         <item name="colorControlActivated">#46bdbf</item>
@@ -28,6 +33,7 @@
         <!-- inactive track color (30% transparency) -->
         <item name="android:colorForeground">#42221f1f</item>
     </style>
+
     <!-- Make alert dialog positive button material design -->
     <style name="AlertDialogTheme" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="buttonBarPositiveButtonStyle">@style/Widget.MaterialComponents.Button</item>

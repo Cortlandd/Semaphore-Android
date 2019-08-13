@@ -13,7 +13,7 @@
                 android:title="Export"/>
             <item
                 android:id="@+id/nav_sendfeedback"
-                android:icon="@android:drawable/sym_action_email"
+                android:icon="@drawable/ic_mail_outline_purp_24dp"
                 android:title="Send Feedback" />
         </menu>
     </item>
@@ -22,16 +22,15 @@
         <menu>
             <item
                 android:id="@+id/nav_licenses"
-                android:icon="@android:drawable/ic_input_get"
+                android:icon="@drawable/ic_code_purp_24dp"
                 android:title="Open Source Licenses"/>
             <item
                 android:id="@+id/nav_faq"
-                android:icon="@android:drawable/ic_menu_help"
+                android:icon="@drawable/ic_help_outline_purp_24dp"
                 android:title="FAQ" />
             <item
                 android:id="@+id/nav_about"
-                android:iconTint="@color/colorAccent"
-                android:icon="@android:drawable/ic_dialog_info"
+                android:icon="@drawable/ic_info_outline_purp_24dp"
                 android:title="About" />
         </menu>
     </item>

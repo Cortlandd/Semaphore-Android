@@ -25,7 +25,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
 
         settings_navigation.setNavigationItemSelectedListener(this)
         // Give nav icons color
-        //settings_navigation.itemIconTintList = null
+        settings_navigation.itemIconTintList = null
     }
 
     override fun onBackPressed() {

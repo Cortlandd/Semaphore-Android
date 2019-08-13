@@ -53,6 +53,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
+        // TODO: Implement this elsewhere such as an application class to avoid leaks
         textToSpeech = TextToSpeech(parentActivity!!, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
                 // TODO: Create preferences for the apps country and set this. Also give users ability to change
@@ -75,8 +76,10 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val workout = mWorkouts[position]
 
-        val dbHandler = WorkoutDatabase(this.parentActivity!!, null)
-        val cursor = dbHandler.getAllWorkouts()
+        // TODO: Could be culprit of SQLITE memory leak. Verify
+        // Before: val dbHandler = WorkoutDatabase(parentActivity!!, null)
+        val dbHandler = parentActivity!!.dbHandler
+        val cursor = dbHandler?.getAllWorkouts()
         if (!cursor!!.moveToPosition(position)) {
             return
         }
