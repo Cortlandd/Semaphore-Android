@@ -84,6 +84,7 @@
 
                 <TextView
                     android:text="Workout"
+                    android:visibility="gone"
                     android:layout_gravity="center_horizontal"
                     android:textSize="36sp"
                     android:textColor="@color/cardview_dark_background"
@@ -92,7 +93,7 @@
 
                 <EditText
                     android:id="@+id/workout_text"
-                    android:hint="Workout"
+                    android:hint="Enter Workout Here"
                     android:gravity="center"
                     android:maxLines="1"
                     android:singleLine="true"

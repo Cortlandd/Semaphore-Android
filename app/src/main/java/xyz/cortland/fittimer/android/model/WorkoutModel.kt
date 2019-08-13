@@ -8,8 +8,9 @@ data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workout
 
     var id: Int? = null
     var isPlaying: Boolean? = false
+    var isPlayingAll: Boolean? = false
     var isCount: Boolean? = false
-    var remainingSeconds: Long? = 0
+    var remainingSeconds: Int? = 0
     var expanded: Boolean? = false
     var isDefaultState: Boolean? = true
 
