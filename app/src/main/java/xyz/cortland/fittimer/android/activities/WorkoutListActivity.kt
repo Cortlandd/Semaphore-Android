@@ -55,7 +55,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     val mWorkouts: ArrayList<WorkoutModel> = ArrayList<WorkoutModel>()
 
-    var playingAll: Boolean = false
+    var playingAll: Boolean by Delegates.observable(false) { _, _, _ ->
+        validatePlayAll()
+    }
 
     var playAllButton: Button? = null
 
@@ -160,8 +162,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
             playingAll = true
 
-            validatePlayAll()
-
             semaphore = Semaphore(1)
 
             for (i in mWorkouts.indices) {
@@ -174,7 +174,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
                 }
             }
 
-            validatePlayAll()
         }
 
         stopAllButton!!.setOnClickListener {
@@ -207,37 +206,31 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             hidePlayButtons()
 
         } else {
+
+            // Update UI Buttons
             stopAllButton?.visibility = View.GONE
             playAllButton?.visibility = View.VISIBLE
+
             fab.show()
+
             itemTouchHelper!!.attachToRecyclerView(item_list)
 
             showPlayButtons()
+
+            mWorkouts.forEach {
+                it.isDefaultState = true
+            }
+
+            workoutAdapter!!.stopAllWorkouts()
+            workoutAdapter!!.notifyDataSetChanged()
 
         }
     }
 
     fun stopPlayingAll() {
-        // Update UI Buttons
-        stopAllButton?.visibility = View.GONE
-        playAllButton?.visibility = View.VISIBLE
 
         // Change state
         playingAll = false
-
-        // Make recyclerview swipable
-        itemTouchHelper!!.attachToRecyclerView(item_list)
-
-        mWorkouts.forEach {
-            it.isDefaultState = true
-        }
-
-        if (fab.isOrWillBeHidden) {
-            fab.show()
-        }
-
-        workoutAdapter!!.stopAllWorkouts()
-        workoutAdapter!!.notifyDataSetChanged()
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
