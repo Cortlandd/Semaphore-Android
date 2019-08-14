@@ -45,6 +45,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             // TODO: Setup preferences to pause and later resume.
             if (item.countDownTimer?.hasStarted != null && item.countDownTimer?.hasStarted!!) {
                 item.countDownTimer?.cancel()
+                item.isDefaultState = true
                 notifyDataSetChanged()
             }
 
