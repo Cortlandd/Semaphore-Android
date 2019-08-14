@@ -110,15 +110,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     }
 
-    // TODO: Capture current countdown playing and pause it.
-    override fun onPause() {
-        super.onPause()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         dbHandler?.close()
-        workoutAdapter?.countdownTimer?.cancel()
+        workoutAdapter?.stopAllWorkouts()
     }
 
     override fun onResume() {
@@ -232,16 +227,15 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         // Make recyclerview swipable
         itemTouchHelper!!.attachToRecyclerView(item_list)
-        for (i in mWorkouts.indices) {
-            mWorkouts.get(i).isDefaultState = true
-            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
-            val item = item_list.findViewHolderForAdapterPosition(i)!!.itemView
-            item.isEnabled = true
-            playButton.visibility = View.VISIBLE
+
+        mWorkouts.forEach {
+            it.isDefaultState = true
         }
+
         if (fab.isOrWillBeHidden) {
             fab.show()
         }
+
         workoutAdapter!!.stopAllWorkouts()
         workoutAdapter!!.notifyDataSetChanged()
     }

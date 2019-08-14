@@ -29,10 +29,6 @@ import java.util.concurrent.Semaphore
 class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
-    var counterList: List<WorkoutModel> = ArrayList()
-    var playingIndividual: Boolean = false
-    var countdownTimer: CountDownTimer? = null
-    var remainingTimeIndividual: Long? = null
     var textToSpeech: TextToSpeech? = null
 
     var workoutId: Int? = null
@@ -44,6 +40,12 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             val intent = Intent(v.context, WorkoutDetailActivity::class.java).apply {
                 putExtra("arg_parcel_workout", item)
                 putExtra("arg_workout_id", workoutId!!)
+            }
+
+            // TODO: Setup preferences to pause and later resume.
+            if (item.countDownTimer?.hasStarted != null && item.countDownTimer?.hasStarted!!) {
+                item.countDownTimer?.cancel()
+                notifyDataSetChanged()
             }
 
             val options = ActivityOptionsCompat.makeSceneTransitionAnimation(parentActivity!!, v, "viewWorkout")
@@ -69,7 +71,6 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
-        this.counterList = mWorkouts
         return ViewHolder(view)
     }
 
@@ -84,15 +85,17 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             return
         }
 
-        var seconds = mWorkouts[position].seconds
+        var seconds = workout.seconds
         seconds = seconds?.times(1000)
 
-        if (mWorkouts.get(position).isDefaultState!!) {
+        if (workout.isDefaultState!!) {
             holder.stopButton.visibility = View.VISIBLE
+            holder.playButton.visibility = View.VISIBLE
             holder.workoutControls.visibility = View.GONE
             holder.resumeButton.visibility = View.GONE
             holder.pauseButton.visibility = View.VISIBLE
             holder.workoutImage.visibility = View.VISIBLE
+            holder.itemView.isEnabled = true
 
             holder.workoutView.text = workout.workoutName
             holder.secondsView.text = workout.seconds.toString()
@@ -106,17 +109,19 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             holder.workoutProgressBar.max = seconds!! / 1000
             holder.workoutProgressBar.progress = seconds / 1000
 
+            workout.countDownTimer?.cancel()
+
         } else {
             return
         }
 
         holder.playButton.setOnClickListener {
 
-            if (mWorkouts[position].workoutSpeech == 1) {
+            if (workout.workoutSpeech == 1) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    textToSpeech?.speak(mWorkouts[position].workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
+                    textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
                 } else {
-                    textToSpeech?.speak(mWorkouts[position].workoutName, TextToSpeech.QUEUE_FLUSH, null)
+                    textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null)
                 }
             }
 
@@ -125,32 +130,20 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
             if (!parentActivity!!.playingAll) {
 
-                if (!playingIndividual) {
-                    playingIndividual = true
-                } else {
-                    playingIndividual = false
-                }
-
-                mWorkouts.get(position).isPlaying = true
-
                 it.visibility = View.GONE
 
-                countdownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
+                workout.isDefaultState = false
+
+                workout.countDownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
-                        if (mWorkouts.get(position).isPlaying!!) {
-                            holder.secondsView.text = "${millisUntilFinished / 1000}"
-                            holder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
-                        } else {
-                            holder.secondsView.text = mWorkouts.get(position).seconds.toString()
-                            cancel() // May have to run on different thread?
-                        }
+                        holder.secondsView.text = "${millisUntilFinished / 1000}"
+                        holder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
                     }
 
                     override fun onFinish() {
-                        mWorkouts.get(position).isPlaying = false
                         it.visibility = View.VISIBLE
-                        holder.secondsView.text = mWorkouts.get(position).seconds.toString()
+                        holder.secondsView.text = workout.seconds.toString()
                         holder.workoutControls.visibility = View.GONE
 
                         // Set the progress ring back to default
@@ -168,15 +161,11 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
 
         holder.stopButton.setOnClickListener {
-            countdownTimer!!.cancel()
-            holder.playButton.visibility = View.VISIBLE
-            mWorkouts.get(position).isPlaying = false
-            holder.secondsView.text = mWorkouts.get(position).seconds.toString()
-            holder.workoutControls.visibility = View.GONE
-            if (holder.resumeButton.visibility == View.VISIBLE) {
-                holder.resumeButton.visibility = View.GONE
-                holder.pauseButton.visibility = View.VISIBLE
-            }
+
+            workout.countDownTimer!!.cancel()
+
+            workout.isDefaultState = true
+
             notifyItemChanged(position)
         }
 
@@ -190,14 +179,14 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             } else {
                 it.visibility = View.GONE
                 holder.resumeButton.visibility = View.VISIBLE
-                countdownTimer!!.pause()
+                workout.countDownTimer!!.pause()
             }
         }
 
         holder.resumeButton.setOnClickListener {
             it.visibility = View.GONE
             holder.pauseButton.visibility = View.VISIBLE
-            countdownTimer!!.resume()
+            workout.countDownTimer!!.resume()
         }
 
         with(holder.itemView) {
@@ -215,17 +204,11 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         var seconds = workout.seconds
         seconds = seconds?.times(1000)
 
-        Log.d("Recyclerview", "Got to Play")
-
-        Log.d("Recyclerview", "Seconds: ${workout.seconds.toString()}")
-
-        Log.d("Recyclerview", "Position: $position")
-
         workout.isDefaultState = false
 
         Handler(Looper.getMainLooper()).post {
 
-            if (mWorkouts[position].workoutSpeech == 1) {
+            if (workout.workoutSpeech == 1) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
                 } else {
@@ -239,19 +222,15 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
             mHolder.workoutProgressBar.max = seconds!! / 1000
 
-            countdownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
+            workout.countDownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
 
                 override fun onTick(millisUntilFinished: Long) {
-                    Log.d("Recyclerview", "millisUntilFinished $millisUntilFinished")
                     mHolder.secondsView.text = "${millisUntilFinished / 1000}"
                     mHolder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
                 }
 
                 override fun onFinish() {
                     if (position == mWorkouts.size - 1) {
-                        Log.d("Recyclerview", "Finished")
-                        Log.d("Recyclerview", "Workout Complete")
-                        countdownTimer!!.cancel()
                         parentActivity!!.stopPlayingAll()
                         notifyDataSetChanged()
                     } else {
@@ -259,18 +238,19 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                         mHolder.secondsView.text = "0"
                         mHolder.workoutProgressBar.progress = 0
 
-                        Log.d("Recyclerview", "Finished")
                         semaphore.release()
                     }
                 }
 
             }
-            countdownTimer!!.start()
+            workout.countDownTimer!!.start()
         }
     }
 
     fun stopAllWorkouts() {
-        countdownTimer!!.cancel()
+        mWorkouts.forEach {
+            it.countDownTimer?.cancel()
+        }
         notifyDataSetChanged()
     }
 

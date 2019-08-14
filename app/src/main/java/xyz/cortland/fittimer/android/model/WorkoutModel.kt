@@ -2,6 +2,7 @@ package xyz.cortland.fittimer.android.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
+import xyz.cortland.fittimer.android.custom.CountDownTimer
 
 @Parcelize
 data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workoutImage: String?, var workoutSpeech: Int?): Parcelable {
@@ -13,6 +14,7 @@ data class WorkoutModel(var seconds: Int?, var workoutName: String?, var workout
     var remainingSeconds: Int? = 0
     var expanded: Boolean? = false
     var isDefaultState: Boolean? = true
+    var countDownTimer: CountDownTimer? = null
 
     constructor(): this(null, null, null, null)
 
