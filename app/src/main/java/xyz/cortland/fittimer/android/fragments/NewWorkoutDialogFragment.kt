@@ -30,6 +30,7 @@ import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.shawnlin.numberpicker.NumberPicker
+import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import xyz.cortland.fittimer.android.utils.ImageFilePath
@@ -99,18 +100,15 @@ class NewWorkoutDialogFragment: DialogFragment() {
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
         workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
 
+        // TODO: Implement shared textToSpeech with observer
         textToSpeech = TextToSpeech(this.activity!!, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                // TODO: Create preferences for the apps country and set this. Also give users ability to change
-                val language = textToSpeech?.setLanguage(Locale.US)
-                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    println("Language Not Supported.")
-                } else {
-                    println("Language Supported.")
-                }
+                textToSpeech?.language = Locale(mGlobalPreferences?.getSpeechLanguage())
             }
         })
 
+        // TODO: Get API Key from Giphy
+        // TODO: Create separate Alert Dialog for this with a callback
         giphyView.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
         giphyView.setSelectedCallback {
 
@@ -147,9 +145,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
         workoutId = arguments?.getInt("arg_workout_id")
 
         if (workout == null) {
-            builder.setTitle("Add Workout")
+            builder.setTitle(R.string.add_workout)
         } else {
-            builder.setTitle("Edit Workout")
+            builder.setTitle(R.string.edit_workout)
             numberPicker?.value = workout?.seconds!!
             workoutText.setText(workout?.workoutName)
             if (workout!!.workoutSpeech == 1) {
@@ -174,19 +172,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
         workoutSpeech!!.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 workoutSpeechValue = 1
+                if (workoutText.text.toString() != "") {
+                    textToSpeech!!.speak(workoutText.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
+                }
             } else {
                 workoutSpeechValue = 0
-            }
-        }
-
-        workoutSpeech!!.setOnClickListener {
-            // TODO: Play Voice
-            if (workoutText.text.toString() != "") {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    textToSpeech!!.speak(workoutText.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
-                } else {
-                    textToSpeech!!.speak(workoutText.text.toString(), TextToSpeech.QUEUE_FLUSH, null)
-                }
             }
         }
 
@@ -204,12 +194,12 @@ class NewWorkoutDialogFragment: DialogFragment() {
         }
 
         builder.setView(dialogView)
-            .setPositiveButton("Save") { dialog, id ->
+            .setPositiveButton(R.string.save) { dialog, id ->
                 mGlobalPreferences!!.setWorkoutModified(true)
                 validateImagePath()
                 newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
             }
-            .setNegativeButton("Close") { dialog, id ->
+            .setNegativeButton(R.string.close) { dialog, id ->
                 newWorkoutDialogListener?.onCancelClick(this)
             }
 
@@ -230,22 +220,18 @@ class NewWorkoutDialogFragment: DialogFragment() {
         when {
             // For New Workouts
             imagePath != null && gifImageLocation == null -> {
-                println("For New Workouts")
                 saveSelectedImage(imagePath!!)
                 workoutImageValue = galleryImageLocation
             }
             gifImageLocation != null && imagePath == null -> {
-                println("For New Workouts")
                 workoutImageValue = gifImageLocation
             }
             // For Existing Workouts
             imagePath != null && workoutImageValue != workout?.workoutImage -> {
-                println("For Existing Workouts")
                 saveSelectedImage(imagePath!!)
                 workoutImageValue = galleryImageLocation
             }
             gifImageLocation != null  && workoutImageValue != workout?.workoutImage -> {
-                println("For Existing Workouts")
                 workoutImageValue = gifImageLocation
             }
         }
@@ -329,11 +315,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
     fun tapWorkoutImage() {
         val builder = AlertDialog.Builder(this.activity!!)
         if (workout == null) {
-            builder.setTitle("Add Workout Image")
+            builder.setTitle(R.string.add_workout_image)
         } else {
-            builder.setTitle("Edit Workout Image")
+            builder.setTitle(R.string.edit_workout_image)
         }
-        val options = arrayOf<String>("Upload Image", "Search GIF", "Remove Current Image")
+        val options = arrayOf<String>(getString(R.string.upload_image), getString(R.string.search_gif), getString(R.string.remove_current_image))
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> { // Gallery Image
@@ -380,11 +366,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
     fun tapPlaceholderImage() {
         val builder = AlertDialog.Builder(this.activity!!)
         if (workout?.workoutImage == null) {
-            builder.setTitle("Add Workout Image")
+            builder.setTitle(R.string.add_workout_image)
         } else {
-            builder.setTitle("Edit Workout Image")
+            builder.setTitle(R.string.edit_workout_image)
         }
-        val options = arrayOf<String>("Upload Image", "Search GIF")
+        val options = arrayOf<String>(getString(R.string.upload_image), getString(R.string.search_gif))
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> { // Gallery Image

@@ -24,7 +24,7 @@
                 <Button
                     android:id="@+id/close_giphysearch_button"
                     android:padding="10dp"
-                    android:text="Close Giphy Search"
+                    android:text="@string/close"
                     android:elevation="3dp"
                     android:textColor="@android:color/white"
                     android:layout_margin="4dp"
@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:text="Seconds"
+                    android:text="@string/seconds"
                     android:layout_gravity="center_horizontal"
                     android:textSize="30sp"
                     android:textColor="@android:color/black"
@@ -65,12 +65,12 @@
                     app:np_scrollerEnabled="true"
                     app:np_fadingEdgeEnabled="true"
                     app:np_height="64dp"
-                    app:np_dividerColor="@color/cardview_dark_background"
+                    app:np_dividerColor="@android:color/black"
                     app:np_orientation="horizontal"
                     app:np_max="59"
                     app:np_min="1"
-                    app:np_selectedTextColor="@color/cardview_dark_background"
-                    app:np_textColor="@color/cardview_dark_background"
+                    app:np_selectedTextColor="@android:color/black"
+                    app:np_textColor="@android:color/black"
                     app:np_textSize="20sp" />
 
             </LinearLayout>
@@ -81,18 +81,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-                <TextView
-                    android:text="Workout"
-                    android:visibility="gone"
-                    android:layout_gravity="center_horizontal"
-                    android:textSize="36sp"
-                    android:textColor="@color/cardview_dark_background"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
                 <EditText
                     android:id="@+id/workout_text"
-                    android:hint="Enter Workout Here"
+                    android:inputType="text"
+                    android:hint="@string/hint_enter_workout_here"
                     android:gravity="center"
                     android:maxLines="1"
                     android:singleLine="true"
@@ -124,7 +116,7 @@
                     android:layout_height="200dp" />
 
                 <TextView
-                    android:hint="Tap the Image to change your Workout Image"
+                    android:hint="@string/hint_tap_image"
                     android:textSize="8sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -141,7 +133,7 @@
                         android:checked="true"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Workout to Speech Audio" />
+                        android:text="@string/switch_workout_to_speech_audio" />
 
                 </LinearLayout>
 

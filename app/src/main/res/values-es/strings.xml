@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Fit Timer</string>
+    <string name="title_item_detail">Workout Details</string>
+    <string name="title_settings">Configuraciones</string>
+    <string name="play_all">Play All</string>
+    <string name="play">Play</string>
+    <string name="stop">Stop</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="add_workout">Add Workout</string>
+    <string name="edit_workout">Edit Workout</string>
+    <string name="seconds">Seconds</string>
+    <string name="switch_workout_to_speech_audio">Text-to-Speech Audio</string>
+    <string name="hint_enter_workout_here">Enter Workout Here</string>
+    <string name="hint_tap_image">Tap the image to change your Workout Image</string>
+    <string name="close">Close</string>
+    <string name="save">Save</string>
+    <string name="general">General</string>
+    <string name="language">Language</string>
+    <string name="speech_language">Text-to-Speech Language</string>
+    <string name="send_feedback">Send Feedback</string>
+    <string name="about">About</string>
+    <string name="open_source_licenses">Open Source Licenses</string>
+    <string name="faq">FAQ</string>
+    <string name="export">Export</string>
+    <string name="add_workout_image">Add Workout Image</string>
+    <string name="edit_workout_image">Edit Workout Image</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="search_gif">Search GIF</string>
+    <string name="remove_current_image">Remove Current Image</string>
+
+
+</resources>

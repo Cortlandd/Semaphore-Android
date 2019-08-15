@@ -4,6 +4,7 @@ import android.animation.LayoutTransition
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.view.Menu
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
@@ -19,6 +20,7 @@ import androidx.core.app.ActivityOptionsCompat
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list.*
 import kotlinx.android.synthetic.main.workout_list_content.view.*
+import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutRecyclerViewAdapter
 import xyz.cortland.fittimer.android.custom.CountDownTimer
@@ -28,6 +30,7 @@ import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.model.WorkoutModel
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import java.io.File
+import java.util.*
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 import kotlin.properties.Delegates
@@ -68,6 +71,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     var itemTouchHelper: ItemTouchHelper? = null
 
     var semaphore: Semaphore? = null
+
+    var textToSpeech: TextToSpeech? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,6 +137,18 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         } else {
             return
         }
+
+        // TODO: Implement shared textToSpeech
+        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage()))
+                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    println("Language Not Supported.")
+                } else {
+                    println("Language Supported.")
+                }
+            }
+        })
     }
 
     /**
@@ -185,9 +202,18 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            workout_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
-        }
+        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage()))
+                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    println("Language Not Supported.")
+                } else {
+                    println("Language Supported.")
+                }
+            }
+        })
+
+        workout_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 
     }
 

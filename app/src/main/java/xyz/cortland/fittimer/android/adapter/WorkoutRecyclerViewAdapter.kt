@@ -15,6 +15,7 @@ import androidx.core.app.ActivityOptionsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.workout_list_content.view.*
+import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
 import xyz.cortland.fittimer.android.activities.WorkoutListActivity
@@ -54,32 +55,16 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         }
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        // TODO: Implement this elsewhere such as an application class to avoid leaks
-        textToSpeech = TextToSpeech(parentActivity!!, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                // TODO: Create preferences for the apps country and set this. Also give users ability to change
-                val language = textToSpeech?.setLanguage(Locale.US)
-                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    println("Language Not Supported.")
-                } else {
-                    println("Language Supported.")
-                }
-            }
-        })
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
+        // TODO: Implement shared textToSpeech
+        textToSpeech = parentActivity!!.textToSpeech
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val workout = mWorkouts[position]
 
-        // TODO: Could be culprit of SQLITE memory leak. Verify
-        // Before: val dbHandler = WorkoutDatabase(parentActivity!!, null)
         val dbHandler = parentActivity!!.dbHandler
         val cursor = dbHandler?.getAllWorkouts()
         if (!cursor!!.moveToPosition(position)) {
@@ -119,11 +104,9 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         holder.playButton.setOnClickListener {
 
             if (workout.workoutSpeech == 1) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
-                } else {
-                    textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null)
-                }
+                // TODO: Need shared textToSpeech
+                textToSpeech?.language = Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage())
+                textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
             }
 
             holder.stopButton.visibility = View.VISIBLE
@@ -212,8 +195,6 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             if (workout.workoutSpeech == 1) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
-                } else {
-                    textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null)
                 }
             }
 

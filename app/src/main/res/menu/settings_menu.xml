@@ -5,33 +5,37 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:showIn="navigation_view">
 
-    <item android:title="General">
+    <item android:title="@string/general">
         <menu>
             <item
                 android:id="@+id/nav_export_workout"
                 android:visible="false"
-                android:title="Export"/>
+                android:title="@string/export"/>
+            <item
+                android:id="@+id/nav_speech_language"
+                android:icon="@drawable/ic_record_voice_over_purp_24dp"
+                android:title="@string/speech_language" />
             <item
                 android:id="@+id/nav_sendfeedback"
                 android:icon="@drawable/ic_mail_outline_purp_24dp"
-                android:title="Send Feedback" />
+                android:title="@string/send_feedback" />
         </menu>
     </item>
 
-    <item android:title="About">
+    <item android:title="@string/about">
         <menu>
             <item
                 android:id="@+id/nav_licenses"
                 android:icon="@drawable/ic_code_purp_24dp"
-                android:title="Open Source Licenses"/>
+                android:title="@string/open_source_licenses"/>
             <item
                 android:id="@+id/nav_faq"
                 android:icon="@drawable/ic_help_outline_purp_24dp"
-                android:title="FAQ" />
+                android:title="@string/faq" />
             <item
                 android:id="@+id/nav_about"
                 android:icon="@drawable/ic_info_outline_purp_24dp"
-                android:title="About" />
+                android:title="@string/about" />
         </menu>
     </item>
 

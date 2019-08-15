@@ -2,6 +2,9 @@ package xyz.cortland.fittimer.android.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.speech.tts.TextToSpeech
+import xyz.cortland.fittimer.android.FitTimer
+import java.util.*
 
 class GlobalPreferences(context: Context) {
 
@@ -12,6 +15,8 @@ class GlobalPreferences(context: Context) {
     val HAS_WORKOUT_EDITED = "has_workout_edited"
 
     val HAS_CURRENT_IMAGE_REMOVED = "has_current_image_removed"
+
+    val CURRENT_LOCAL_LANGUAGE = "current_local_language"
 
     init {
         mSharedPreferences = context.getSharedPreferences(GLOBAL_PREFERENCES, Context.MODE_PRIVATE)
@@ -59,6 +64,17 @@ class GlobalPreferences(context: Context) {
      */
     fun isCurrentImageRemoved(): Boolean {
         return mSharedPreferences!!.getBoolean(HAS_CURRENT_IMAGE_REMOVED, false)
+    }
+
+    fun setSpeechLanguage(language: String) {
+        with(mSharedPreferences!!.edit()) {
+            this.putString(CURRENT_LOCAL_LANGUAGE, language)
+            this.apply()
+        }
+    }
+
+    fun getSpeechLanguage(): String {
+        return mSharedPreferences!!.getString(CURRENT_LOCAL_LANGUAGE, Locale.getDefault().language)!!
     }
 
     /**
