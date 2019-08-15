@@ -41,7 +41,7 @@
             android:layout_margin="4dp"
             android:background="#fff"
             android:elevation="3dp"
-            android:text="Play All" />
+            android:text="@string/play_all" />
 
         <Button
             android:id="@+id/stop_all_button"
@@ -50,7 +50,7 @@
             android:layout_margin="4dp"
             android:background="#fff"
             android:elevation="3dp"
-            android:text="Stop All"
+            android:text="@string/stop_all"
             android:visibility="gone" />
 
     </LinearLayout>

@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Fit Timer</string>
-    <string name="title_item_detail">Workout Details</string>
+    <string name="title_item_detail">Detalles del entrenamiento</string>
     <string name="title_settings">Configuraciones</string>
-    <string name="play_all">Play All</string>
-    <string name="play">Play</string>
-    <string name="stop">Stop</string>
-    <string name="pause">Pause</string>
-    <string name="resume">Resume</string>
-    <string name="add_workout">Add Workout</string>
-    <string name="edit_workout">Edit Workout</string>
-    <string name="seconds">Seconds</string>
-    <string name="switch_workout_to_speech_audio">Text-to-Speech Audio</string>
-    <string name="hint_enter_workout_here">Enter Workout Here</string>
-    <string name="hint_tap_image">Tap the image to change your Workout Image</string>
-    <string name="close">Close</string>
-    <string name="save">Save</string>
+    <string name="play_all">Jugar todo</string>
+    <string name="stop_all">Para todo</string>
+    <string name="play">Jugar</string>
+    <string name="stop">Detener</string>
+    <string name="pause">Pausa</string>
+    <string name="resume">Currículum</string>
+    <string name="add_workout">Agregar entrenamiento</string>
+    <string name="edit_workout">Editar entrenamiento</string>
+    <string name="seconds">Segundos</string>
+    <string name="switch_workout_to_speech_audio">Audio de texto a voz</string>
+    <string name="hint_enter_workout_here">Ingrese el entrenamiento aquí</string>
+    <string name="hint_tap_image">Toque la imagen para cambiar su imagen de entrenamiento</string>
+    <string name="close">Cerca</string>
+    <string name="save">Salvar</string>
     <string name="general">General</string>
-    <string name="language">Language</string>
-    <string name="speech_language">Text-to-Speech Language</string>
-    <string name="send_feedback">Send Feedback</string>
-    <string name="about">About</string>
-    <string name="open_source_licenses">Open Source Licenses</string>
-    <string name="faq">FAQ</string>
-    <string name="export">Export</string>
-    <string name="add_workout_image">Add Workout Image</string>
-    <string name="edit_workout_image">Edit Workout Image</string>
-    <string name="upload_image">Upload Image</string>
-    <string name="search_gif">Search GIF</string>
-    <string name="remove_current_image">Remove Current Image</string>
+    <string name="language">Idioma</string>
+    <string name="speech_language">Lenguaje de texto a voz</string>
+    <string name="send_feedback">Enviar comentarios</string>
+    <string name="about">Acerca de</string>
+    <string name="open_source_licenses">Licencias de código abierto</string>
+    <string name="faq">Preguntas más frecuentes</string>
+    <string name="export">Exportar</string>
+    <string name="add_workout_image">Agregar imagen de entrenamiento</string>
+    <string name="edit_workout_image">Editar imagen de entrenamiento</string>
+    <string name="upload_image">Cargar imagen</string>
+    <string name="search_gif">Buscar GIF</string>
+    <string name="remove_current_image">Eliminar imagen actual</string>
 
 
 </resources>
