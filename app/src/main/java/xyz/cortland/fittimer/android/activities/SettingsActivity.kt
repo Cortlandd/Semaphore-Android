@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
@@ -18,13 +20,21 @@ import xyz.cortland.fittimer.android.BuildConfig
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.properties.Delegates
 
 
 class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     var textToSpeech: TextToSpeech? = null
+
+    var locale: Locale? = null
+
+    var language: String? by Delegates.observable(initialValue = locale?.displayLanguage) { _, _, _ ->
+        setSpeechTitle()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +42,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         setSupportActionBar(settings_toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        // TODO: Fix leaking connection
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
                 // TODO: Create preferences for the apps country and set this. Also give users ability to change
@@ -43,15 +54,22 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         // Give nav icons color
         settings_navigation.itemIconTintList = null
 
+        // Initialize language here to trigger setSpeechTitle()
+        language = String()
+
+    }
+
+    // Do again what was initially done on Create
+    fun setSpeechTitle() {
+
+        locale = Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage())
+
         val menu = settings_navigation.menu
 
-        val locale = Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage())
-
-        val language = locale.displayLanguage
+        val language = locale?.displayLanguage
 
         val speechLanguage = menu!!.findItem(R.id.nav_speech_language)
         speechLanguage.title = "${getString(R.string.switch_workout_to_speech_audio)} ($language)"
-
     }
 
     override fun onBackPressed() {
@@ -109,6 +127,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 val builder = AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 val dialogView = this.layoutInflater.inflate(R.layout.speech_language_selection_dialog, null)
                 val listview = dialogView.findViewById<ListView>(R.id.speech_language_list_view)
+                val filterText = dialogView.findViewById<EditText>(R.id.speech_language_filter)
 
                 val list = ArrayList<String>()
                 val listLanguage = ArrayList<String>()
@@ -133,7 +152,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 builder.setPositiveButton(R.string.save) { dialog, which ->
                     if (selectedLanguage != null) {
                         FitTimer.applicationContext().mGlobalPreferences!!.setSpeechLanguage(selectedLanguage!!)
-                        recreate()
+                        language = selectedLanguage
                     } else {
                         dialog.dismiss()
                     }
@@ -141,6 +160,21 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 builder.setNegativeButton(R.string.close) { dialog, which ->
                     dialog.dismiss()
                 }
+
+                filterText.addTextChangedListener(object: TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+
+                    }
+
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+                    }
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                        adapter.filter.filter(s)
+                    }
+
+                })
 
                 builder.create().show()
             }

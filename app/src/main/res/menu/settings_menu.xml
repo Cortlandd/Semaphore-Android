@@ -14,7 +14,7 @@
             <item
                 android:id="@+id/nav_speech_language"
                 android:icon="@drawable/ic_record_voice_over_purp_24dp"
-                android:title="@string/speech_language" />
+                android:title="@string/switch_workout_to_speech_audio" />
             <item
                 android:id="@+id/nav_sendfeedback"
                 android:icon="@drawable/ic_mail_outline_purp_24dp"

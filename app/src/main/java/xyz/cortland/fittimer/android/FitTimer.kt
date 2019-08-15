@@ -7,6 +7,8 @@ import java.util.*
 
 class FitTimer: Application() {
 
+    // TODO: Potentially implement a shared AlertDialog.
+
     var mGlobalPreferences: GlobalPreferences? = null
     var availableLanguages = emptyArray<Locale>()
 
