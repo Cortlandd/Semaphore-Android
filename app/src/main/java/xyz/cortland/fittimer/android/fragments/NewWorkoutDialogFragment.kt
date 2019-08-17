@@ -41,7 +41,7 @@ import java.io.IOException
 import java.util.*
 
 
-// TODO: Implemented an EditWorkoutDialogFragment Dialog Class
+// TODO: (MAYBE) Implemented an EditWorkoutDialogFragment Dialog Class
 class NewWorkoutDialogFragment: DialogFragment() {
 
     //image pick code
@@ -68,6 +68,8 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var workout: WorkoutModel? = null
     var workoutId: Int? = null
 
+    var positiveButton: Button? = null
+
     interface NewWorkoutDialogListener {
         fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel)
         fun onCancelClick(dialog: DialogFragment)
@@ -83,6 +85,16 @@ class NewWorkoutDialogFragment: DialogFragment() {
             args.putInt("arg_workout_id", id)
             newWorkoutDialogFragment.arguments = args
             return newWorkoutDialogFragment
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Because my goofass
+        val d: AlertDialog = dialog as AlertDialog
+        if (d != null) {
+            positiveButton = d.getButton(Dialog.BUTTON_POSITIVE)
+            positiveButton?.isEnabled = false
         }
     }
 
@@ -128,15 +140,16 @@ class NewWorkoutDialogFragment: DialogFragment() {
             giphyView?.invalidate()
         }
 
-        // TODO: Implement text requirement
         workoutText.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 workoutValue = s.toString()
+                positiveButton?.isEnabled = s.toString().length >= 2
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 workoutValue = s.toString()
+                positiveButton?.isEnabled = s.toString().length >= 2
             }
 
         })
