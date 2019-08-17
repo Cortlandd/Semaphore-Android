@@ -45,7 +45,6 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         // TODO: Fix leaking connection
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                // TODO: Create preferences for the apps country and set this. Also give users ability to change
                 textToSpeech?.language = Locale(FitTimer.applicationContext().mGlobalPreferences!!.getSpeechLanguage())
             }
         })
@@ -85,7 +84,6 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 val aboutAlert = AlertDialog.Builder(this)
                 aboutAlert.setTitle(R.string.about)
                 aboutAlert.setMessage("${getString(R.string.app_name)} ${BuildConfig.VERSION_NAME}\nCopyright © Cortland Walker")
-                // TODO: Add contributors
                 // TODO: aboutAlert.setIcon = App Icon
                 aboutAlert.setPositiveButton("OK") { dialog, _ ->
                     dialog.dismiss()
@@ -116,7 +114,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
 
                 val emailIntent = Intent(Intent.ACTION_SENDTO)
                 emailIntent.type = "message/rfc822"
-                emailIntent.data = Uri.parse("mailto:cortlandwalker@gmail.com")
+                emailIntent.data = Uri.parse("mailto:cortlandjwalker@gmail.com")
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback - Android")
                 emailIntent.putExtra(Intent.EXTRA_TEXT, body)
                 startActivity(Intent.createChooser(emailIntent, "Send Feedback"))

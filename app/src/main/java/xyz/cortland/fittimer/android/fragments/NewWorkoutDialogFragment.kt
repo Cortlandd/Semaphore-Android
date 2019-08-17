@@ -57,6 +57,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var numberPicker: NumberPicker? = null
     var workoutSpeech: SwitchCompat? = null
     var searchGiphyLayout: LinearLayout? = null
+    var giphyView: GiphyView? = null
 
     var workoutValue: String? = ""
     var secondsValue: Int? = null
@@ -92,7 +93,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
         val workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
-        val giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
+        giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
         searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
         workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
@@ -109,8 +110,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         // TODO: Get API Key from Giphy
         // TODO: Create separate Alert Dialog for this with a callback
-        giphyView.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
-        giphyView.setSelectedCallback {
+        giphyView?.setSelectedCallback {
 
             // Make images visible
             workoutImage!!.visibility = View.VISIBLE
@@ -125,7 +125,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         closeGiphyButton.setOnClickListener {
             searchGiphyLayout?.visibility = View.GONE
-            giphyView.invalidate()
+            giphyView?.invalidate()
         }
 
         // TODO: Implement text requirement
@@ -330,6 +330,8 @@ class NewWorkoutDialogFragment: DialogFragment() {
                     }
                 }
                 1 -> { // Search GIF
+                    giphyView?.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
+
                     searchGiphyLayout?.visibility = View.VISIBLE
                 }
                 2 -> { // Remove Current Image
@@ -381,6 +383,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
                     }
                 }
                 1 -> { // Search GIF
+                    giphyView?.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
                     searchGiphyLayout?.visibility = View.VISIBLE
                 }
             }

@@ -28,6 +28,6 @@
     <string name="add_workout_image">Ajouter une image d\'entraînement</string>
     <string name="edit_workout_image">Modifier l\'image d\'entraînement</string>
     <string name="upload_image">Upload Image</string>
-    <string name="search_gif">Recherche GIF</string>
+    <string name="search_gif">Recherche GIF (Giphy)</string>
     <string name="remove_current_image">Supprimer l\'image actuelle</string>
 </resources>

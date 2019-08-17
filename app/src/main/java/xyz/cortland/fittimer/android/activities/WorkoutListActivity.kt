@@ -121,6 +121,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         super.onDestroy()
         dbHandler?.close()
         workoutAdapter?.stopAllWorkouts()
+        if (textToSpeech != null) {
+            textToSpeech?.stop()
+            textToSpeech?.shutdown()
+        }
     }
 
     override fun onResume() {

@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- TODO: Implement ability to search languages -->
     <LinearLayout
         android:id="@+id/speech_language_filter_layout"
         android:orientation="horizontal"
