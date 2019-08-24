@@ -30,6 +30,8 @@
     <string name="upload_image">Upload Image</string>
     <string name="search_gif">Search GIF</string>
     <string name="remove_current_image">Remove Current Image</string>
+    <string name="tap">Tap</string>
+    <string name="no_workouts_message">to add a new Workout.</string>
 
     <!-- Open Source Licenses -->
     <string name="giphy_android_search_library_title" translatable="false">Giphy Android Search Library</string>

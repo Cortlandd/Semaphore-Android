@@ -207,6 +207,12 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
 
+        // TODO: Doesn't work but ill keep it in just in case
+        fab_placeholder.setOnClickListener {
+            val newWorkoutFragment = NewWorkoutDialogFragment()
+            newWorkoutFragment.show(supportFragmentManager, "newWorkout")
+        }
+
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
                 val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage()))
