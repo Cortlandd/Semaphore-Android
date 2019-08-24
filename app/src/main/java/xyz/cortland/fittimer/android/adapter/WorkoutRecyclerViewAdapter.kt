@@ -15,6 +15,7 @@ import androidx.core.app.ActivityOptionsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
@@ -93,8 +94,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             }
 
             // Mostly for Play All
-            holder.workoutProgressBar.max = seconds!! / 1000
-            holder.workoutProgressBar.progress = seconds / 1000
+            holder.workoutProgressBar.progressMax = (seconds!! / 1000).toFloat()
+            holder.workoutProgressBar.progress = (seconds / 1000).toFloat()
 
             workout.countDownTimer?.cancel()
 
@@ -123,7 +124,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
                     override fun onTick(millisUntilFinished: Long) {
                         holder.secondsView.text = "${millisUntilFinished / 1000}"
-                        holder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
+                        holder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                     }
 
                     override fun onFinish() {
@@ -132,7 +133,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                         holder.workoutControls.visibility = View.GONE
 
                         // Set the progress ring back to default
-                        holder.workoutProgressBar.progress = seconds / 1000
+                        holder.workoutProgressBar.progress = (seconds / 1000).toFloat()
                     }
 
                 }.start()
@@ -203,13 +204,13 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             mHolder.stopButton.hide()
             mHolder.playButton.hide()
 
-            mHolder.workoutProgressBar.max = seconds!! / 1000
+            mHolder.workoutProgressBar.progressMax = (seconds!! / 1000).toFloat()
 
             workout.countDownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
 
                 override fun onTick(millisUntilFinished: Long) {
                     mHolder.secondsView.text = "${millisUntilFinished / 1000}"
-                    mHolder.workoutProgressBar.progress = (millisUntilFinished / 1000).toInt()
+                    mHolder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                 }
 
                 override fun onFinish() {
@@ -219,8 +220,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
                         mHolder.secondsView.text = "0"
-                        mHolder.workoutProgressBar.progress = 0
-
+                        //mHolder.workoutProgressBar.progress = 0
                         semaphore.release()
                     }
                 }
@@ -248,7 +248,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         var resumeButton: FloatingActionButton = view.single_resume_button
         var workoutImage: ImageView = view.workout_image
         var workoutControls: LinearLayout = view.workout_controls
-        var workoutProgressBar: ProgressBar = view.workout_progress_bar
+        var workoutProgressBar: CircularProgressBar = view.workout_progress_bar
     }
 
 }

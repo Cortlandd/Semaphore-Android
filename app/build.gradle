@@ -42,4 +42,7 @@ dependencies {
 
     // Number Picker
     implementation 'com.shawnlin:number-picker:2.4.8'
+
+    // Circular progress bar
+    implementation 'com.mikhaellopez:circularprogressbar:3.0.2'
 }
