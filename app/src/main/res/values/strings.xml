@@ -28,7 +28,7 @@
     <string name="add_workout_image">Add Workout Image</string>
     <string name="edit_workout_image">Edit Workout Image</string>
     <string name="upload_image">Upload Image</string>
-    <string name="search_gif">Search GIF (Giphy)</string>
+    <string name="search_gif">Search GIF</string>
     <string name="remove_current_image">Remove Current Image</string>
 
     <!-- Open Source Licenses -->

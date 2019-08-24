@@ -6,6 +6,7 @@
     android:transitionName="viewWorkout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:fitsSystemWindows="false"
     tools:context=".activities.WorkoutDetailActivity"
     tools:ignore="MergeRootFrame">
@@ -23,7 +24,7 @@
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#363640"
+            android:background="@color/colorPrimary"
             android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
@@ -31,7 +32,6 @@
 
             <ImageView
                 android:id="@+id/workout_image_detail"
-                android:src="@drawable/placeholder_image2"
                 android:scaleType="fitXY"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
