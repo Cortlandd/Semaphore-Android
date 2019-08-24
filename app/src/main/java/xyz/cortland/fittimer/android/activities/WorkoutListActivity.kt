@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.app.ActivityOptionsCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list.*
@@ -315,20 +316,20 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     // TODO: Need to do better
     fun showPlayButtons() {
         for (i in 0 until item_list.childCount) {
-            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
-            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_stop_button)
-            playButton.visibility = View.VISIBLE
-            stopButton.visibility = View.VISIBLE
+            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button)
+            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_stop_button)
+            playButton.show()
+            stopButton.show()
             workoutAdapter?.notifyItemChanged(i)
         }
     }
 
     fun hidePlayButtons() {
         for (i in 0 until item_list.childCount) {
-            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_play_button)
-            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<Button>(R.id.single_stop_button)
-            playButton.visibility = View.GONE
-            stopButton.visibility = View.GONE
+            val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button)
+            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_stop_button)
+            playButton.hide()
+            stopButton.hide()
         }
     }
 

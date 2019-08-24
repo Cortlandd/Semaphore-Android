@@ -14,6 +14,7 @@ import android.widget.*
 import androidx.core.app.ActivityOptionsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
@@ -75,11 +76,11 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
         seconds = seconds?.times(1000)
 
         if (workout.isDefaultState!!) {
-            holder.stopButton.visibility = View.VISIBLE
-            holder.playButton.visibility = View.VISIBLE
+            holder.stopButton.show()
+            holder.playButton.show()
             holder.workoutControls.visibility = View.GONE
-            holder.resumeButton.visibility = View.GONE
-            holder.pauseButton.visibility = View.VISIBLE
+            holder.resumeButton.hide()
+            holder.pauseButton.show()
             holder.workoutImage.visibility = View.VISIBLE
             holder.itemView.isEnabled = true
 
@@ -109,7 +110,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                 textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
             }
 
-            holder.stopButton.visibility = View.VISIBLE
+            holder.stopButton.show()
             holder.workoutControls.visibility = View.VISIBLE
 
             if (!parentActivity!!.playingAll) {
@@ -162,14 +163,14 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
                 ).show()
             } else {
                 it.visibility = View.GONE
-                holder.resumeButton.visibility = View.VISIBLE
+                holder.resumeButton.show()
                 workout.countDownTimer!!.pause()
             }
         }
 
         holder.resumeButton.setOnClickListener {
             it.visibility = View.GONE
-            holder.pauseButton.visibility = View.VISIBLE
+            holder.pauseButton.show()
             workout.countDownTimer!!.resume()
         }
 
@@ -199,8 +200,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             }
 
             mHolder.workoutControls.visibility = View.VISIBLE
-            mHolder.stopButton.visibility = View.GONE
-            mHolder.playButton.visibility = View.GONE
+            mHolder.stopButton.hide()
+            mHolder.playButton.hide()
 
             mHolder.workoutProgressBar.max = seconds!! / 1000
 
@@ -241,10 +242,10 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var secondsView: TextView = view.seconds
         var workoutView: TextView = view.workout
-        var playButton: Button = view.single_play_button
-        var stopButton: Button = view.single_stop_button
-        var pauseButton: Button = view.single_pause_button
-        var resumeButton: Button = view.single_resume_button
+        var playButton: FloatingActionButton = view.single_play_button
+        var stopButton: FloatingActionButton = view.single_stop_button
+        var pauseButton: FloatingActionButton = view.single_pause_button
+        var resumeButton: FloatingActionButton = view.single_resume_button
         var workoutImage: ImageView = view.workout_image
         var workoutControls: LinearLayout = view.workout_controls
         var workoutProgressBar: ProgressBar = view.workout_progress_bar
