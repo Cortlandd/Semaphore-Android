@@ -187,6 +187,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
         val workout = mWorkouts[position]
 
+        FitTimer.applicationContext().mGlobalPreferences?.setCurrentPlayingAllWorkoutPosition(position)
+
         var seconds = workout.seconds
         seconds = seconds?.times(1000)
 
@@ -210,16 +212,21 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
                 override fun onTick(millisUntilFinished: Long) {
                     mHolder.secondsView.text = "${millisUntilFinished / 1000}"
+                    FitTimer.applicationContext().mGlobalPreferences?.setCurrentPlayingAllRemainingTime("${millisUntilFinished / 1000}")
                     mHolder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                 }
 
                 override fun onFinish() {
                     if (position == mWorkouts.size - 1) {
                         parentActivity!!.stopPlayingAll()
+                        FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_REMAINING!!)
+                        FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_POSITION!!)
                         notifyDataSetChanged()
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
                         mHolder.secondsView.text = "0"
+                        FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_REMAINING!!)
+                        FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_POSITION!!)
                         //mHolder.workoutProgressBar.progress = 0
                         semaphore.release()
                     }

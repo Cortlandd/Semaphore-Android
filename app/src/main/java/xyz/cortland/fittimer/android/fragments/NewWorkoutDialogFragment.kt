@@ -363,14 +363,30 @@ class NewWorkoutDialogFragment: DialogFragment() {
                         // Preferences to indicate image removed
                         mGlobalPreferences!!.setCurrentImageRemoved(true)
                     } else {
-                        val gif = File(gifImageLocation)
-                        if (gif.exists()) {
-                            gif.delete()
-                            Glide.with(this.activity!!).clear(workoutImage!!)
+
+                        if (gifImageLocation != null) {
+
+                            val gif = File(gifImageLocation)
+                            if (gif.exists()) {
+                                gif.delete()
+                                Glide.with(this.activity!!).clear(workoutImage!!)
+                            }
+
+                            workoutImage?.visibility = View.GONE
+                            workoutImagePlaceholder?.visibility = View.VISIBLE
                         }
 
-                        workoutImage?.visibility = View.GONE
-                        workoutImagePlaceholder?.visibility = View.VISIBLE
+                        if (imagePath != null) {
+                            val img = File(imagePath)
+                            if (img.exists()) {
+                                img.delete()
+                                Glide.with(this.activity!!).clear(workoutImage!!)
+                            }
+
+                            workoutImage?.visibility = View.GONE
+                            workoutImagePlaceholder?.visibility = View.VISIBLE
+                        }
+
                     }
 
                 }
