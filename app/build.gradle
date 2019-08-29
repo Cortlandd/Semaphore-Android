@@ -40,6 +40,9 @@ dependencies {
     implementation 'com.klinkerapps:giphy:2.1.4'
     // Note: Using glide library because giphy already uses it
 
+    // Support library In-App Notifications
+    implementation 'com.android.support:support-compat:28.0.0'
+
     // Number Picker
     implementation 'com.shawnlin:number-picker:2.4.8'
 

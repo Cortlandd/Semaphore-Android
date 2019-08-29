@@ -1,17 +1,21 @@
 package xyz.cortland.fittimer.android.adapter
 
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
-import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -24,12 +28,13 @@ import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.utils.WORKOUT_FINISHED_ID
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
 
 
-class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : RecyclerView.Adapter<WorkoutRecyclerViewAdapter.ViewHolder>() {
+class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<WorkoutModel>) : RecyclerView.Adapter<WorkoutAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
     var textToSpeech: TextToSpeech? = null
@@ -98,6 +103,7 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             holder.workoutProgressBar.progress = (seconds / 1000).toFloat()
 
             workout.countDownTimer?.cancel()
+            workout.isPlayingAll = false
 
         } else {
             return
@@ -189,6 +195,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
         FitTimer.applicationContext().mGlobalPreferences?.setCurrentPlayingAllWorkoutPosition(position)
 
+        workout.isPlayingAll = true
+
         var seconds = workout.seconds
         seconds = seconds?.times(1000)
 
@@ -203,8 +211,8 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
             }
 
             mHolder.workoutControls.visibility = View.VISIBLE
-            mHolder.stopButton.hide()
-            mHolder.playButton.hide()
+            //mHolder.stopButton.hide()
+            //mHolder.playButton.hide()
 
             mHolder.workoutProgressBar.progressMax = (seconds!! / 1000).toFloat()
 
@@ -212,28 +220,40 @@ class WorkoutRecyclerViewAdapter(var parentActivity: WorkoutListActivity?, var m
 
                 override fun onTick(millisUntilFinished: Long) {
                     mHolder.secondsView.text = "${millisUntilFinished / 1000}"
-                    FitTimer.applicationContext().mGlobalPreferences?.setCurrentPlayingAllRemainingTime("${millisUntilFinished / 1000}")
+                    workout.remainingSeconds = (millisUntilFinished / 1000).toInt()
+                    FitTimer.applicationContext().mGlobalPreferences?.setCurrentPlayingAllRemainingTime(workout.remainingSeconds!!)
+                    if (parentActivity!!.isPaused!!) {
+                        //updateNotification(workout,"${millisUntilFinished / 1000} seconds remaining.")
+                        parentActivity!!.updateNotification("${millisUntilFinished / 1000} seconds remaining.", workoutName = workout.workoutName!!)
+                    }
                     mHolder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                 }
 
                 override fun onFinish() {
                     if (position == mWorkouts.size - 1) {
+                        if (parentActivity!!.isPaused!!) {
+                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                        }
                         parentActivity!!.stopPlayingAll()
+                        workout.remainingSeconds = 0
                         FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_REMAINING!!)
                         FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_POSITION!!)
                         notifyDataSetChanged()
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
+                        if (parentActivity!!.isPaused!!) {
+                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                        }
+                        workout.isPlayingAll = false
                         mHolder.secondsView.text = "0"
+                        workout.remainingSeconds = 0
                         FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_REMAINING!!)
                         FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_POSITION!!)
                         //mHolder.workoutProgressBar.progress = 0
                         semaphore.release()
                     }
                 }
-
-            }
-            workout.countDownTimer!!.start()
+            }.start()
         }
     }
 

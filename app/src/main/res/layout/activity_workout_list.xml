@@ -55,6 +55,36 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/no_workouts_message"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="@string/tap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_placeholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="@dimen/fab_margin"
+            app:backgroundTint="@color/colorAccent"
+            android:src="@drawable/ic_add_black_24dp"
+            app:borderWidth="0dp" />
+
+        <TextView
+            android:text="@string/no_workouts_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/frameLayout"
         android:transitionName="viewWorkout"
@@ -62,36 +92,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
-            android:id="@+id/no_workouts_message"
-            android:visibility="gone"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_gravity="center_horizontal|center_vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:text="@string/tap"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_placeholder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/fab_margin"
-                app:backgroundTint="@color/colorAccent"
-                android:src="@drawable/ic_add_black_24dp"
-                app:borderWidth="0dp" />
-
-            <TextView
-                android:text="@string/no_workouts_message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
 
         <include layout="@layout/workout_list" />
 

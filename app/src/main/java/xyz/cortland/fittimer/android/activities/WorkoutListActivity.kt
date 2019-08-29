@@ -1,7 +1,14 @@
 package xyz.cortland.fittimer.android.activities
 
 import android.animation.LayoutTransition
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -12,24 +19,23 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ItemTouchHelper
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
-import androidx.core.app.ActivityOptionsCompat
+import androidx.core.app.NotificationCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list.*
-import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
-import xyz.cortland.fittimer.android.adapter.WorkoutRecyclerViewAdapter
-import xyz.cortland.fittimer.android.custom.CountDownTimer
+import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 
 import xyz.cortland.fittimer.android.model.WorkoutModel
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
+import xyz.cortland.fittimer.android.utils.WORKOUT_CHANNEL
+import xyz.cortland.fittimer.android.utils.WORKOUT_FINISHED_ID
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -53,7 +59,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
      */
     //private var twoPane: Boolean = false
 
-    var workoutAdapter: WorkoutRecyclerViewAdapter? = null
+    var workoutAdapter: WorkoutAdapter? = null
 
     var dbHandler: WorkoutDatabase? = null
 
@@ -62,6 +68,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     var playingAll: Boolean by Delegates.observable(false) { _, _, _ ->
         validatePlayAll()
     }
+
+    var isPaused: Boolean? = false
 
     var playAllButton: Button? = null
 
@@ -75,6 +83,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var textToSpeech: TextToSpeech? = null
 
+    var notificationManager: NotificationManager? = null
+    var notificationBuilder: NotificationCompat.Builder? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_list)
@@ -84,10 +95,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         dbHandler = WorkoutDatabase(this, null)
 
-        mGlobalPreferences = GlobalPreferences(this)
+        mGlobalPreferences = FitTimer.applicationContext().mGlobalPreferences
 
         mWorkouts.addAll(dbHandler!!.allWorkoutsList())
-        workoutAdapter = WorkoutRecyclerViewAdapter(this, mWorkouts)
+        workoutAdapter = WorkoutAdapter(this, mWorkouts)
         item_list.adapter = workoutAdapter
 
         val itemTouchCallback = object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
@@ -131,6 +142,12 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     override fun onResume() {
         super.onResume()
 
+        isPaused = false
+
+        if (playingAll) {
+            notificationManager?.cancel(WORKOUT_FINISHED_ID)
+        }
+
         // Used for Editing Workouts
         if (mGlobalPreferences!!.isWorkoutModified()) {
             mWorkouts.clear()
@@ -154,6 +171,38 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
                 }
             }
         })
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        isPaused = true
+
+        if (playingAll) {
+            val currentWorkout = mGlobalPreferences?.getCurrentPlayingAllWorkoutPosition()
+            createNotification(currentWorkout!!)
+
+//            Notify
+//                .with(this)
+//                .content {
+//                    title = mWorkouts.get(currentPlaying!!).workoutName
+//                    text = "${mGlobalPreferences?.getCurrentPlayingAllRemainingTime()} seconds remaining."
+//                }
+//                .meta {
+//                    this.timeout = mGlobalPreferences?.getCurrentPlayingAllRemainingTime()!!.toLong()
+//                    clickIntent = PendingIntent.getActivity(
+//                        this@WorkoutListActivity,
+//                        PendingIntent.FLAG_CANCEL_CURRENT,
+//                        intent,
+//                        0
+//                    )
+//                }
+//                .alerting("low_priority") {
+//                    this.sound = Uri.EMPTY
+//                    this.channelImportance = Notify.IMPORTANCE_NORMAL
+//                }
+//                .show(WORKOUT_FINISHED_ID)
+        }
     }
 
     /**
@@ -187,7 +236,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             semaphore = Semaphore(1)
 
             for (i in mWorkouts.indices) {
-                val holder = item_list.getChildViewHolder(item_list.getChildAt(i)) as WorkoutRecyclerViewAdapter.ViewHolder?
+                val holder = item_list.getChildViewHolder(item_list.getChildAt(i)) as WorkoutAdapter.ViewHolder?
                 holder!!.itemView.isEnabled = false
                 thread {
                     semaphore!!.acquire(1)
@@ -317,6 +366,48 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         } else {
             playAllButton!!.visibility = View.VISIBLE
         }
+    }
+
+    fun createNotification(currentWorkout: Int) {
+
+        val workout = mWorkouts.get(currentWorkout)
+        val intent = Intent(applicationContext, this::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+        notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel(WORKOUT_CHANNEL, "workout_channel", NotificationManager.IMPORTANCE_LOW).apply {
+                setSound(null, null)
+                notificationManager!!.createNotificationChannel(this)
+            }
+        }
+
+        var numMessages = 0
+
+        // TODO: Why do I need a Channel
+        notificationBuilder = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(workout.workoutName)
+            .setContentText("${mGlobalPreferences?.getCurrentPlayingAllRemainingTime()} seconds remaining.")
+            .setNumber(++numMessages)
+            .setSound(null)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setShowWhen(false)
+            .setContentIntent(PendingIntent.getActivity(this, PendingIntent.FLAG_CANCEL_CURRENT, intent, 0))
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+
+        notificationManager!!.notify(WORKOUT_FINISHED_ID, notificationBuilder!!.build())
+
+    }
+
+    fun updateNotification(text: String, workoutName: String) {
+        notificationBuilder!!
+            .setContentTitle(workoutName)
+            .setContentText(text)
+            .setSound(null)
+        notificationManager!!.notify(WORKOUT_FINISHED_ID, notificationBuilder!!.build())
     }
 
     // TODO: Need to do better
