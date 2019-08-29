@@ -58,6 +58,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var workoutSpeech: SwitchCompat? = null
     var searchGiphyLayout: LinearLayout? = null
     var giphyView: GiphyView? = null
+    var workoutText: EditText? = null
 
     var workoutValue: String? = ""
     var secondsValue: Int? = null
@@ -94,7 +95,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
         val d: AlertDialog = dialog as AlertDialog
         if (d != null) {
             positiveButton = d.getButton(Dialog.BUTTON_POSITIVE)
-            positiveButton?.isEnabled = false
+            if (workoutText!!.text.toString().length >= 2) {
+                positiveButton?.isEnabled = true
+            } else {
+                positiveButton?.isEnabled = false
+            }
         }
     }
 
@@ -104,7 +109,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         mGlobalPreferences = GlobalPreferences(this.activity!!)
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
-        val workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
+        workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
         giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
         searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
@@ -140,7 +145,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             giphyView?.invalidate()
         }
 
-        workoutText.addTextChangedListener(object: TextWatcher {
+        workoutText!!.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 workoutValue = s.toString()
                 positiveButton?.isEnabled = s.toString().length >= 2
@@ -162,7 +167,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         } else {
             builder.setTitle(R.string.edit_workout)
             numberPicker?.value = workout?.seconds!!
-            workoutText.setText(workout?.workoutName)
+            workoutText?.setText(workout?.workoutName)
             if (workout!!.workoutSpeech == 1) {
                 workoutSpeechValue = 1
                 workoutSpeech!!.isChecked = true
@@ -185,8 +190,8 @@ class NewWorkoutDialogFragment: DialogFragment() {
         workoutSpeech!!.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 workoutSpeechValue = 1
-                if (workoutText.text.toString() != "") {
-                    textToSpeech!!.speak(workoutText.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
+                if (workoutText?.text.toString() != "") {
+                    textToSpeech!!.speak(workoutText?.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             } else {
                 workoutSpeechValue = 0

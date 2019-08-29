@@ -181,27 +181,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         if (playingAll) {
             val currentWorkout = mGlobalPreferences?.getCurrentPlayingAllWorkoutPosition()
             createNotification(currentWorkout!!)
-
-//            Notify
-//                .with(this)
-//                .content {
-//                    title = mWorkouts.get(currentPlaying!!).workoutName
-//                    text = "${mGlobalPreferences?.getCurrentPlayingAllRemainingTime()} seconds remaining."
-//                }
-//                .meta {
-//                    this.timeout = mGlobalPreferences?.getCurrentPlayingAllRemainingTime()!!.toLong()
-//                    clickIntent = PendingIntent.getActivity(
-//                        this@WorkoutListActivity,
-//                        PendingIntent.FLAG_CANCEL_CURRENT,
-//                        intent,
-//                        0
-//                    )
-//                }
-//                .alerting("low_priority") {
-//                    this.sound = Uri.EMPTY
-//                    this.channelImportance = Notify.IMPORTANCE_NORMAL
-//                }
-//                .show(WORKOUT_FINISHED_ID)
         }
     }
 
@@ -394,7 +373,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             .setSound(null)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setShowWhen(false)
-            .setContentIntent(PendingIntent.getActivity(this, PendingIntent.FLAG_CANCEL_CURRENT, intent, 0))
+            .setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 

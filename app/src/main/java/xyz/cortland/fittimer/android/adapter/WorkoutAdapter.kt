@@ -28,6 +28,7 @@ import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.receivers.WorkoutFinishedReceiver
 import xyz.cortland.fittimer.android.utils.WORKOUT_FINISHED_ID
 import java.io.File
 import java.util.*
@@ -239,6 +240,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                         FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_REMAINING!!)
                         FitTimer.applicationContext().mGlobalPreferences?.removePreferences(FitTimer.applicationContext().mGlobalPreferences?.CURRENT_PLAYING_ALL_WORKOUT_POSITION!!)
                         notifyDataSetChanged()
+                        finishedWorkout()
+
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
                         if (parentActivity!!.isPaused!!) {
@@ -262,6 +265,12 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             it.countDownTimer?.cancel()
         }
         notifyDataSetChanged()
+    }
+
+    fun finishedWorkout() {
+        val intent = Intent(parentActivity!!, WorkoutFinishedReceiver::class.java)
+        intent.action = "playingall.workout.finished"
+        parentActivity!!.sendBroadcast(intent)
     }
 
     override fun getItemCount() = mWorkouts.size

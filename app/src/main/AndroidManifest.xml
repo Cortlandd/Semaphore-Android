@@ -27,8 +27,8 @@
         <activity
             android:name=".activities.WorkoutDetailActivity"
             android:label="@string/title_item_detail"
-            android:screenOrientation="portrait"
             android:parentActivityName=".activities.WorkoutListActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -37,10 +37,18 @@
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_settings"
-            android:screenOrientation="portrait"
             android:parentActivityName=".activities.WorkoutListActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <receiver
+            android:name=".receivers.WorkoutFinishedReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="playingall.workout.finished" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
