@@ -381,7 +381,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     }
 
-    fun updateNotification(text: String, workoutName: String) {
+    fun updateNotification(text: String, workoutName: String?) {
         notificationBuilder!!
             .setContentTitle(workoutName)
             .setContentText(text)

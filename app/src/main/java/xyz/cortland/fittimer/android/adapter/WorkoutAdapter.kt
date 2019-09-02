@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
+import io.karn.notify.Notify
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
@@ -135,6 +136,9 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     }
 
                     override fun onFinish() {
+                        if (parentActivity!!.isPaused!! == true) {
+                            finishedWorkoutNotification(workout)
+                        }
                         it.visibility = View.VISIBLE
                         holder.secondsView.text = workout.seconds.toString()
                         holder.workoutControls.visibility = View.GONE
@@ -258,6 +262,26 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                 }
             }.start()
         }
+    }
+
+    fun finishedWorkoutNotification(workout: WorkoutModel) {
+
+        val resultIntent = Intent(parentActivity!!.applicationContext, parentActivity!!::class.java)
+        resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+        Notify
+            .with(parentActivity!!)
+            .content {
+                title = "Finished"
+                text = "${workout.workoutName}\nfor ${workout.seconds.toString()} seconds."
+            }
+            .meta {
+                clickIntent = PendingIntent.getActivity(parentActivity!!.applicationContext, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            }
+            .header {
+                color = 0x706DF8 // Set the color of the bell icon
+            }
+            .show()
     }
 
     fun stopAllWorkouts() {
