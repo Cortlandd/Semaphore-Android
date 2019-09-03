@@ -405,9 +405,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     fun showPlayButtons() {
         for (i in 0 until item_list.childCount) {
             val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button)
-            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_stop_button)
             playButton.show()
-            stopButton.show()
             workoutAdapter?.notifyItemChanged(i)
         }
     }
@@ -415,9 +413,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     fun hidePlayButtons() {
         for (i in 0 until item_list.childCount) {
             val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button)
-            val stopButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_stop_button)
             playButton.hide()
-            stopButton.hide()
         }
     }
 

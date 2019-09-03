@@ -15,7 +15,9 @@ import androidx.core.app.ActivityOptionsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
+import com.tapadoo.alerter.Alerter
 import io.karn.notify.Notify
 import kotlinx.android.synthetic.main.workout_list_content.view.*
 import xyz.cortland.fittimer.android.FitTimer
@@ -169,13 +171,54 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             }
         }
 
+        // TODO: Implement full logic for Stop button on Playing All
         holder.stopButton.setOnClickListener {
+            when {
+                parentActivity!!.playingAll && position != mWorkouts.size - 1 -> {
+                    // Necessary because countdowntimer is weird and stops doing shit at 1
+                    if (parentActivity!!.isPaused!!) {
+                        parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                    }
+                    workout.isPlayingAll = false
+                    holder.secondsView.text = "0"
+                    workout.remainingSeconds = 0
+                    FitTimer.applicationContext().preferences?.removePreferences(
+                        CURRENT_PLAYING_ALL_WORKOUT_REMAINING
+                    )
+                    FitTimer.applicationContext().preferences?.removePreferences(
+                        CURRENT_PLAYING_ALL_WORKOUT_REMAINING
+                    )
+                    //mHolder.workoutProgressBar.progress = 0
+                    parentActivity!!.semaphore!!.release()
+                }
+                parentActivity!!.playingAll && position == mWorkouts.size - 1 -> {
+                    parentActivity!!.stopPlayingAll()
+                    workout.remainingSeconds = 0
+                    FitTimer.applicationContext().preferences?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                    FitTimer.applicationContext().preferences?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                    parentActivity!!.semaphore!!.drainPermits()
+                    notifyDataSetChanged()
+                    if (parentActivity!!.isPaused!!) {
+                        parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                        finishedWorkout()
+                    } else {
+                        Alerter.create(parentActivity)
+                            .setTitle("Workout Complete!")
+                            .setDuration(1000)
+                            .enableSwipeToDismiss()
+                            .enableVibration(true)
+                            .setBackgroundColorRes(R.color.colorAccent)
+                            .show()
+                    }
+                }
+                else -> {
+                    workout.countDownTimer!!.cancel()
 
-            workout.countDownTimer!!.cancel()
+                    workout.isDefaultState = true
 
-            workout.isDefaultState = true
-
-            notifyItemChanged(position)
+                    notifyItemChanged(position)
+                }
+            }
         }
 
         holder.pauseButton.setOnClickListener {
@@ -260,8 +303,20 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                         FitTimer.applicationContext().preferences?.removePreferences(
                             CURRENT_PLAYING_ALL_WORKOUT_REMAINING
                         )
+                        semaphore.drainPermits()
                         notifyDataSetChanged()
-                        finishedWorkout()
+                        if (parentActivity!!.isPaused!!) {
+                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                            finishedWorkout()
+                        } else {
+                            Alerter.create(parentActivity)
+                                .setTitle("Workout Complete!")
+                                .setDuration(1000)
+                                .setBackgroundColorRes(R.color.colorAccent)
+                                .enableSwipeToDismiss()
+                                .enableVibration(true)
+                                .show()
+                        }
 
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
