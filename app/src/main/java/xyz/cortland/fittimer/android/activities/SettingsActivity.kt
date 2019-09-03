@@ -7,9 +7,7 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.Menu
 import android.view.MenuItem
-import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -45,7 +43,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         // TODO: Fix leaking connection
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale(FitTimer.applicationContext().mGlobalPreferences!!.getSpeechLanguage())
+                textToSpeech?.language = Locale(FitTimer.applicationContext().preferences!!.speechLanguage)
             }
         })
 
@@ -61,7 +59,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
     // Do again what was initially done on Create
     fun setSpeechTitle() {
 
-        locale = Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage())
+        locale = Locale(FitTimer.applicationContext().preferences?.speechLanguage)
 
         val menu = settings_navigation.menu
 
@@ -149,7 +147,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 builder.setView(dialogView)
                 builder.setPositiveButton(R.string.save) { dialog, which ->
                     if (selectedLanguage != null) {
-                        FitTimer.applicationContext().mGlobalPreferences!!.setSpeechLanguage(selectedLanguage!!)
+                        FitTimer.applicationContext().preferences!!.speechLanguage = selectedLanguage!!
                         language = selectedLanguage
                     } else {
                         dialog.dismiss()

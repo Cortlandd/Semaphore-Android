@@ -5,7 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.model.Workout
 
 class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?): SQLiteOpenHelper(context, DATABASE_NAME, factory, DATABASE_VERSION) {
 
@@ -35,7 +35,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         onCreate(db)
     }
 
-    fun addWorkout(workoutModel: WorkoutModel) {
+    fun addWorkout(workoutModel: Workout) {
         val values = ContentValues()
         values.put(COLUMN_SECONDS, workoutModel.seconds)
         values.put(COLUMN_WORKOUT, workoutModel.workoutName)
@@ -64,10 +64,10 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         db.close()
     }
 
-    fun getWorkoutById(id: Int): WorkoutModel {
+    fun getWorkoutById(id: Int): Workout {
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT FROM $TABLE_NAME WHERE $COLUMN_ID='$id'", null)
-        val workout = WorkoutModel()
+        val workout = Workout()
         if (cursor.moveToFirst()) {
             do {
                 workout.id = cursor.getInt(cursor.getColumnIndex(COLUMN_ID))
@@ -84,8 +84,8 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
         return workout
     }
 
-    fun allWorkoutsList(): List<WorkoutModel> {
-        val workouts: ArrayList<WorkoutModel> = ArrayList()
+    fun allWorkoutsList(): List<Workout> {
+        val workouts: ArrayList<Workout> = ArrayList()
         val selectQuery = "SELECT * FROM $TABLE_NAME"
         val db = this.writableDatabase
         val cursor = db.rawQuery(selectQuery, null)
@@ -96,7 +96,7 @@ class WorkoutDatabase(context: Context, factory: SQLiteDatabase.CursorFactory?):
                 val workoutName = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUT))
                 val workoutImage = cursor.getString(cursor.getColumnIndex(COLUMN_WORKOUTIMAGE))
                 val workoutSpeech = cursor.getInt(cursor.getColumnIndex(COLUMN_WORKOUTSPEECH))
-                val workout: WorkoutModel = WorkoutModel(seconds = seconds, workoutName = workoutName, workoutImage = workoutImage, workoutSpeech = workoutSpeech)
+                val workout: Workout = Workout(seconds = seconds, workoutName = workoutName, workoutImage = workoutImage, workoutSpeech = workoutSpeech)
                 workouts.add(workout)
             } while (cursor.moveToNext())
         }

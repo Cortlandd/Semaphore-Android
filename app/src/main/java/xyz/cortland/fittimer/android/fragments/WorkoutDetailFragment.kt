@@ -13,7 +13,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
-import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.model.Workout
 import java.io.File
 
 /**
@@ -27,7 +27,7 @@ class WorkoutDetailFragment : Fragment() {
     /**
      * The Workout Content this fragment is presenting.
      */
-    private var item: WorkoutModel? = null
+    private var item: Workout? = null
     private var workoutId: Int? = null
     var secondsView: TextView? = null
 

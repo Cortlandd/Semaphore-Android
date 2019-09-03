@@ -1,7 +1,6 @@
 package xyz.cortland.fittimer.android
 
 import android.app.Application
-import android.speech.tts.TextToSpeech
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import java.util.*
 
@@ -9,7 +8,7 @@ class FitTimer: Application() {
 
     // TODO: Potentially implement a shared AlertDialog.
 
-    var mGlobalPreferences: GlobalPreferences? = null
+    var preferences: GlobalPreferences? = null
     var availableLanguages = emptyArray<Locale>()
 
     init {
@@ -27,7 +26,7 @@ class FitTimer: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        mGlobalPreferences = GlobalPreferences(this)
+        preferences = GlobalPreferences(this)
 
         availableLanguages = Locale.getAvailableLocales()
 

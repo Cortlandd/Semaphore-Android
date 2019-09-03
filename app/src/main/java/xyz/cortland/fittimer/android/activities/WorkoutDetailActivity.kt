@@ -16,7 +16,7 @@ import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
-import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 
 /**
@@ -27,7 +27,7 @@ import xyz.cortland.fittimer.android.utils.GlobalPreferences
  */
 class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWorkoutDialogListener {
 
-    var workout: WorkoutModel? = null
+    var workout: Workout? = null
     var workoutId: Int? = null
 
     var fragment: WorkoutDetailFragment? = null
@@ -83,7 +83,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         }
     }
 
-    override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
+    override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
         updateWorkoutItem(workoutId!!, workout)
         dialog.dismiss()
         supportFinishAfterTransition()
@@ -95,15 +95,15 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
      * @param id: The id of the book
      * @param workout: The workout to be updated
      */
-    private fun updateWorkoutItem(id: Int, workout: WorkoutModel) {
+    private fun updateWorkoutItem(id: Int, workout: Workout) {
         val dbHelper = WorkoutDatabase(this, null)
         val db = dbHelper.writableDatabase
         val values = ContentValues()
         values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
-        if (mGlobalPreferences!!.isCurrentImageRemoved()) {
+        if (mGlobalPreferences!!.currentImageRemoved) {
             values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
-            mGlobalPreferences!!.setCurrentImageRemoved(false)
+            mGlobalPreferences!!.currentImageRemoved = false
         } else {
             values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
         }

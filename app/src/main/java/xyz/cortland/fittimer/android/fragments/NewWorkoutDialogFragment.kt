@@ -14,7 +14,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import xyz.cortland.fittimer.android.R
-import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.model.Workout
 import xyz.klinker.giphy.GiphyView
 import java.lang.ClassCastException
 import androidx.core.app.ActivityCompat
@@ -66,20 +66,20 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var workoutSpeechValue: Int? = 1
     var textToSpeech: TextToSpeech? = null
 
-    var workout: WorkoutModel? = null
+    var workout: Workout? = null
     var workoutId: Int? = null
 
     var positiveButton: Button? = null
 
     interface NewWorkoutDialogListener {
-        fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel)
+        fun onSaveClick(dialog: DialogFragment, workout: Workout)
         fun onCancelClick(dialog: DialogFragment)
     }
 
     var newWorkoutDialogListener: NewWorkoutDialogListener? = null
 
     companion object {
-        fun newInstance(workout: WorkoutModel, id: Int): NewWorkoutDialogFragment {
+        fun newInstance(workout: Workout, id: Int): NewWorkoutDialogFragment {
             val newWorkoutDialogFragment = NewWorkoutDialogFragment()
             val args = Bundle()
             args.putParcelable("arg_workout", workout)
@@ -121,7 +121,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         // TODO: Implement shared textToSpeech with observer
         textToSpeech = TextToSpeech(this.activity!!, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale(mGlobalPreferences?.getSpeechLanguage())
+                textToSpeech?.language = Locale(mGlobalPreferences?.speechLanguage)
             }
         })
 
@@ -213,9 +213,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
         builder.setView(dialogView)
             .setPositiveButton(R.string.save) { dialog, id ->
-                mGlobalPreferences!!.setWorkoutModified(true)
+                mGlobalPreferences!!.workoutModified = true
                 validateImagePath()
-                newWorkoutDialogListener?.onSaveClick(this, WorkoutModel(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
+                newWorkoutDialogListener?.onSaveClick(this, Workout(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
             }
             .setNegativeButton(R.string.close) { dialog, id ->
                 newWorkoutDialogListener?.onCancelClick(this)
@@ -366,7 +366,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
                         workoutImagePlaceholder!!.visibility = View.VISIBLE
                         workoutImage!!.visibility = View.GONE
                         // Preferences to indicate image removed
-                        mGlobalPreferences!!.setCurrentImageRemoved(true)
+                        mGlobalPreferences!!.currentImageRemoved = true
                     } else {
 
                         if (gifImageLocation != null) {

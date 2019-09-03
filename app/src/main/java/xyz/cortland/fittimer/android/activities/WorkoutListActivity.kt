@@ -1,14 +1,11 @@
 package xyz.cortland.fittimer.android.activities
 
 import android.animation.LayoutTransition
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -32,10 +29,10 @@ import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 
-import xyz.cortland.fittimer.android.model.WorkoutModel
+import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
-import xyz.cortland.fittimer.android.utils.WORKOUT_CHANNEL
-import xyz.cortland.fittimer.android.utils.WORKOUT_FINISHED_ID
+import xyz.cortland.fittimer.android.helpers.WORKOUT_CHANNEL
+import xyz.cortland.fittimer.android.helpers.WORKOUT_FINISHED_ID
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -63,7 +60,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var dbHandler: WorkoutDatabase? = null
 
-    val mWorkouts: ArrayList<WorkoutModel> = ArrayList<WorkoutModel>()
+    val mWorkouts: ArrayList<Workout> = ArrayList<Workout>()
 
     var playingAll: Boolean by Delegates.observable(false) { _, _, _ ->
         validatePlayAll()
@@ -95,7 +92,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         dbHandler = WorkoutDatabase(this, null)
 
-        mGlobalPreferences = FitTimer.applicationContext().mGlobalPreferences
+        mGlobalPreferences = FitTimer.applicationContext().preferences
 
         mWorkouts.addAll(dbHandler!!.allWorkoutsList())
         workoutAdapter = WorkoutAdapter(this, mWorkouts)
@@ -149,13 +146,13 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
 
         // Used for Editing Workouts
-        if (mGlobalPreferences!!.isWorkoutModified()) {
+        if (mGlobalPreferences!!.workoutModified) {
             mWorkouts.clear()
             item_list.invalidate()
             mWorkouts.addAll(dbHandler!!.allWorkoutsList())
             workoutAdapter!!.notifyDataSetChanged()
             validateWorkoutCount()
-            mGlobalPreferences!!.setWorkoutModified(edited = false)
+            mGlobalPreferences!!.workoutModified = false
         } else {
             return
         }
@@ -163,7 +160,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         // TODO: Implement shared textToSpeech
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage()))
+                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().preferences?.speechLanguage))
                 if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
                     println("Language Not Supported.")
                 } else {
@@ -179,7 +176,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         isPaused = true
 
         if (playingAll) {
-            val currentWorkout = mGlobalPreferences?.getCurrentPlayingAllWorkoutPosition()
+            val currentWorkout = mGlobalPreferences?.currentPlayingAllWorkoutPosition
             createNotification(currentWorkout!!)
         }
     }
@@ -243,7 +240,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().mGlobalPreferences?.getSpeechLanguage()))
+                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().preferences?.speechLanguage))
                 if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
                     println("Language Not Supported.")
                 } else {
@@ -298,7 +295,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         playingAll = false
     }
 
-    override fun onSaveClick(dialog: DialogFragment, workout: WorkoutModel) {
+    override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
         dbHandler!!.addWorkout(workout)
         mWorkouts.clear()
         mWorkouts.addAll(dbHandler!!.allWorkoutsList())
@@ -368,7 +365,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         notificationBuilder = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(workout.workoutName)
-            .setContentText("${mGlobalPreferences?.getCurrentPlayingAllRemainingTime()} seconds remaining.")
+            .setContentText("${mGlobalPreferences?.currentPlayingAllRemainingTime} seconds remaining.")
             .setNumber(++numMessages)
             .setSound(null)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
