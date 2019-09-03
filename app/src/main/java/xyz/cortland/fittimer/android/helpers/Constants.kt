@@ -1,5 +1,7 @@
 package xyz.cortland.fittimer.android.helpers
 
+import xyz.cortland.fittimer.android.FitTimer
+
 const val WORKOUT_FINISHED_ID = 9000
 const val WORKOUT_CHANNEL = "workout_channel_9000"
 const val IMAGE_PICK_CODE = 1000
@@ -12,3 +14,4 @@ const val CURRENT_PLAYING_ALL_WORKOUT_POSITION = "current_playing_all_workout_po
 const val CURRENT_PLAYING_ALL_WORKOUT_REMAINING = "current_playing_all_workout_remaining"
 const val EDITING_WORKOUT = "editing_workout"
 const val LONGPRESS_WORKOUT_ID = "longpress_workout_id"
+val prefs = FitTimer.applicationContext().preferences

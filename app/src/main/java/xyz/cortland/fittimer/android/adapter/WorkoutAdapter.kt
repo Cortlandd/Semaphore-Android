@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.speech.tts.TextToSpeech
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -26,11 +25,13 @@ import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
 import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.extensions.speakText
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.receivers.WorkoutFinishedReceiver
 import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_WORKOUT_REMAINING
 import xyz.cortland.fittimer.android.helpers.WORKOUT_FINISHED_ID
+import xyz.cortland.fittimer.android.helpers.prefs
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -40,8 +41,6 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
     private val onClickListener: View.OnClickListener
     private val onLongClickListener: View.OnLongClickListener
-
-    var textToSpeech: TextToSpeech? = null
 
     var workoutId: Int? = null
 
@@ -68,8 +67,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
         onLongClickListener = View.OnLongClickListener { v ->
             val workout = v.tag as Workout
             workoutId = v.id
-            FitTimer.applicationContext().preferences!!.longPressWorkoutId = v.id
-            FitTimer.applicationContext().preferences!!.editingLongPressWorkout = true
+            prefs!!.longPressWorkoutId = v.id
+            prefs.editingLongPressWorkout = true
             val newWorkoutDialogFragment: NewWorkoutDialogFragment = NewWorkoutDialogFragment.newInstance(workout, workoutId!!)
             newWorkoutDialogFragment.show(parentActivity!!.supportFragmentManager, "ModifyWorkout")
 
@@ -80,8 +79,6 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.workout_list_content, parent, false)
-        // TODO: Implement shared textToSpeech
-        textToSpeech = parentActivity!!.textToSpeech
         return ViewHolder(view)
     }
 
@@ -129,8 +126,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
             if (workout.workoutSpeech == 1) {
                 // TODO: Need shared textToSpeech
-                textToSpeech?.language = Locale(FitTimer.applicationContext().preferences?.speechLanguage)
-                textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
+                parentActivity!!.speakText(workout.workoutName!!)
             }
 
             holder.stopButton.show()
@@ -182,20 +178,16 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     workout.isPlayingAll = false
                     holder.secondsView.text = "0"
                     workout.remainingSeconds = 0
-                    FitTimer.applicationContext().preferences?.removePreferences(
-                        CURRENT_PLAYING_ALL_WORKOUT_REMAINING
-                    )
-                    FitTimer.applicationContext().preferences?.removePreferences(
-                        CURRENT_PLAYING_ALL_WORKOUT_REMAINING
-                    )
+                    prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                    prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                     //mHolder.workoutProgressBar.progress = 0
                     parentActivity!!.semaphore!!.release()
                 }
                 parentActivity!!.playingAll && position == mWorkouts.size - 1 -> {
                     parentActivity!!.stopPlayingAll()
                     workout.remainingSeconds = 0
-                    FitTimer.applicationContext().preferences?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                    FitTimer.applicationContext().preferences?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                    prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                    prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                     parentActivity!!.semaphore!!.drainPermits()
                     notifyDataSetChanged()
                     if (parentActivity!!.isPaused!!) {
@@ -267,7 +259,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
             if (workout.workoutSpeech == 1) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    textToSpeech?.speak(workout.workoutName, TextToSpeech.QUEUE_FLUSH, null, null)
+                    parentActivity!!.speakText(workout.workoutName!!)
                 }
             }
 
@@ -282,7 +274,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                 override fun onTick(millisUntilFinished: Long) {
                     mHolder.secondsView.text = "${millisUntilFinished / 1000}"
                     workout.remainingSeconds = (millisUntilFinished / 1000).toInt()
-                    FitTimer.applicationContext().preferences?.currentPlayingAllRemainingTime = workout.remainingSeconds!!
+                    prefs?.currentPlayingAllRemainingTime = workout.remainingSeconds!!
                     if (parentActivity!!.isPaused!!) {
                         //updateNotification(workout,"${millisUntilFinished / 1000} seconds remaining.")
                         parentActivity!!.updateNotification("${millisUntilFinished / 1000} seconds remaining.", workoutName = workout.workoutName!!)
@@ -297,12 +289,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                         }
                         parentActivity!!.stopPlayingAll()
                         workout.remainingSeconds = 0
-                        FitTimer.applicationContext().preferences?.removePreferences(
-                            CURRENT_PLAYING_ALL_WORKOUT_REMAINING
-                        )
-                        FitTimer.applicationContext().preferences?.removePreferences(
-                            CURRENT_PLAYING_ALL_WORKOUT_REMAINING
-                        )
+                        prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                         semaphore.drainPermits()
                         notifyDataSetChanged()
                         if (parentActivity!!.isPaused!!) {
@@ -326,12 +314,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                         workout.isPlayingAll = false
                         mHolder.secondsView.text = "0"
                         workout.remainingSeconds = 0
-                        FitTimer.applicationContext().preferences?.removePreferences(
-                            CURRENT_PLAYING_ALL_WORKOUT_REMAINING
-                        )
-                        FitTimer.applicationContext().preferences?.removePreferences(
-                            CURRENT_PLAYING_ALL_WORKOUT_REMAINING
-                        )
+                        prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                         //mHolder.workoutProgressBar.progress = 0
                         semaphore.release()
                     }

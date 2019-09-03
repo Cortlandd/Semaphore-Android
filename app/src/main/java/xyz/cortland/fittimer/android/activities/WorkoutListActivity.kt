@@ -9,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.speech.tts.TextToSpeech
 import android.view.Menu
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
@@ -29,13 +28,10 @@ import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
-import xyz.cortland.fittimer.android.helpers.EDITING_WORKOUT
-import xyz.cortland.fittimer.android.helpers.LONGPRESS_WORKOUT_ID
+import xyz.cortland.fittimer.android.helpers.*
 
 import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
-import xyz.cortland.fittimer.android.helpers.WORKOUT_CHANNEL
-import xyz.cortland.fittimer.android.helpers.WORKOUT_FINISHED_ID
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -75,13 +71,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var stopAllButton: Button? = null
 
-    var prefs: GlobalPreferences? = null
-
     var itemTouchHelper: ItemTouchHelper? = null
 
     var semaphore: Semaphore? = null
-
-    var textToSpeech: TextToSpeech? = null
 
     var notificationManager: NotificationManager? = null
     var notificationBuilder: NotificationCompat.Builder? = null
@@ -94,8 +86,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         toolbar.title = title
 
         dbHandler = WorkoutDatabase(this, null)
-
-        prefs = FitTimer.applicationContext().preferences
 
         mWorkouts.addAll(dbHandler!!.allWorkoutsList())
         workoutAdapter = WorkoutAdapter(this, mWorkouts)
@@ -133,10 +123,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         super.onDestroy()
         dbHandler?.close()
         workoutAdapter?.stopAllWorkouts()
-        if (textToSpeech != null) {
-            textToSpeech?.stop()
-            textToSpeech?.shutdown()
-        }
     }
 
     override fun onResume() {
@@ -160,17 +146,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             return
         }
 
-        // TODO: Implement shared textToSpeech
-        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().preferences?.speechLanguage))
-                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    println("Language Not Supported.")
-                } else {
-                    println("Language Supported.")
-                }
-            }
-        })
     }
 
     override fun onPause() {
@@ -240,17 +215,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             val newWorkoutFragment = NewWorkoutDialogFragment()
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
-
-        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                val language = textToSpeech?.setLanguage(Locale(FitTimer.applicationContext().preferences?.speechLanguage))
-                if (language == TextToSpeech.LANG_MISSING_DATA || language == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    println("Language Not Supported.")
-                } else {
-                    println("Language Supported.")
-                }
-            }
-        })
 
         workout_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 

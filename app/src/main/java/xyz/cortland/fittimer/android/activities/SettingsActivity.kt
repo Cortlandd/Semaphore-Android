@@ -19,14 +19,13 @@ import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import xyz.cortland.fittimer.android.helpers.prefs
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.properties.Delegates
 
 
 class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
-    var textToSpeech: TextToSpeech? = null
 
     var locale: Locale? = null
 
@@ -40,13 +39,6 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         setSupportActionBar(settings_toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        // TODO: Fix leaking connection
-        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale(FitTimer.applicationContext().preferences!!.speechLanguage)
-            }
-        })
-
         settings_navigation.setNavigationItemSelectedListener(this)
         // Give nav icons color
         settings_navigation.itemIconTintList = null
@@ -59,7 +51,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
     // Do again what was initially done on Create
     fun setSpeechTitle() {
 
-        locale = Locale(FitTimer.applicationContext().preferences?.speechLanguage)
+        locale = Locale(prefs?.speechLanguage)
 
         val menu = settings_navigation.menu
 
@@ -129,7 +121,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 val listLanguage = ArrayList<String>()
 
                 for (i in FitTimer.applicationContext().availableLanguages) {
-                    if (textToSpeech!!.isLanguageAvailable(i) >= TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+                    if (FitTimer.applicationContext().textToSpeech!!.isLanguageAvailable(i) >= TextToSpeech.LANG_COUNTRY_AVAILABLE) {
                         list.add(i.displayName)
                         listLanguage.add(i.language)
                     }
@@ -147,7 +139,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 builder.setView(dialogView)
                 builder.setPositiveButton(R.string.save) { dialog, which ->
                     if (selectedLanguage != null) {
-                        FitTimer.applicationContext().preferences!!.speechLanguage = selectedLanguage!!
+                        prefs!!.speechLanguage = selectedLanguage!!
                         language = selectedLanguage
                     } else {
                         dialog.dismiss()

@@ -34,6 +34,7 @@ import com.shawnlin.numberpicker.NumberPicker
 import kotlinx.android.synthetic.main.add_workout.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.extensions.speakText
 import xyz.cortland.fittimer.android.helpers.IMAGE_PICK_CODE
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import xyz.cortland.fittimer.android.utils.ImageFilePath
@@ -65,7 +66,6 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var secondsValue: Int? = null
     var workoutImageValue: String? = null
     var workoutSpeechValue: Int? = 1
-    var textToSpeech: TextToSpeech? = null
 
     var workout: Workout? = null
     var workoutId: Int? = null
@@ -148,7 +148,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             if (isChecked) {
                 workoutSpeechValue = 1
                 if (workoutText?.text.toString() != "") {
-                    textToSpeech!!.speak(workoutText?.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
+                    context?.speakText(workoutText?.text.toString())
                 }
             } else {
                 workoutSpeechValue = 0
@@ -204,13 +204,6 @@ class NewWorkoutDialogFragment: DialogFragment() {
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
         workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
 
-        // TODO: Implement shared textToSpeech with observer
-        textToSpeech = TextToSpeech(this.activity!!, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale(mGlobalPreferences?.speechLanguage)
-            }
-        })
-
         // TODO: Get API Key from Giphy
         // TODO: Create separate Alert Dialog for this with a callback
         giphyView?.setSelectedCallback {
@@ -252,7 +245,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             if (isChecked) {
                 workoutSpeechValue = 1
                 if (workoutText?.text.toString() != "") {
-                    textToSpeech!!.speak(workoutText?.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
+                    context?.speakText(workoutText?.text.toString())
                 }
             } else {
                 workoutSpeechValue = 0
@@ -479,10 +472,6 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (textToSpeech != null) {
-            textToSpeech?.stop()
-            textToSpeech?.shutdown()
-        }
     }
 
 
