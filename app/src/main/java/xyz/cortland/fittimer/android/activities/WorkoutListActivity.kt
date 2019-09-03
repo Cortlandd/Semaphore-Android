@@ -4,6 +4,7 @@ import android.animation.LayoutTransition
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -28,6 +29,8 @@ import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
+import xyz.cortland.fittimer.android.helpers.EDITING_WORKOUT
+import xyz.cortland.fittimer.android.helpers.LONGPRESS_WORKOUT_ID
 
 import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
@@ -72,7 +75,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var stopAllButton: Button? = null
 
-    var mGlobalPreferences: GlobalPreferences? = null
+    var prefs: GlobalPreferences? = null
 
     var itemTouchHelper: ItemTouchHelper? = null
 
@@ -92,7 +95,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         dbHandler = WorkoutDatabase(this, null)
 
-        mGlobalPreferences = FitTimer.applicationContext().preferences
+        prefs = FitTimer.applicationContext().preferences
 
         mWorkouts.addAll(dbHandler!!.allWorkoutsList())
         workoutAdapter = WorkoutAdapter(this, mWorkouts)
@@ -146,13 +149,13 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
 
         // Used for Editing Workouts
-        if (mGlobalPreferences!!.workoutModified) {
+        if (prefs!!.workoutModified) {
             mWorkouts.clear()
             item_list.invalidate()
             mWorkouts.addAll(dbHandler!!.allWorkoutsList())
             workoutAdapter!!.notifyDataSetChanged()
             validateWorkoutCount()
-            mGlobalPreferences!!.workoutModified = false
+            prefs!!.workoutModified = false
         } else {
             return
         }
@@ -176,7 +179,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         isPaused = true
 
         if (playingAll) {
-            val currentWorkout = mGlobalPreferences?.currentPlayingAllWorkoutPosition
+            val currentWorkout = prefs?.currentPlayingAllWorkoutPosition
             createNotification(currentWorkout!!)
         }
     }
@@ -296,12 +299,24 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
-        dbHandler!!.addWorkout(workout)
-        mWorkouts.clear()
-        mWorkouts.addAll(dbHandler!!.allWorkoutsList())
-        workoutAdapter?.notifyDataSetChanged()
-        validateWorkoutCount()
-        dialog.dismiss()
+        if (prefs!!.editingLongPressWorkout) {
+            updateWorkoutItem(prefs!!.longPressWorkoutId, workout)
+            FitTimer.applicationContext().preferences!!.removePreferences(EDITING_WORKOUT) // Remove editing workout from preferences
+            FitTimer.applicationContext().preferences!!.removePreferences(LONGPRESS_WORKOUT_ID) // Remove longpressed workout id from preferences
+            // TODO: Shouldn't have to clear all then add again
+            mWorkouts.clear()
+            mWorkouts.addAll(dbHandler!!.allWorkoutsList())
+            workoutAdapter?.notifyDataSetChanged()
+            validateWorkoutCount()
+            dialog.dismiss()
+        } else {
+            dbHandler!!.addWorkout(workout)
+            mWorkouts.clear()
+            mWorkouts.addAll(dbHandler!!.allWorkoutsList())
+            workoutAdapter?.notifyDataSetChanged()
+            validateWorkoutCount()
+            dialog.dismiss()
+        }
     }
 
     override fun onCancelClick(dialog: DialogFragment) {
@@ -365,7 +380,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         notificationBuilder = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(workout.workoutName)
-            .setContentText("${mGlobalPreferences?.currentPlayingAllRemainingTime} seconds remaining.")
+            .setContentText("${prefs?.currentPlayingAllRemainingTime} seconds remaining.")
             .setNumber(++numMessages)
             .setSound(null)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -404,6 +419,29 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             playButton.hide()
             stopButton.hide()
         }
+    }
+
+    /**
+     * Used to remove swiped Workouts
+     *
+     * @param id: The id of the book
+     * @param workout: The workout to be updated
+     */
+    private fun updateWorkoutItem(id: Int, workout: Workout) {
+        val dbHelper = WorkoutDatabase(this, null)
+        val db = dbHelper.writableDatabase
+        val values = ContentValues()
+        values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
+        values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
+        if (prefs!!.currentImageRemoved) {
+            values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
+            prefs!!.currentImageRemoved = false
+        } else {
+            values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
+        }
+        values.put(WorkoutDatabase.COLUMN_WORKOUTSPEECH, workout.workoutSpeech)
+        db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + id, null)
+        db.close()
     }
 
 }

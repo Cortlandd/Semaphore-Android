@@ -1,17 +1,13 @@
 package xyz.cortland.fittimer.android.activities
 
 import android.content.ContentValues
-import android.content.Intent
-import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
-import android.view.View
-import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_workout_detail.*
+import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
@@ -32,14 +28,14 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     var fragment: WorkoutDetailFragment? = null
 
-    var mGlobalPreferences: GlobalPreferences? = null
+    var prefs: GlobalPreferences? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_detail)
         setSupportActionBar(detail_toolbar)
 
-        mGlobalPreferences = GlobalPreferences(this)
+        prefs = FitTimer.applicationContext().preferences
 
         workout = intent.getParcelableExtra("arg_parcel_workout")
         workoutId = intent.getIntExtra("arg_workout_id", 0)
@@ -101,9 +97,9 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         val values = ContentValues()
         values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
-        if (mGlobalPreferences!!.currentImageRemoved) {
+        if (prefs!!.currentImageRemoved) {
             values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
-            mGlobalPreferences!!.currentImageRemoved = false
+            prefs!!.currentImageRemoved = false
         } else {
             values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
         }

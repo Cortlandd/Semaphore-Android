@@ -27,11 +27,14 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SwitchCompat
 import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
+import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.shawnlin.numberpicker.NumberPicker
+import kotlinx.android.synthetic.main.add_workout.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.helpers.IMAGE_PICK_CODE
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import xyz.cortland.fittimer.android.utils.ImageFilePath
 import java.io.File
@@ -43,9 +46,6 @@ import java.util.*
 
 // TODO: (MAYBE) Implemented an EditWorkoutDialogFragment Dialog Class
 class NewWorkoutDialogFragment: DialogFragment() {
-
-    //image pick code
-    private val IMAGE_PICK_CODE = 1000
 
     var gifImageLocation: String? = null
     var galleryImageLocation: String? = null
@@ -59,6 +59,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var searchGiphyLayout: LinearLayout? = null
     var giphyView: GiphyView? = null
     var workoutText: EditText? = null
+    var fullControls: NestedScrollView? = null
 
     var workoutValue: String? = ""
     var secondsValue: Int? = null
@@ -70,6 +71,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var workoutId: Int? = null
 
     var positiveButton: Button? = null
+    var negativeButton: Button? = null
 
     interface NewWorkoutDialogListener {
         fun onSaveClick(dialog: DialogFragment, workout: Workout)
@@ -95,6 +97,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         val d: AlertDialog = dialog as AlertDialog
         if (d != null) {
             positiveButton = d.getButton(Dialog.BUTTON_POSITIVE)
+            negativeButton = d.getButton(Dialog.BUTTON_NEGATIVE)
             if (workoutText!!.text.toString().length >= 2) {
                 positiveButton?.isEnabled = true
             } else {
@@ -106,61 +109,15 @@ class NewWorkoutDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
         val builder = AlertDialog.Builder(this.activity!!, R.style.AlertDialogTheme)
-        mGlobalPreferences = GlobalPreferences(this.activity!!)
+        mGlobalPreferences = FitTimer.applicationContext().preferences
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
-        workoutText = dialogView!!.findViewById<EditText>(R.id.workout_text)
-        giphyView = dialogView.findViewById<GiphyView>(R.id.search_giphy_view)
-        val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
-        searchGiphyLayout = dialogView.findViewById<LinearLayout>(R.id.gif_search_view)
-        workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
-        numberPicker = dialogView.findViewById(R.id.number_picker)
-        workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
-        workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
-
-        // TODO: Implement shared textToSpeech with observer
-        textToSpeech = TextToSpeech(this.activity!!, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale(mGlobalPreferences?.speechLanguage)
-            }
-        })
-
-        // TODO: Get API Key from Giphy
-        // TODO: Create separate Alert Dialog for this with a callback
-        giphyView?.setSelectedCallback {
-
-            // Make images visible
-            workoutImage!!.visibility = View.VISIBLE
-            workoutImagePlaceholder!!.visibility = View.GONE
-
-            gifImageLocation = it.path?.toString()
-            Glide.with(this).load(it).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(workoutImage!!)
-            galleryImageLocation = null
-            imagePath = null
-            searchGiphyLayout?.visibility = View.GONE
-        }
-
-        closeGiphyButton.setOnClickListener {
-            searchGiphyLayout?.visibility = View.GONE
-            giphyView?.invalidate()
-        }
-
-        workoutText!!.addTextChangedListener(object: TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                workoutValue = s.toString()
-                positiveButton?.isEnabled = s.toString().length >= 2
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                workoutValue = s.toString()
-                positiveButton?.isEnabled = s.toString().length >= 2
-            }
-
-        })
 
         workout = arguments?.getParcelable("arg_workout")
         workoutId = arguments?.getInt("arg_workout_id")
+
+        setupView(dialogView!!)
+
 
         if (workout == null) {
             builder.setTitle(R.string.add_workout)
@@ -179,7 +136,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
             if (workout?.workoutImage != null) {
                 workoutImage!!.visibility = View.VISIBLE
                 workoutImagePlaceholder!!.visibility = View.GONE
-                Glide.with(this).load(Uri.fromFile(File(workout?.workoutImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(workoutImage!!)
+                Glide.with(this).load(Uri.fromFile(File(workout?.workoutImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(workoutImage!!)
                 workoutImageValue = workout?.workoutImage
             } else {
                 workoutImage!!.visibility = View.GONE
@@ -218,6 +175,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
                 newWorkoutDialogListener?.onSaveClick(this, Workout(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
             }
             .setNegativeButton(R.string.close) { dialog, id ->
+                // TODO: If cancel is selected and image isn't null, delete anything created
                 newWorkoutDialogListener?.onCancelClick(this)
             }
 
@@ -232,6 +190,88 @@ class NewWorkoutDialogFragment: DialogFragment() {
         } catch (e: ClassCastException) {
             throw ClassCastException(activity.toString() + "must implement NewWorkoutDialogListener")
         }
+    }
+
+    fun setupView(dialogView: View) {
+
+        fullControls = dialogView.findViewById(R.id.workout_content_view)
+        workoutText = dialogView.findViewById(R.id.workout_text)
+        giphyView = dialogView.findViewById(R.id.search_giphy_view)
+        val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
+        searchGiphyLayout = dialogView.findViewById(R.id.gif_search_view)
+        workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
+        numberPicker = dialogView.findViewById(R.id.number_picker)
+        workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
+        workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
+
+        // TODO: Implement shared textToSpeech with observer
+        textToSpeech = TextToSpeech(this.activity!!, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                textToSpeech?.language = Locale(mGlobalPreferences?.speechLanguage)
+            }
+        })
+
+        // TODO: Get API Key from Giphy
+        // TODO: Create separate Alert Dialog for this with a callback
+        giphyView?.setSelectedCallback {
+
+            // Make images visible
+            workoutImage!!.visibility = View.VISIBLE
+            workoutImagePlaceholder!!.visibility = View.GONE
+
+            gifImageLocation = it.path?.toString()
+            Glide.with(this).load(it).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(workoutImage!!)
+            galleryImageLocation = null
+            imagePath = null
+            searchGiphyLayout?.visibility = View.GONE
+            showControlButtons()
+        }
+
+
+        workoutText!!.addTextChangedListener(object: TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                workoutValue = s.toString()
+                positiveButton?.isEnabled = s.toString().length >= 2
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                workoutValue = s.toString()
+                positiveButton?.isEnabled = s.toString().length >= 2
+            }
+
+        })
+
+        closeGiphyButton.setOnClickListener {
+            searchGiphyLayout?.visibility = View.GONE
+            giphyView?.invalidate()
+            showControlButtons()
+        }
+
+        workoutSpeech!!.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                workoutSpeechValue = 1
+                if (workoutText?.text.toString() != "") {
+                    textToSpeech!!.speak(workoutText?.text.toString(), TextToSpeech.QUEUE_FLUSH, null, null)
+                }
+            } else {
+                workoutSpeechValue = 0
+            }
+        }
+
+        secondsValue = numberPicker!!.value
+
+        numberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+            secondsValue = newVal
+        }
+
+        workoutImage?.setOnClickListener {
+            tapWorkoutImage()
+        }
+        workoutImagePlaceholder?.setOnClickListener {
+            tapPlaceholderImage()
+        }
+
     }
 
     private fun validateImagePath() {
@@ -317,7 +357,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
                     workoutImagePlaceholder!!.visibility = View.GONE
 
                     try {
-                        Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(workoutImage!!)
+                        Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(workoutImage!!)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -349,8 +389,8 @@ class NewWorkoutDialogFragment: DialogFragment() {
                 }
                 1 -> { // Search GIF
                     giphyView?.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
-
                     searchGiphyLayout?.visibility = View.VISIBLE
+                    hideControlButtons()
                 }
                 2 -> { // Remove Current Image
                     if (workout != null) {
@@ -419,9 +459,22 @@ class NewWorkoutDialogFragment: DialogFragment() {
                 1 -> { // Search GIF
                     giphyView?.initializeView("dc6zaTOxFJmzC", 5 * 1024 * 1024)
                     searchGiphyLayout?.visibility = View.VISIBLE
+                    hideControlButtons()
                 }
             }
         }.create().show()
+    }
+
+    fun hideControlButtons() {
+        fullControls?.visibility = View.GONE
+        negativeButton?.visibility = View.GONE
+        positiveButton?.visibility = View.GONE
+    }
+
+    fun showControlButtons() {
+        fullControls?.visibility = View.VISIBLE
+        negativeButton?.visibility = View.VISIBLE
+        positiveButton?.visibility = View.VISIBLE
     }
 
     override fun onDestroy() {

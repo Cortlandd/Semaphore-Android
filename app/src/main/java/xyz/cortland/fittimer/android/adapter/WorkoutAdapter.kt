@@ -24,6 +24,7 @@ import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
 import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.receivers.WorkoutFinishedReceiver
 import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_WORKOUT_REMAINING
@@ -36,6 +37,8 @@ import java.util.concurrent.Semaphore
 class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<Workout>) : RecyclerView.Adapter<WorkoutAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
+    private val onLongClickListener: View.OnLongClickListener
+
     var textToSpeech: TextToSpeech? = null
 
     var workoutId: Int? = null
@@ -58,6 +61,18 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
             val options = ActivityOptionsCompat.makeSceneTransitionAnimation(parentActivity!!, v, "viewWorkout")
             v.context.startActivity(intent, options.toBundle())
+        }
+
+        onLongClickListener = View.OnLongClickListener { v ->
+            val workout = v.tag as Workout
+            workoutId = v.id
+            FitTimer.applicationContext().preferences!!.longPressWorkoutId = v.id
+            FitTimer.applicationContext().preferences!!.editingLongPressWorkout = true
+            val newWorkoutDialogFragment: NewWorkoutDialogFragment = NewWorkoutDialogFragment.newInstance(workout, workoutId!!)
+            newWorkoutDialogFragment.show(parentActivity!!.supportFragmentManager, "ModifyWorkout")
+
+            true
+
         }
     }
 
@@ -188,6 +203,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             cursor.close()
             tag = workout
             setOnClickListener(onClickListener)
+            setOnLongClickListener(onLongClickListener)
         }
     }
 

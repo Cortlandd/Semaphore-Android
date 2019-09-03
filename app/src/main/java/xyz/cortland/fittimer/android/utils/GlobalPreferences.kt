@@ -60,11 +60,22 @@ class GlobalPreferences(context: Context) {
         set(position) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_WORKOUT_POSITION, position).apply() }
 
     /**
-     *
-     * */
+     * Get/Set the current workout, from Playing All's, remaining time.
+     */
     var currentPlayingAllRemainingTime: Int
         get() = mSharedPreferences!!.getInt(CURRENT_PLAYING_ALL_WORKOUT_REMAINING, 0)
         set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_WORKOUT_REMAINING, remainingTime).apply() }
+
+    /**
+     * Get/Set rather or not the workout is playing from longpress
+     */
+    var editingLongPressWorkout: Boolean
+        get() = mSharedPreferences!!.getBoolean(EDITING_WORKOUT, false)
+        set(editing) = with(mSharedPreferences!!.edit()) { this.putBoolean(EDITING_WORKOUT, editing).apply() }
+
+    var longPressWorkoutId: Int
+        get() = mSharedPreferences!!.getInt(LONGPRESS_WORKOUT_ID, -1)
+        set(workoutId) = with(mSharedPreferences!!.edit()) { this.putInt(LONGPRESS_WORKOUT_ID, workoutId).apply() }
 
     /**
      *
