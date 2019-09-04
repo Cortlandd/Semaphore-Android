@@ -19,6 +19,7 @@ import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import com.tapadoo.alerter.Alerter
 import io.karn.notify.Notify
 import kotlinx.android.synthetic.main.workout_list_content.view.*
+import org.greenrobot.eventbus.EventBus
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
@@ -26,13 +27,17 @@ import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.extensions.dbHandler
+import xyz.cortland.fittimer.android.extensions.hideTimerNotification
+import xyz.cortland.fittimer.android.extensions.showTimerNotification
 import xyz.cortland.fittimer.android.extensions.speakText
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
+import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_WORKOUT_POSITION
 import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.receivers.WorkoutFinishedReceiver
 import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_WORKOUT_REMAINING
 import xyz.cortland.fittimer.android.helpers.WORKOUT_FINISHED_ID
 import xyz.cortland.fittimer.android.helpers.prefs
+import xyz.cortland.fittimer.android.receivers.CountDownEvent
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
@@ -203,8 +208,6 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
         val workout = mWorkouts[position]
 
-        prefs!!.currentPlayingAllWorkoutPosition = position
-
         workout.isPlayingAll = true
 
         var seconds = workout.seconds
@@ -224,27 +227,24 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                 override fun onTick(millisUntilFinished: Long) {
                     mHolder.secondsView.text = "${millisUntilFinished / 1000}"
                     workout.remainingSeconds = (millisUntilFinished / 1000).toInt()
-                    prefs.currentPlayingAllRemainingTime = workout.remainingSeconds!!
+                    prefs!!.currentPlayingAllRemainingTime = workout.remainingSeconds!!
                     if (parentActivity!!.isPaused!!) {
                         //updateNotification(workout,"${millisUntilFinished / 1000} seconds remaining.")
-                        parentActivity!!.updateNotification("${millisUntilFinished / 1000} seconds remaining.", workoutName = workout.workoutName!!)
+                        parentActivity!!.showTimerNotification(workout)
                     }
                     mHolder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                 }
 
                 override fun onFinish() {
                     if (position == mWorkouts.size - 1) {
-                        if (parentActivity!!.isPaused!!) {
-                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
-                        }
                         parentActivity!!.stopPlayingAll()
                         workout.remainingSeconds = 0
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
                         semaphore.drainPermits()
                         notifyDataSetChanged()
                         if (parentActivity!!.isPaused!!) {
-                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                            parentActivity!!.hideTimerNotification()
                             finishedWorkout()
                         } else {
                             Alerter.create(parentActivity)
@@ -259,19 +259,22 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
                         if (parentActivity!!.isPaused!!) {
-                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                            parentActivity!!.hideTimerNotification()
                         }
                         workout.isPlayingAll = false
                         mHolder.secondsView.text = "0"
                         workout.remainingSeconds = 0
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
                         //mHolder.workoutProgressBar.progress = 0
                         semaphore.release()
                     }
                 }
 
                 override fun countdownStart() {
+
+                    prefs!!.currentPlayingAllWorkoutPosition = position
+
                     if (workout.workoutSpeech == 1) {
                         // TODO: Need shared textToSpeech
                         parentActivity!!.speakText(workout.workoutName!!)
@@ -286,13 +289,13 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                 override fun countdownCancel() {
                     if (position != mWorkouts.size - 1) {
                         if (parentActivity!!.isPaused!!) {
-                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
+                            parentActivity!!.hideTimerNotification()
                         }
                         workout.isPlayingAll = false
                         mHolder.secondsView.text = "0"
                         workout.remainingSeconds = 0
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
                         //mHolder.workoutProgressBar.progress = 0
                         semaphore.release()
                     }
@@ -300,8 +303,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     if (position == mWorkouts.size - 1) {
                         parentActivity!!.stopPlayingAll()
                         workout.remainingSeconds = 0
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
                         parentActivity!!.semaphore!!.drainPermits()
                         notifyDataSetChanged()
                         if (parentActivity!!.isPaused!!) {

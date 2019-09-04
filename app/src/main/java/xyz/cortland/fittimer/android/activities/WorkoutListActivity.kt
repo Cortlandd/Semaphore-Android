@@ -23,15 +23,21 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 import kotlinx.android.synthetic.main.activity_workout_list.*
 import kotlinx.android.synthetic.main.workout_list.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
+import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
 import xyz.cortland.fittimer.android.extensions.dbHandler
+import xyz.cortland.fittimer.android.extensions.hideTimerNotification
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.helpers.*
 
 import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.receivers.CountDownEvent
+import xyz.cortland.fittimer.android.receivers.WorkoutPlaybackReceiver
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import java.io.File
 import java.util.*
@@ -77,6 +83,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     var notificationManager: NotificationManager? = null
     var notificationBuilder: NotificationCompat.Builder? = null
 
+    var currentCountDownTimer: CountDownTimer? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_list)
@@ -116,10 +124,23 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        hideTimerNotification()
+        EventBus.getDefault().unregister(this)
         dbHandler.close()
         workoutAdapter?.stopAllWorkouts()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        hideTimerNotification()
+        EventBus.getDefault().unregister(this)
     }
 
     override fun onResume() {
@@ -127,8 +148,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         isPaused = false
 
+        hideTimerNotification()
+
         if (playingAll) {
-            notificationManager?.cancel(WORKOUT_FINISHED_ID)
+            EventBus.getDefault().removeAllStickyEvents()
         }
 
         // Used for Editing Workouts
@@ -150,10 +173,11 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         isPaused = true
 
-        if (playingAll) {
-            val currentWorkout = prefs?.currentPlayingAllWorkoutPosition
-            createNotification(currentWorkout!!)
-        }
+    }
+
+    @Subscribe(sticky = true)
+    fun onEvent(event: CountDownEvent) {
+        currentCountDownTimer = event.countdownTimer
     }
 
     /**
@@ -317,48 +341,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         } else {
             playAllButton!!.visibility = View.VISIBLE
         }
-    }
-
-    fun createNotification(currentWorkout: Int) {
-
-        val workout = mWorkouts.get(currentWorkout)
-        val intent = Intent(applicationContext, this::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-
-        notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel(WORKOUT_CHANNEL, "workout_channel", NotificationManager.IMPORTANCE_LOW).apply {
-                setSound(null, null)
-                notificationManager!!.createNotificationChannel(this)
-            }
-        }
-
-        var numMessages = 0
-
-        // TODO: Why do I need a Channel
-        notificationBuilder = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(workout.workoutName)
-            .setContentText("${prefs?.currentPlayingAllRemainingTime} seconds remaining.")
-            .setNumber(++numMessages)
-            .setSound(null)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setShowWhen(false)
-            .setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
-            .setOngoing(true)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-
-        notificationManager!!.notify(WORKOUT_FINISHED_ID, notificationBuilder!!.build())
-
-    }
-
-    fun updateNotification(text: String, workoutName: String?) {
-        notificationBuilder!!
-            .setContentTitle(workoutName)
-            .setContentText(text)
-            .setSound(null)
-        notificationManager!!.notify(WORKOUT_FINISHED_ID, notificationBuilder!!.build())
     }
 
     // TODO: Need to do better

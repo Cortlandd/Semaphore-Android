@@ -49,6 +49,9 @@ dependencies {
     // Library for handling alerts
     implementation 'com.tapadoo.android:alerter:4.0.2'
 
+    // Use eventbus for passing countdowntimer
+    implementation 'org.greenrobot:eventbus:3.1.1'
+
     // Number Picker
     implementation 'com.shawnlin:number-picker:2.4.8'
 
