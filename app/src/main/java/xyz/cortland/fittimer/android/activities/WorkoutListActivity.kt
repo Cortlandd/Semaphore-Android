@@ -27,6 +27,7 @@ import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.extensions.dbHandler
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.helpers.*
 
@@ -57,8 +58,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     var workoutAdapter: WorkoutAdapter? = null
 
-    var dbHandler: WorkoutDatabase? = null
-
     val mWorkouts: ArrayList<Workout> = ArrayList<Workout>()
 
     var playingAll: Boolean by Delegates.observable(false) { _, _, _ ->
@@ -85,9 +84,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-        dbHandler = WorkoutDatabase(this, null)
-
-        mWorkouts.addAll(dbHandler!!.allWorkoutsList())
+        mWorkouts.addAll(dbHandler.allWorkoutsList())
         workoutAdapter = WorkoutAdapter(this, mWorkouts)
         item_list.adapter = workoutAdapter
 
@@ -121,7 +118,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     override fun onDestroy() {
         super.onDestroy()
-        dbHandler?.close()
+        dbHandler.close()
         workoutAdapter?.stopAllWorkouts()
     }
 
@@ -138,10 +135,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         if (prefs!!.workoutModified) {
             mWorkouts.clear()
             item_list.invalidate()
-            mWorkouts.addAll(dbHandler!!.allWorkoutsList())
+            mWorkouts.addAll(dbHandler.allWorkoutsList())
             workoutAdapter!!.notifyDataSetChanged()
             validateWorkoutCount()
-            prefs!!.workoutModified = false
+            prefs.workoutModified = false
         } else {
             return
         }
@@ -264,7 +261,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
         if (prefs!!.editingLongPressWorkout) {
-            updateWorkoutItem(prefs!!.longPressWorkoutId, workout)
+            updateWorkoutItem(prefs.longPressWorkoutId, workout)
             FitTimer.applicationContext().preferences!!.removePreferences(EDITING_WORKOUT) // Remove editing workout from preferences
             FitTimer.applicationContext().preferences!!.removePreferences(LONGPRESS_WORKOUT_ID) // Remove longpressed workout id from preferences
             // TODO: Shouldn't have to clear all then add again
@@ -274,9 +271,9 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             validateWorkoutCount()
             dialog.dismiss()
         } else {
-            dbHandler!!.addWorkout(workout)
+            dbHandler.addWorkout(workout)
             mWorkouts.clear()
-            mWorkouts.addAll(dbHandler!!.allWorkoutsList())
+            mWorkouts.addAll(dbHandler.allWorkoutsList())
             workoutAdapter?.notifyDataSetChanged()
             validateWorkoutCount()
             dialog.dismiss()
@@ -395,7 +392,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
         if (prefs!!.currentImageRemoved) {
             values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
-            prefs!!.currentImageRemoved = false
+            prefs.currentImageRemoved = false
         } else {
             values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
         }

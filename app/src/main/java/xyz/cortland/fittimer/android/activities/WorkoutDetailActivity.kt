@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.activity_workout_detail.*
 import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.extensions.dbHandler
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
 import xyz.cortland.fittimer.android.model.Workout
@@ -92,8 +93,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
      * @param workout: The workout to be updated
      */
     private fun updateWorkoutItem(id: Int, workout: Workout) {
-        val dbHelper = WorkoutDatabase(this, null)
-        val db = dbHelper.writableDatabase
+        val db = dbHandler.writableDatabase
         val values = ContentValues()
         values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)

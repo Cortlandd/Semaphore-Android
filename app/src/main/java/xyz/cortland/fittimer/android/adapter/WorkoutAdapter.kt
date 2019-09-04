@@ -25,6 +25,7 @@ import xyz.cortland.fittimer.android.activities.WorkoutDetailActivity
 import xyz.cortland.fittimer.android.activities.WorkoutListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.extensions.dbHandler
 import xyz.cortland.fittimer.android.extensions.speakText
 import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
 import xyz.cortland.fittimer.android.model.Workout
@@ -64,6 +65,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             v.context.startActivity(intent, options.toBundle())
         }
 
+        // TODO: Resolve issue where a workout is playing and edited
         onLongClickListener = View.OnLongClickListener { v ->
             val workout = v.tag as Workout
             workoutId = v.id
@@ -85,8 +87,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val workout = mWorkouts[position]
 
-        val dbHandler = parentActivity!!.dbHandler
-        val cursor = dbHandler?.getAllWorkouts()
+        val cursor = FitTimer.applicationContext().dbHandler.getAllWorkouts()
         if (!cursor!!.moveToPosition(position)) {
             return
         }
@@ -171,6 +172,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
         holder.stopButton.setOnClickListener {
             when {
                 parentActivity!!.playingAll && position != mWorkouts.size - 1 -> {
+                    workout.countDownTimer!!.cancel()
                     // Necessary because countdowntimer is weird and stops doing shit at 1
                     if (parentActivity!!.isPaused!!) {
                         parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
@@ -184,6 +186,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     parentActivity!!.semaphore!!.release()
                 }
                 parentActivity!!.playingAll && position == mWorkouts.size - 1 -> {
+                    workout.countDownTimer!!.cancel()
                     parentActivity!!.stopPlayingAll()
                     workout.remainingSeconds = 0
                     prefs?.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
@@ -196,7 +199,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     } else {
                         Alerter.create(parentActivity)
                             .setTitle("Workout Complete!")
-                            .setDuration(1000)
+                            .setDuration(500)
                             .enableSwipeToDismiss()
                             .enableVibration(true)
                             .setBackgroundColorRes(R.color.colorAccent)
@@ -299,7 +302,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                         } else {
                             Alerter.create(parentActivity)
                                 .setTitle("Workout Complete!")
-                                .setDuration(1000)
+                                .setDuration(500)
                                 .setBackgroundColorRes(R.color.colorAccent)
                                 .enableSwipeToDismiss()
                                 .enableVibration(true)
