@@ -66,9 +66,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     val mWorkouts: ArrayList<Workout> = ArrayList<Workout>()
 
-    var playingAll: Boolean by Delegates.observable(false) { _, _, _ ->
-        validatePlayAll()
-    }
+    var playingAll: Boolean = false
 
     var isPaused: Boolean? = false
 
@@ -79,9 +77,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     var itemTouchHelper: ItemTouchHelper? = null
 
     var semaphore: Semaphore? = null
-
-    var notificationManager: NotificationManager? = null
-    var notificationBuilder: NotificationCompat.Builder? = null
 
     var currentCountDownTimer: CountDownTimer? = null
 
@@ -133,6 +128,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         super.onDestroy()
         hideTimerNotification()
         EventBus.getDefault().unregister(this)
+        EventBus.getDefault().removeAllStickyEvents()
         dbHandler.close()
         workoutAdapter?.stopAllWorkouts()
     }
@@ -141,6 +137,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         super.onStop()
         hideTimerNotification()
         EventBus.getDefault().unregister(this)
+        EventBus.getDefault().removeAllStickyEvents()
     }
 
     override fun onResume() {
@@ -207,6 +204,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         playAllButton!!.setOnClickListener {
 
             playingAll = true
+            validatePlayAll()
 
             semaphore = Semaphore(1)
 
@@ -223,7 +221,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         }
 
         stopAllButton!!.setOnClickListener {
-            stopPlayingAll()
+            playingAll = false
+            validatePlayAll()
         }
 
         fab.setOnClickListener {
@@ -241,7 +240,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     }
 
-    private fun validatePlayAll() {
+    fun validatePlayAll() {
         if (playingAll == true) {
 
             // Hide Add Workout Button
@@ -267,19 +266,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
             showPlayButtons()
 
-            mWorkouts.forEach {
-                it.isDefaultState = true
-            }
+            semaphore?.drainPermits()
 
-            workoutAdapter!!.notifyDataSetChanged()
-
+            workoutAdapter?.stopAllWorkouts()
         }
-    }
-
-    fun stopPlayingAll() {
-
-        // Change state
-        playingAll = false
     }
 
     override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
@@ -348,7 +338,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         for (i in 0 until item_list.childCount) {
             val playButton = item_list.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button)
             playButton.show()
-            workoutAdapter?.notifyItemChanged(i)
         }
     }
 

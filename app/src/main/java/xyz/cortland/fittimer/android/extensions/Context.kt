@@ -27,7 +27,7 @@ fun Context.speakText(text: String) {
 
 val Context.dbHandler: WorkoutDatabase get() = WorkoutDatabase(applicationContext, null)
 
-fun Context.createTimerNotification(workout: Workout): Notification {
+fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notification {
 
     // TODO: Currently creating when a workout is started
 
@@ -48,7 +48,7 @@ fun Context.createTimerNotification(workout: Workout): Notification {
     val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        NotificationChannel(WORKOUT_CHANNEL, "workout_channel", NotificationManager.IMPORTANCE_LOW).apply {
+        NotificationChannel(WORKOUT_CHANNEL, "workout_channel", NotificationManager.IMPORTANCE_DEFAULT).apply {
             setSound(null, null)
             notificationManager.createNotificationChannel(this)
         }
@@ -67,9 +67,14 @@ fun Context.createTimerNotification(workout: Workout): Notification {
         .setShowWhen(false)
         .setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .addAction(R.drawable.ic_stop_24dp, "Stop", PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT)).setColor(ContextCompat.getColor(applicationContext, R.color.colorAccent))
-        .addAction(android.R.drawable.ic_media_pause, "Pause", PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)).setColor(ContextCompat.getColor(applicationContext, R.color.colorAccent))
-        //.addAction(R.drawable.ic_app_icon, "Resume", PendingIntent.getBroadcast(this, 0, resumeIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+        .setColor(ContextCompat.getColor(applicationContext, R.color.colorAccent))
+        .addAction(R.drawable.ic_stop_24dp, "Stop", PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+
+    if (paused) {
+        notificationBuider.addAction(android.R.drawable.ic_media_play, "Resume", PendingIntent.getBroadcast(this, 0, resumeIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+    } else {
+        notificationBuider.addAction(android.R.drawable.ic_media_pause, "Pause", PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+    }
 
     val notification = notificationBuider.build()
 
@@ -77,8 +82,8 @@ fun Context.createTimerNotification(workout: Workout): Notification {
 
 }
 
-fun Context.showTimerNotification(workout: Workout) {
-    val notification = createTimerNotification(workout)
+fun Context.showTimerNotification(workout: Workout, paused: Boolean) {
+    val notification = createTimerNotification(workout, paused)
     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.notify(WORKOUT_FINISHED_ID, notification)
 }

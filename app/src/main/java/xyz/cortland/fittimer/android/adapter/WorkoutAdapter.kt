@@ -230,19 +230,18 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     prefs!!.currentPlayingAllRemainingTime = workout.remainingSeconds!!
                     if (parentActivity!!.isPaused!!) {
                         //updateNotification(workout,"${millisUntilFinished / 1000} seconds remaining.")
-                        parentActivity!!.showTimerNotification(workout)
+                        parentActivity!!.showTimerNotification(workout, false)
                     }
                     mHolder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                 }
 
                 override fun onFinish() {
                     if (position == mWorkouts.size - 1) {
-                        parentActivity!!.stopPlayingAll()
                         workout.remainingSeconds = 0
                         prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                         prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
-                        semaphore.drainPermits()
-                        notifyDataSetChanged()
+                        parentActivity!!.playingAll = false
+                        parentActivity!!.validatePlayAll()
                         if (parentActivity!!.isPaused!!) {
                             parentActivity!!.hideTimerNotification()
                             finishedWorkout()
@@ -255,13 +254,12 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                                 .enableVibration(true)
                                 .show()
                         }
-
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
                         if (parentActivity!!.isPaused!!) {
                             parentActivity!!.hideTimerNotification()
                         }
-                        workout.isPlayingAll = false
+                        //workout.isPlayingAll = false
                         mHolder.secondsView.text = "0"
                         workout.remainingSeconds = 0
                         prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
@@ -287,47 +285,57 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                 }
 
                 override fun countdownCancel() {
-                    if (position != mWorkouts.size - 1) {
-                        if (parentActivity!!.isPaused!!) {
-                            parentActivity!!.hideTimerNotification()
-                        }
-                        workout.isPlayingAll = false
-                        mHolder.secondsView.text = "0"
-                        workout.remainingSeconds = 0
-                        prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
-                        //mHolder.workoutProgressBar.progress = 0
-                        semaphore.release()
-                    }
 
-                    if (position == mWorkouts.size - 1) {
-                        parentActivity!!.stopPlayingAll()
-                        workout.remainingSeconds = 0
-                        prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
-                        parentActivity!!.semaphore!!.drainPermits()
-                        notifyDataSetChanged()
-                        if (parentActivity!!.isPaused!!) {
-                            parentActivity!!.notificationManager?.cancel(WORKOUT_FINISHED_ID)
-                            finishedWorkout()
-                        } else {
-                            Alerter.create(parentActivity)
-                                .setTitle("Workout Complete!")
-                                .setDuration(500)
-                                .enableSwipeToDismiss()
-                                .enableVibration(true)
-                                .setBackgroundColorRes(R.color.colorAccent)
-                                .show()
+                    when {
+                        position != mWorkouts.size - 1 -> {
+                            if (parentActivity!!.isPaused!!) {
+                                parentActivity!!.hideTimerNotification()
+                            }
+                            mHolder.secondsView.text = "0"
+                            workout.remainingSeconds = 0
+                            mHolder.workoutProgressBar.progress = 0f
+                            prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                            prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
+                            //mHolder.workoutProgressBar.progress = 0
+                            if (parentActivity!!.playingAll) {
+                                semaphore.release()
+                            } else {
+                                return
+                            }
+                        }
+                        position == mWorkouts.size - 1 -> {
+                            workout.remainingSeconds = 0
+                            prefs!!.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
+                            prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
+                            parentActivity!!.playingAll = false
+                            parentActivity!!.validatePlayAll()
+                            if (parentActivity!!.isPaused!!) {
+                                parentActivity!!.hideTimerNotification()
+                                finishedWorkout()
+                            } else {
+                                Alerter.create(parentActivity)
+                                    .setTitle("Workout Complete!")
+                                    .setDuration(500)
+                                    .enableSwipeToDismiss()
+                                    .enableVibration(true)
+                                    .setBackgroundColorRes(R.color.colorAccent)
+                                    .show()
+                            }
+                        }
+                        else -> {
+                            return
                         }
                     }
                 }
 
                 override fun countdownPause() {
+                    parentActivity!!.showTimerNotification(workout, true)
                     mHolder.pauseButton.hide()
                     mHolder.resumeButton.show()
                 }
 
                 override fun countdownResume() {
+                    parentActivity!!.showTimerNotification(workout, false)
                     mHolder.resumeButton.hide()
                     mHolder.pauseButton.show()
                 }
@@ -360,6 +368,7 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
     fun stopAllWorkouts() {
         mWorkouts.forEach {
             it.countDownTimer?.cancel()
+            it.isDefaultState = true
         }
         notifyDataSetChanged()
     }
