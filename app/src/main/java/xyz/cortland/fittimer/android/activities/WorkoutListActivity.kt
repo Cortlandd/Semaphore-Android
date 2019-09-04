@@ -247,7 +247,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
                 it.isDefaultState = true
             }
 
-            workoutAdapter!!.stopAllWorkouts()
             workoutAdapter!!.notifyDataSetChanged()
 
         }

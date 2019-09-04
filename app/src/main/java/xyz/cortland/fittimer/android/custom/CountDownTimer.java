@@ -79,6 +79,11 @@ public abstract class CountDownTimer {
         mCountdownInterval = countDownInterval;
     }
 
+    public abstract void countdownStart();
+    public abstract void countdownCancel();
+    public abstract void countdownPause();
+    public abstract void countdownResume();
+
     /**
      * Cancel the countdown.
      *
@@ -88,6 +93,7 @@ public abstract class CountDownTimer {
         mCancelled = true;
         hasStarted = false;
         mHandler.removeMessages(MSG);
+        countdownCancel();
     }
 
     /**
@@ -104,6 +110,7 @@ public abstract class CountDownTimer {
         mHandler.sendMessage(mHandler.obtainMessage(MSG));
         mCancelled = false;
         mPaused = false;
+        countdownStart();
         return this;
     }
 
@@ -113,6 +120,7 @@ public abstract class CountDownTimer {
     public long pause() {
         mPauseTime = mStopTimeInFuture - SystemClock.elapsedRealtime();
         mPaused = true;
+        countdownPause();
         return mPauseTime;
     }
 
@@ -123,6 +131,7 @@ public abstract class CountDownTimer {
         mStopTimeInFuture = mPauseTime + SystemClock.elapsedRealtime();
         mPaused = false;
         mHandler.sendMessage(mHandler.obtainMessage(MSG));
+        countdownResume();
         return mPauseTime;
     }
 
@@ -176,3 +185,4 @@ public abstract class CountDownTimer {
         }
     };
 }
+
