@@ -123,11 +123,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     override fun onStop() {
         super.onStop()
-        hideTimerNotification()
-        EventBus.getDefault().unregister(this)
-        EventBus.getDefault().removeAllStickyEvents()
-        prefs.isPlayingAllWorkouts = false
-        prefs.mSharedPreferences?.unregisterOnSharedPreferenceChangeListener(this) // Register prefs for change listening in this Activity
     }
 
     override fun onResume() {
