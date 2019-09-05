@@ -14,4 +14,5 @@ const val CURRENT_PLAYING_ALL_WORKOUT_POSITION = "current_playing_all_workout_po
 const val CURRENT_PLAYING_ALL_WORKOUT_REMAINING = "current_playing_all_workout_remaining"
 const val EDITING_WORKOUT = "editing_workout"
 const val LONGPRESS_WORKOUT_ID = "longpress_workout_id"
-val prefs = FitTimer.applicationContext().preferences
+const val IS_PLAYING_ALL_WORKOUTS = "is_playing_all_workouts"
+val prefs = FitTimer.applicationContext().preferences!!

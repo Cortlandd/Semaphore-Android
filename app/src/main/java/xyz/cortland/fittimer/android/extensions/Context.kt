@@ -29,8 +29,6 @@ val Context.dbHandler: WorkoutDatabase get() = WorkoutDatabase(applicationContex
 
 fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notification {
 
-    // TODO: Currently creating when a workout is started
-
     EventBus.getDefault().postSticky(CountDownEvent(workout.countDownTimer!!))
 
     val intent = Intent(this, this::class.java)
@@ -60,7 +58,7 @@ fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notifica
     val notificationBuider = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentTitle(workout.workoutName)
-        .setContentText("${prefs?.currentPlayingAllRemainingTime} seconds remaining.")
+        .setContentText("${prefs.currentPlayingAllRemainingTime} seconds remaining.")
         .setNumber(++numMessages)
         .setSound(null)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)

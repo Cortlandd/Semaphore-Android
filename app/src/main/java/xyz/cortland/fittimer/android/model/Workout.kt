@@ -9,8 +9,6 @@ data class Workout(var seconds: Int?, var workoutName: String?, var workoutImage
 
     var id: Int? = null
     var isPlaying: Boolean? = false
-    var isPlayingAll: Boolean? = false
-    var remainingSeconds: Int? = 0
     var isDefaultState: Boolean? = true
     var countDownTimer: CountDownTimer? = null
 

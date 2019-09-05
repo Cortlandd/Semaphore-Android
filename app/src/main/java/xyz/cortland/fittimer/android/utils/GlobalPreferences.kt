@@ -68,6 +68,8 @@ class GlobalPreferences(context: Context) {
 
     /**
      * Get/Set rather or not the workout is playing from longpress
+     *
+     * @return [Boolean]: true or false rather a user is modifying a workout through long pressing
      */
     var editingLongPressWorkout: Boolean
         get() = mSharedPreferences!!.getBoolean(EDITING_WORKOUT, false)
@@ -76,6 +78,15 @@ class GlobalPreferences(context: Context) {
     var longPressWorkoutId: Int
         get() = mSharedPreferences!!.getInt(LONGPRESS_WORKOUT_ID, -1)
         set(workoutId) = with(mSharedPreferences!!.edit()) { this.putInt(LONGPRESS_WORKOUT_ID, workoutId).apply() }
+
+    /**
+     * Get/Set rather a not the app is playing all workouts vs a single workout
+     *
+     * @return [Boolean]: true or false rather the app is playing all workouts or a single workout
+     */
+    var isPlayingAllWorkouts: Boolean
+        get() = mSharedPreferences!!.getBoolean(IS_PLAYING_ALL_WORKOUTS,false)
+        set(isPlaying) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_PLAYING_ALL_WORKOUTS, isPlaying).apply() }
 
     /**
      *
