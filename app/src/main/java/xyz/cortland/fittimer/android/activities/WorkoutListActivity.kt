@@ -123,6 +123,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     override fun onStop() {
         super.onStop()
+        EventBus.getDefault().unregister(this)
     }
 
     override fun onResume() {
@@ -175,12 +176,6 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     private fun setupView() {
 
-        if (mWorkouts.size == 0 || mWorkouts.size == null) {
-            no_workouts_message.visibility = View.VISIBLE
-        } else {
-            no_workouts_message.visibility = View.GONE
-        }
-
         playAllButton = findViewById<Button>(R.id.play_all_button)
         stopAllButton = findViewById<Button>(R.id.stop_all_button)
 
@@ -190,6 +185,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
             prefs.isPlayingAllWorkouts = true
 
+            semaphore?.drainPermits() // Just in case
             semaphore = Semaphore(1)
 
             for (i in mWorkouts.indices) {
@@ -237,7 +233,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
             dbHandler.addWorkout(workout)
             mWorkouts.clear()
             mWorkouts.addAll(dbHandler.allWorkoutsList())
-            workoutAdapter?.notifyDataSetChanged()
+            workoutAdapter!!.notifyDataSetChanged()
             validateWorkoutCount()
             dialog.dismiss()
         }
@@ -330,14 +326,14 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
                     // Disable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(null)
                     // Update Play All and Stop All buttons
-                    stopAllButton?.visibility = View.VISIBLE
-                    playAllButton?.visibility = View.GONE
+                    stopAllButton!!.visibility = View.VISIBLE
+                    playAllButton!!.visibility = View.GONE
 
                     hidePlayButtons()
                 } else {
                     // Update Play All and Stop All buttons
-                    stopAllButton?.visibility = View.GONE
-                    playAllButton?.visibility = View.VISIBLE
+                    stopAllButton!!.visibility = View.GONE
+                    playAllButton!!.visibility = View.VISIBLE
                     // Show Add Workout Button
                     fab.show()
                     // Enable swiping while playing
