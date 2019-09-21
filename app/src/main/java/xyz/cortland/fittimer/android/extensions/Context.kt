@@ -20,6 +20,7 @@ import xyz.cortland.fittimer.android.helpers.prefs
 import xyz.cortland.fittimer.android.model.Workout
 import xyz.cortland.fittimer.android.receivers.CountDownEvent
 import xyz.cortland.fittimer.android.receivers.WorkoutPlaybackReceiver
+import java.util.concurrent.TimeUnit
 
 fun Context.speakText(text: String) {
     FitTimer.applicationContext().textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
@@ -43,14 +44,18 @@ fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notifica
     val resumeIntent = Intent(this, WorkoutPlaybackReceiver::class.java)
     resumeIntent.action = "workout.resume"
 
-    val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         NotificationChannel(WORKOUT_CHANNEL, "workout_channel", NotificationManager.IMPORTANCE_DEFAULT).apply {
+            enableVibration(true)
             setSound(null, null)
             notificationManager.createNotificationChannel(this)
         }
     }
+
+    val _hours = TimeUnit.MILLISECONDS.toHours(prefs.currentPlayingAllRemainingTime)
+    val _minutes = TimeUnit.MILLISECONDS.toMinutes(prefs.currentPlayingAllRemainingTime) % TimeUnit.HOURS.toMinutes(1)
+    val _seconds = TimeUnit.MILLISECONDS.toSeconds(prefs.currentPlayingAllRemainingTime) % TimeUnit.MINUTES.toSeconds(1)
 
     var numMessages = 0
 
@@ -58,7 +63,7 @@ fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notifica
     val notificationBuider = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentTitle(workout.workoutName)
-        .setContentText("${prefs.currentPlayingAllRemainingTime} seconds remaining.")
+        .setContentText("$_hours hr $_minutes min $_seconds sec remaining.")
         .setNumber(++numMessages)
         .setSound(null)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)

@@ -245,7 +245,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     mHolder.minutesView.text = if (_minutes in 0..9) "0$_minutes" else "$_minutes"
                     mHolder.secondsView.text = if (_seconds in 0..9) "0$_seconds" else "$_seconds"
 
-                    prefs.currentPlayingAllRemainingTime = (millisUntilFinished / 1000).toInt()
+                    prefs.currentPlayingAllRemainingTime = millisUntilFinished
+
                     if (parentActivity!!.isPaused!!) {
                         //updateNotification(workout,"${millisUntilFinished / 1000} seconds remaining.")
                         parentActivity!!.showTimerNotification(workout, false)
@@ -275,7 +276,9 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                         if (parentActivity!!.isPaused!!) {
                             parentActivity!!.hideTimerNotification()
                         }
-                        mHolder.secondsView.text = "0"
+                        mHolder.hoursView.text = "00"
+                        mHolder.minutesView.text = "00"
+                        mHolder.secondsView.text = "00"
                         mHolder.workoutProgressBar.progress = 0f
                         prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                         prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)
@@ -305,7 +308,9 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                             if (parentActivity!!.isPaused!!) {
                                 parentActivity!!.hideTimerNotification()
                             }
-                            mHolder.secondsView.text = "0"
+                            mHolder.hoursView.text = "00"
+                            mHolder.minutesView.text = "00"
+                            mHolder.secondsView.text = "00"
                             mHolder.workoutProgressBar.progress = 0f
                             prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_REMAINING)
                             prefs.removePreferences(CURRENT_PLAYING_ALL_WORKOUT_POSITION)

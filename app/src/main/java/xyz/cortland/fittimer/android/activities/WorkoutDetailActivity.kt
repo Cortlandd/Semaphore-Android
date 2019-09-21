@@ -95,6 +95,8 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
     private fun updateWorkoutItem(id: Int, workout: Workout) {
         val db = dbHandler.writableDatabase
         val values = ContentValues()
+        values.put(WorkoutDatabase.COLUMN_HOURS, workout.hours)
+        values.put(WorkoutDatabase.COLUMN_MINUTES, workout.minutes)
         values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
         values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
         if (prefs!!.currentImageRemoved) {
