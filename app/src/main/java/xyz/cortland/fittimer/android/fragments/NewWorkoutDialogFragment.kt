@@ -55,7 +55,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     var workoutImage: ImageView? = null
     var workoutImagePlaceholder: ImageView? = null
-    var numberPicker: NumberPicker? = null
+    var hoursNumberPicker: NumberPicker? = null
+    var minutesNumberPicker: NumberPicker? = null
+    var secondsNumberPicker: NumberPicker? = null
     var workoutSpeech: SwitchCompat? = null
     var searchGiphyLayout: LinearLayout? = null
     var giphyView: GiphyView? = null
@@ -63,6 +65,8 @@ class NewWorkoutDialogFragment: DialogFragment() {
     var fullControls: NestedScrollView? = null
 
     var workoutValue: String? = ""
+    var hoursValue: Int? = null
+    var minutesValue: Int? = null
     var secondsValue: Int? = null
     var workoutImageValue: String? = null
     var workoutSpeechValue: Int? = 1
@@ -123,7 +127,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
             builder.setTitle(R.string.add_workout)
         } else {
             builder.setTitle(R.string.edit_workout)
-            numberPicker?.value = workout?.seconds!!
+            hoursNumberPicker?.value = workout?.hours!!
+            minutesNumberPicker?.value = workout?.minutes!!
+            secondsNumberPicker?.value = workout?.seconds!!
             workoutText?.setText(workout?.workoutName)
             if (workout!!.workoutSpeech == 1) {
                 workoutSpeechValue = 1
@@ -144,35 +150,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
             }
         }
 
-        workoutSpeech!!.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                workoutSpeechValue = 1
-                if (workoutText?.text.toString() != "") {
-                    context?.speakText(workoutText?.text.toString())
-                }
-            } else {
-                workoutSpeechValue = 0
-            }
-        }
-
-        secondsValue = numberPicker!!.value
-
-        numberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
-            secondsValue = newVal
-        }
-
-        workoutImage?.setOnClickListener {
-            tapWorkoutImage()
-        }
-        workoutImagePlaceholder?.setOnClickListener {
-            tapPlaceholderImage()
-        }
-
         builder.setView(dialogView)
             .setPositiveButton(R.string.save) { dialog, id ->
                 mGlobalPreferences!!.workoutModified = true
                 validateImagePath()
-                newWorkoutDialogListener?.onSaveClick(this, Workout(seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
+                newWorkoutDialogListener?.onSaveClick(this, Workout(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
             }
             .setNegativeButton(R.string.close) { dialog, id ->
                 // TODO: If cancel is selected and image isn't null, delete anything created
@@ -200,7 +182,9 @@ class NewWorkoutDialogFragment: DialogFragment() {
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
         searchGiphyLayout = dialogView.findViewById(R.id.gif_search_view)
         workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
-        numberPicker = dialogView.findViewById(R.id.number_picker)
+        hoursNumberPicker = dialogView.findViewById(R.id.hours_number_picker)
+        minutesNumberPicker = dialogView.findViewById(R.id.minutes_number_picker)
+        secondsNumberPicker = dialogView.findViewById(R.id.seconds_number_picker)
         workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
         workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
 
@@ -252,9 +236,18 @@ class NewWorkoutDialogFragment: DialogFragment() {
             }
         }
 
-        secondsValue = numberPicker!!.value
+        hoursValue = hoursNumberPicker!!.value
+        hoursNumberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+            hoursValue = newVal
+        }
 
-        numberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+        minutesValue = minutesNumberPicker!!.value
+        minutesNumberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+            minutesValue = newVal
+        }
+
+        secondsValue = secondsNumberPicker!!.value
+        secondsNumberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
             secondsValue = newVal
         }
 

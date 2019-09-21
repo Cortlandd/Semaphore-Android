@@ -43,39 +43,79 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+
             <LinearLayout
                 android:layout_margin="10dp"
+                android:orientation="horizontal"
                 android:layout_gravity="center_horizontal"
-                android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-                <TextView
-                    android:text="@string/seconds"
-                    android:layout_gravity="center_horizontal"
-                    android:textSize="30sp"
-                    android:textColor="@android:color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
                 <com.shawnlin.numberpicker.NumberPicker
-                    android:id="@+id/number_picker"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_width="match_parent"
+                    android:id="@+id/hours_number_picker"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:np_wrapSelectorWheel="true"
                     app:np_scrollerEnabled="true"
                     app:np_fadingEdgeEnabled="true"
-                    app:np_height="64dp"
-                    app:np_dividerColor="@android:color/black"
-                    app:np_orientation="horizontal"
-                    app:np_max="59"
-                    app:np_min="1"
+                    app:np_dividerColor="@android:color/darker_gray"
+                    app:np_orientation="vertical"
+                    app:np_max="23"
+                    app:np_min="0"
                     app:np_selectedTextColor="@android:color/black"
                     app:np_textColor="@android:color/black"
                     app:np_textSize="20sp" />
 
+                <TextView
+                    android:text="hr"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.shawnlin.numberpicker.NumberPicker
+                    android:id="@+id/minutes_number_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:np_wrapSelectorWheel="true"
+                    app:np_scrollerEnabled="true"
+                    app:np_fadingEdgeEnabled="true"
+                    app:np_dividerColor="@android:color/darker_gray"
+                    app:np_orientation="vertical"
+                    app:np_max="59"
+                    app:np_min="0"
+                    app:np_selectedTextColor="@android:color/black"
+                    app:np_textColor="@android:color/black"
+                    app:np_textSize="20sp" />
+
+                <TextView
+                    android:text="min"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.shawnlin.numberpicker.NumberPicker
+                    android:id="@+id/seconds_number_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:np_wrapSelectorWheel="true"
+                    app:np_scrollerEnabled="true"
+                    app:np_fadingEdgeEnabled="true"
+                    app:np_dividerColor="@android:color/darker_gray"
+                    app:np_orientation="vertical"
+                    app:np_max="59"
+                    app:np_min="0"
+                    app:np_selectedTextColor="@android:color/black"
+                    app:np_textColor="@android:color/black"
+                    app:np_textSize="20sp" />
+
+                <TextView
+                    android:text="sec"
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
             </LinearLayout>
+
 
             <LinearLayout
                 android:orientation="vertical"

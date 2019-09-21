@@ -41,6 +41,8 @@ import xyz.cortland.fittimer.android.receivers.CountDownEvent
 import java.io.File
 import java.util.*
 import java.util.concurrent.Semaphore
+import javax.xml.datatype.DatatypeConstants.HOURS
+import java.util.concurrent.TimeUnit
 
 
 class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: List<Workout>) : RecyclerView.Adapter<WorkoutAdapter.ViewHolder>() {
@@ -95,8 +97,11 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             return
         }
 
+        var hours = workout.hours
+        var minutes = workout.minutes
         var seconds = workout.seconds
-        seconds = seconds?.times(1000)
+
+        val totalTimeInMillis = hours?.times(3600000)!! + minutes?.times(60000)!! + seconds?.times(1000)!!
 
         if (workout.isDefaultState!!) {
             holder.stopButton.show()
@@ -108,7 +113,9 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             holder.itemView.isEnabled = true
 
             holder.workoutView.text = workout.workoutName
-            holder.secondsView.text = workout.seconds.toString()
+            holder.hoursView.text = if (workout.hours in 0..9) "0${workout.hours.toString()}" else workout.hours.toString()
+            holder.minutesView.text = if (workout.minutes in 0..9) "0${workout.minutes.toString()}" else workout.minutes.toString()
+            holder.secondsView.text = if (workout.seconds in 0..9) "0${workout.seconds.toString()}" else workout.seconds.toString()
             if (workout.workoutImage != null) {
                 Glide.with(parentActivity!!).load(File(workout.workoutImage)).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(holder.workoutImage)
             } else {
@@ -116,17 +123,25 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             }
 
             // Mostly for Play All
-            holder.workoutProgressBar.progressMax = (seconds!! / 1000).toFloat()
-            holder.workoutProgressBar.progress = (seconds / 1000).toFloat()
+            holder.workoutProgressBar.progressMax = (totalTimeInMillis / 1000).toFloat()
+            holder.workoutProgressBar.progress = (totalTimeInMillis / 1000).toFloat()
 
         } else {
             return
         }
 
-        workout.countDownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
+        workout.countDownTimer = object: CountDownTimer(totalTimeInMillis.toLong(), 1000) {
 
             override fun onTick(millisUntilFinished: Long) {
-                holder.secondsView.text = "${millisUntilFinished / 1000}"
+
+                val _hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished)
+                val _minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % TimeUnit.HOURS.toMinutes(1)
+                val _seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % TimeUnit.MINUTES.toSeconds(1)
+
+                holder.hoursView.text = if (_hours in 0..9) "0$_hours" else "$_hours"
+                holder.minutesView.text = if (_minutes in 0..9) "0$_minutes" else "$_minutes"
+                holder.secondsView.text = if (_seconds in 0..9) "0$_seconds" else "$_seconds"
+
                 holder.workoutProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
             }
 
@@ -135,11 +150,13 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
                     finishedWorkoutNotification(workout)
                 }
                 holder.playButton.show()
-                holder.secondsView.text = workout.seconds.toString()
+                holder.hoursView.text = if (workout.hours in 0..9) "0${workout.hours.toString()}" else workout.hours.toString()
+                holder.minutesView.text = if (workout.minutes in 0..9) "0${workout.minutes.toString()}" else workout.minutes.toString()
+                holder.secondsView.text = if (workout.seconds in 0..9) "0${workout.seconds.toString()}" else workout.seconds.toString()
                 holder.workoutControls.visibility = View.GONE
 
                 // Set the progress ring back to default
-                holder.workoutProgressBar.progress = (seconds / 1000).toFloat()
+                holder.workoutProgressBar.progress = (totalTimeInMillis / 1000).toFloat()
             }
 
             override fun countdownStart() {
@@ -201,8 +218,11 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
         val workout = mWorkouts[position]
 
+        var hours = workout.hours
+        var minutes = workout.minutes
         var seconds = workout.seconds
-        seconds = seconds?.times(1000)
+
+        val totalTimeInMillis = hours?.times(3600000)!! + minutes?.times(60000)!! + seconds?.times(1000)!!
 
         workout.isDefaultState = false
 
@@ -211,12 +231,20 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
             //mHolder.stopButton.hide()
             //mHolder.playButton.hide()
 
-            mHolder.workoutProgressBar.progressMax = (seconds!! / 1000).toFloat()
+            mHolder.workoutProgressBar.progressMax = (totalTimeInMillis / 1000).toFloat()
 
-            workout.countDownTimer = object: CountDownTimer(seconds.toLong(), 1000) {
+            workout.countDownTimer = object: CountDownTimer(totalTimeInMillis.toLong(), 1000) {
 
                 override fun onTick(millisUntilFinished: Long) {
-                    mHolder.secondsView.text = "${millisUntilFinished / 1000}"
+
+                    val _hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished)
+                    val _minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % TimeUnit.HOURS.toMinutes(1)
+                    val _seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % TimeUnit.MINUTES.toSeconds(1)
+
+                    mHolder.hoursView.text = if (_hours in 0..9) "0$_hours" else "$_hours"
+                    mHolder.minutesView.text = if (_minutes in 0..9) "0$_minutes" else "$_minutes"
+                    mHolder.secondsView.text = if (_seconds in 0..9) "0$_seconds" else "$_seconds"
+
                     prefs.currentPlayingAllRemainingTime = (millisUntilFinished / 1000).toInt()
                     if (parentActivity!!.isPaused!!) {
                         //updateNotification(workout,"${millisUntilFinished / 1000} seconds remaining.")
@@ -366,6 +394,8 @@ class WorkoutAdapter(var parentActivity: WorkoutListActivity?, var mWorkouts: Li
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         var secondsView: TextView = view.seconds
+        var minutesView: TextView = view.minutes
+        var hoursView: TextView = view.hours
         var workoutView: TextView = view.workout
         var playButton: FloatingActionButton = view.single_play_button
         var stopButton: FloatingActionButton = view.single_stop_button
