@@ -5,7 +5,7 @@ import android.speech.tts.TextToSpeech
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 import java.util.*
 
-class FitTimer: Application() {
+class SemaphoreApp: Application() {
 
     // TODO: Potentially implement a shared AlertDialog.
 
@@ -18,10 +18,10 @@ class FitTimer: Application() {
     }
 
     companion object {
-        private var instance: FitTimer? = null
+        private var instance: SemaphoreApp? = null
 
-        fun applicationContext(): FitTimer {
-            return instance as FitTimer
+        fun applicationContext(): SemaphoreApp {
+            return instance as SemaphoreApp
         }
     }
 

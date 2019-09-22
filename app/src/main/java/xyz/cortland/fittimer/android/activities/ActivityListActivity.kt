@@ -16,21 +16,21 @@ import android.widget.Button
 import android.widget.Toast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-import kotlinx.android.synthetic.main.activity_workout_list.*
-import kotlinx.android.synthetic.main.workout_list.*
+import kotlinx.android.synthetic.main.activity_activity_list.*
+import kotlinx.android.synthetic.main.activity_list.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import xyz.cortland.fittimer.android.FitTimer
 import xyz.cortland.fittimer.android.R
-import xyz.cortland.fittimer.android.adapter.WorkoutAdapter
+import xyz.cortland.fittimer.android.SemaphoreApp
+import xyz.cortland.fittimer.android.adapter.ActivityAdapter
 import xyz.cortland.fittimer.android.custom.CountDownTimer
-import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.database.ActivityDatabase
 import xyz.cortland.fittimer.android.extensions.dbHandler
 import xyz.cortland.fittimer.android.extensions.hideTimerNotification
-import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
+import xyz.cortland.fittimer.android.fragments.NewActivityDialogFragment
 import xyz.cortland.fittimer.android.helpers.*
 
-import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.model.ActivityModel
 import xyz.cortland.fittimer.android.receivers.CountDownEvent
 import java.io.File
 import java.util.*
@@ -42,11 +42,11 @@ import kotlin.concurrent.thread
  * An activity representing a list of Pings. This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
- * lead to a [WorkoutDetailActivity] representing
+ * lead to a [ActivityDetailActivity] representing
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWorkoutDialogListener, SharedPreferences.OnSharedPreferenceChangeListener {
+class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewActivityDialogListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -54,12 +54,12 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
      */
     //private var twoPane: Boolean = false
 
-    var workoutAdapter: WorkoutAdapter? = null
+    var activityAdapter: ActivityAdapter? = null
     var currentCountDownTimer: CountDownTimer? = null
     var itemTouchHelper: ItemTouchHelper? = null
     var semaphore: Semaphore? = null
 
-    val mWorkouts: ArrayList<Workout> = ArrayList<Workout>()
+    val mActivityModels: ArrayList<ActivityModel> = ArrayList<ActivityModel>()
     var isPaused: Boolean? = false
 
     var playAllButton: Button? = null
@@ -67,14 +67,14 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_workout_list)
+        setContentView(R.layout.activity_activity_list)
 
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-        mWorkouts.addAll(dbHandler.allWorkoutsList())
-        workoutAdapter = WorkoutAdapter(this, mWorkouts)
-        item_list.adapter = workoutAdapter
+        mActivityModels.addAll(dbHandler.allActivitiesList())
+        activityAdapter = ActivityAdapter(this, mActivityModels)
+        item_list.adapter = activityAdapter
 
         val itemTouchCallback = object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
@@ -84,15 +84,15 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val image = mWorkouts.get(position).workoutImage
-                mWorkouts.removeAt(position)
+                val image = mActivityModels.get(position).activityImage
+                mActivityModels.removeAt(position)
                 item_list!!.adapter?.notifyItemRemoved(position)
-                removeWorkoutItem(viewHolder.itemView.id)
+                removeActivityItem(viewHolder.itemView.id)
                 if (image != null) {
                     val df = File(image)
                     df.delete()
                 }
-                validateWorkoutCount()
+                validateActivityCount()
             }
 
         }
@@ -116,8 +116,8 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         EventBus.getDefault().unregister(this)
         EventBus.getDefault().removeAllStickyEvents()
         dbHandler.close()
-        workoutAdapter?.stopAllWorkouts()
-        prefs.isPlayingAllWorkouts = false
+        activityAdapter?.stopAllActivities()
+        prefs.isPlayingAllActivities = false
         prefs.mSharedPreferences?.unregisterOnSharedPreferenceChangeListener(this) // Register prefs for change listening in this Activity
     }
 
@@ -133,18 +133,18 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
         hideTimerNotification()
 
-        if (prefs.isPlayingAllWorkouts) {
+        if (prefs.isPlayingAllActivities) {
             EventBus.getDefault().removeAllStickyEvents()
         }
 
         // Used for Editing Workouts
-        if (prefs.workoutModified) {
-            mWorkouts.clear()
+        if (prefs.activityModified) {
+            mActivityModels.clear()
             item_list.invalidate()
-            mWorkouts.addAll(dbHandler.allWorkoutsList())
-            workoutAdapter!!.notifyDataSetChanged()
-            validateWorkoutCount()
-            prefs.workoutModified = false
+            mActivityModels.addAll(dbHandler.allActivitiesList())
+            activityAdapter!!.notifyDataSetChanged()
+            validateActivityCount()
+            prefs.activityModified = false
         } else {
             return
         }
@@ -167,10 +167,10 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
      * Used to remove swiped Workouts
      * @param id: The id of the book
      */
-    fun removeWorkoutItem(id: Int) {
-        val dbHelper = WorkoutDatabase(this, null)
+    fun removeActivityItem(id: Int) {
+        val dbHelper = ActivityDatabase(this, null)
         val db = dbHelper.writableDatabase
-        db.delete(WorkoutDatabase.TABLE_NAME, WorkoutDatabase.COLUMN_ID + "=" + id, null)
+        db.delete(ActivityDatabase.TABLE_NAME, ActivityDatabase.COLUMN_ID + "=" + id, null)
         db.close()
     }
 
@@ -179,62 +179,62 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         playAllButton = findViewById<Button>(R.id.play_all_button)
         stopAllButton = findViewById<Button>(R.id.stop_all_button)
 
-        validateWorkoutCount()
+        validateActivityCount()
 
         playAllButton!!.setOnClickListener {
 
-            prefs.isPlayingAllWorkouts = true
+            prefs.isPlayingAllActivities = true
 
             semaphore?.drainPermits() // Just in case
             semaphore = Semaphore(1)
 
-            for (i in mWorkouts.indices) {
-                val holder = item_list.getChildViewHolder(item_list.getChildAt(i)) as WorkoutAdapter.ViewHolder?
+            for (i in mActivityModels.indices) {
+                val holder = item_list.getChildViewHolder(item_list.getChildAt(i)) as ActivityAdapter.ViewHolder?
                 holder!!.itemView.isEnabled = false
                 thread {
                     semaphore!!.acquire(1)
                     println("Aquired")
-                    workoutAdapter?.play(holder, i, semaphore!!)
+                    activityAdapter?.play(holder, i, semaphore!!)
                 }
             }
 
         }
 
         stopAllButton!!.setOnClickListener {
-            prefs.isPlayingAllWorkouts = false
+            prefs.isPlayingAllActivities = false
         }
 
         fab.setOnClickListener {
-            val newWorkoutFragment = NewWorkoutDialogFragment()
+            val newWorkoutFragment = NewActivityDialogFragment()
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
 
         fab_placeholder.setOnClickListener {
-            val newWorkoutFragment = NewWorkoutDialogFragment()
+            val newWorkoutFragment = NewActivityDialogFragment()
             newWorkoutFragment.show(supportFragmentManager, "newWorkout")
         }
 
-        workout_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
+        activity_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 
     }
 
-    override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
-        if (prefs.editingLongPressWorkout) {
-            updateWorkoutItem(prefs.longPressWorkoutId, workout)
-            FitTimer.applicationContext().preferences!!.removePreferences(EDITING_WORKOUT) // Remove editing workout from preferences
-            FitTimer.applicationContext().preferences!!.removePreferences(LONGPRESS_WORKOUT_ID) // Remove longpressed workout id from preferences
+    override fun onSaveClick(dialog: DialogFragment, activityModel: ActivityModel) {
+        if (prefs.editingLongPressActivity) {
+            updateActivityItem(prefs.longPressActivityId, activityModel)
+            SemaphoreApp.applicationContext().preferences!!.removePreferences(EDITING_ACTIVITY) // Remove editing activityModel from preferences
+            SemaphoreApp.applicationContext().preferences!!.removePreferences(LONGPRESS_ACTIVITY_ID) // Remove longpressed activityModel id from preferences
             // TODO: Shouldn't have to clear all then add again. Also need animations for insert and remove
-            mWorkouts.clear()
-            mWorkouts.addAll(dbHandler.allWorkoutsList())
-            workoutAdapter?.notifyDataSetChanged()
-            validateWorkoutCount()
+            mActivityModels.clear()
+            mActivityModels.addAll(dbHandler.allActivitiesList())
+            activityAdapter?.notifyDataSetChanged()
+            validateActivityCount()
             dialog.dismiss()
         } else {
-            dbHandler.addWorkout(workout)
-            mWorkouts.clear()
-            mWorkouts.addAll(dbHandler.allWorkoutsList())
-            workoutAdapter!!.notifyDataSetChanged()
-            validateWorkoutCount()
+            dbHandler.addActivity(activityModel)
+            mActivityModels.clear()
+            mActivityModels.addAll(dbHandler.allActivitiesList())
+            activityAdapter!!.notifyDataSetChanged()
+            validateActivityCount()
             dialog.dismiss()
         }
     }
@@ -251,7 +251,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.settings_menu -> {
-                if (prefs.isPlayingAllWorkouts) {
+                if (prefs.isPlayingAllActivities) {
                     Toast.makeText(this, "Stop All Workouts before changing Settings.", Toast.LENGTH_SHORT).show()
                 } else {
                     val i = Intent(this, SettingsActivity::class.java)
@@ -264,15 +264,15 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
         return true
     }
 
-    fun validateWorkoutCount() {
+    fun validateActivityCount() {
 
-        if (mWorkouts.size == 0 || mWorkouts.size == null) {
-            no_workouts_message.visibility = View.VISIBLE
+        if (mActivityModels.size == 0 || mActivityModels.size == null) {
+            no_activities_message.visibility = View.VISIBLE
         } else {
-            no_workouts_message.visibility = View.GONE
+            no_activities_message.visibility = View.GONE
         }
 
-        if (mWorkouts.size <= 1 || mWorkouts == null) {
+        if (mActivityModels.size <= 1 || mActivityModels == null) {
             playAllButton!!.visibility = View.GONE
         } else {
             playAllButton!!.visibility = View.VISIBLE
@@ -298,30 +298,30 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
      * Used to remove swiped Workouts
      *
      * @param id: The id of the book
-     * @param workout: The workout to be updated
+     * @param activityModel: The activityModel to be updated
      */
-    private fun updateWorkoutItem(id: Int, workout: Workout) {
-        val dbHelper = WorkoutDatabase(this, null)
+    private fun updateActivityItem(id: Int, activityModel: ActivityModel) {
+        val dbHelper = ActivityDatabase(this, null)
         val db = dbHelper.writableDatabase
         val values = ContentValues()
-        values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
-        values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
+        values.put(ActivityDatabase.COLUMN_SECONDS, activityModel.seconds)
+        values.put(ActivityDatabase.COLUMN_ACTIVITY, activityModel.activityName)
         if (prefs.currentImageRemoved) {
-            values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
+            values.putNull(ActivityDatabase.COLUMN_ACTIVITYIMAGE)
             prefs.currentImageRemoved = false
         } else {
-            values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
+            values.put(ActivityDatabase.COLUMN_ACTIVITYIMAGE, activityModel.activityImage)
         }
-        values.put(WorkoutDatabase.COLUMN_WORKOUTSPEECH, workout.workoutSpeech)
-        db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + id, null)
+        values.put(ActivityDatabase.COLUMN_ACTIVITYSPEECH, activityModel.activitySpeech)
+        db.update(ActivityDatabase.TABLE_NAME, values, ActivityDatabase.COLUMN_ID + "=" + id, null)
         db.close()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
-            IS_PLAYING_ALL_WORKOUTS -> {
-                if (prefs.isPlayingAllWorkouts) {
-                    // Hide Add Workout Button
+            IS_PLAYING_ALL_ACTIVITIES -> {
+                if (prefs.isPlayingAllActivities) {
+                    // Hide Add ActivityModel Button
                     fab.hide()
                     // Disable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(null)
@@ -334,7 +334,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.GONE
                     playAllButton!!.visibility = View.VISIBLE
-                    // Show Add Workout Button
+                    // Show Add ActivityModel Button
                     fab.show()
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(item_list)
@@ -343,7 +343,7 @@ class WorkoutListActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWor
 
                     semaphore?.drainPermits()
 
-                    workoutAdapter?.stopAllWorkouts()
+                    activityAdapter?.stopAllActivities()
                 }
             }
         }

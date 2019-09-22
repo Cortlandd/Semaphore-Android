@@ -1,18 +1,18 @@
 package xyz.cortland.fittimer.android.helpers
 
-import xyz.cortland.fittimer.android.FitTimer
+import xyz.cortland.fittimer.android.SemaphoreApp
 
-const val WORKOUT_FINISHED_ID = 9000
-const val WORKOUT_CHANNEL = "workout_channel_9000"
+const val ACTIVITY_FINISHED_ID = 9000
+const val ACTIVITY_CHANNEL = "activity_channel_9000"
 const val IMAGE_PICK_CODE = 1000
 /* Related to SharedPreferences */
 const val GLOBAL_PREFERENCES = "global_preferences"
-const val HAS_WORKOUT_EDITED = "has_workout_edited"
+const val HAS_ACTIVITY_EDITED = "has_activity_edited"
 const val HAS_CURRENT_IMAGE_REMOVED = "has_current_image_removed"
 const val CURRENT_LOCAL_LANGUAGE = "current_local_language"
-const val CURRENT_PLAYING_ALL_WORKOUT_POSITION = "current_playing_all_workout_position"
-const val CURRENT_PLAYING_ALL_WORKOUT_REMAINING = "current_playing_all_workout_remaining"
-const val EDITING_WORKOUT = "editing_workout"
-const val LONGPRESS_WORKOUT_ID = "longpress_workout_id"
-const val IS_PLAYING_ALL_WORKOUTS = "is_playing_all_workouts"
-val prefs = FitTimer.applicationContext().preferences!!
+const val CURRENT_PLAYING_ALL_ACTIVITY_POSITION = "current_playing_all_activity_position"
+const val CURRENT_PLAYING_ALL_ACTIVITY_REMAINING = "current_playing_all_activity_remaining"
+const val EDITING_ACTIVITY = "editing_activity"
+const val LONGPRESS_ACTIVITY_ID = "longpress_activity_id"
+const val IS_PLAYING_ALL_ACTIVITIES = "is_playing_all_activities"
+val prefs = SemaphoreApp.applicationContext().preferences!!

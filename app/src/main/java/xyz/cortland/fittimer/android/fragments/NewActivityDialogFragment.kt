@@ -3,7 +3,6 @@ package xyz.cortland.fittimer.android.fragments
 import android.Manifest
 import android.app.Activity
 import android.app.Dialog
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,26 +13,19 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import xyz.cortland.fittimer.android.R
-import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.model.ActivityModel
 import xyz.klinker.giphy.GiphyView
 import java.lang.ClassCastException
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
-import android.graphics.Color
-import android.os.Build
-import android.speech.tts.TextToSpeech
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SwitchCompat
-import androidx.constraintlayout.widget.ConstraintSet.WRAP_CONTENT
 import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.shawnlin.numberpicker.NumberPicker
-import kotlinx.android.synthetic.main.add_workout.*
-import xyz.cortland.fittimer.android.FitTimer
-import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.SemaphoreApp
+import xyz.cortland.fittimer.android.database.ActivityDatabase
 import xyz.cortland.fittimer.android.extensions.speakText
 import xyz.cortland.fittimer.android.helpers.IMAGE_PICK_CODE
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
@@ -42,56 +34,55 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.*
 
 
-// TODO: (MAYBE) Implemented an EditWorkoutDialogFragment Dialog Class
-class NewWorkoutDialogFragment: DialogFragment() {
+// TODO: (MAYBE) Implemented an EditActivityDialogFragment Dialog Class
+class NewActivityDialogFragment: DialogFragment() {
 
     var gifImageLocation: String? = null
     var galleryImageLocation: String? = null
     var imagePath: String? = null
     var mGlobalPreferences: GlobalPreferences? = null
 
-    var workoutImage: ImageView? = null
-    var workoutImagePlaceholder: ImageView? = null
+    var activityImage: ImageView? = null
+    var activityImagePlaceholder: ImageView? = null
     var hoursNumberPicker: NumberPicker? = null
     var minutesNumberPicker: NumberPicker? = null
     var secondsNumberPicker: NumberPicker? = null
-    var workoutSpeech: SwitchCompat? = null
+    var activitySpeech: SwitchCompat? = null
     var searchGiphyLayout: LinearLayout? = null
     var giphyView: GiphyView? = null
-    var workoutText: EditText? = null
+    var activityText: EditText? = null
     var fullControls: NestedScrollView? = null
 
-    var workoutValue: String? = ""
+    var activityValue: String? = ""
     var hoursValue: Int? = null
     var minutesValue: Int? = null
     var secondsValue: Int? = null
-    var workoutImageValue: String? = null
-    var workoutSpeechValue: Int? = 1
+    var activityImageValue: String? = null
+    var activitySpeechValue: Int? = 1
 
-    var workout: Workout? = null
-    var workoutId: Int? = null
+    var activityModel: ActivityModel? = null
+    var activityModelId: Int? = null
 
     var positiveButton: Button? = null
     var negativeButton: Button? = null
 
-    interface NewWorkoutDialogListener {
-        fun onSaveClick(dialog: DialogFragment, workout: Workout)
+    interface NewActivityDialogListener {
+        fun onSaveClick(dialog: DialogFragment, activityModel: ActivityModel)
         fun onCancelClick(dialog: DialogFragment)
     }
 
-    var newWorkoutDialogListener: NewWorkoutDialogListener? = null
+    var newActivityDialogListener: NewActivityDialogListener? = null
 
     companion object {
-        fun newInstance(workout: Workout, id: Int): NewWorkoutDialogFragment {
-            val newWorkoutDialogFragment = NewWorkoutDialogFragment()
+        fun newInstance(activityModel: ActivityModel, id: Int): NewActivityDialogFragment {
+            val newActivityDialogFragment = NewActivityDialogFragment()
             val args = Bundle()
-            args.putParcelable("arg_workout", workout)
-            args.putInt("arg_workout_id", id)
-            newWorkoutDialogFragment.arguments = args
-            return newWorkoutDialogFragment
+            args.putParcelable("arg_activity", activityModel)
+            args.putInt("arg_activity_id", id)
+            newActivityDialogFragment.arguments = args
+            return newActivityDialogFragment
         }
     }
 
@@ -102,7 +93,7 @@ class NewWorkoutDialogFragment: DialogFragment() {
         if (d != null) {
             positiveButton = d.getButton(Dialog.BUTTON_POSITIVE)
             negativeButton = d.getButton(Dialog.BUTTON_NEGATIVE)
-            if (workoutText!!.text.toString().length >= 2) {
+            if (activityText!!.text.toString().length >= 2) {
                 positiveButton?.isEnabled = true
             } else {
                 positiveButton?.isEnabled = false
@@ -113,52 +104,52 @@ class NewWorkoutDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
         val builder = AlertDialog.Builder(this.activity!!, R.style.AlertDialogTheme)
-        mGlobalPreferences = FitTimer.applicationContext().preferences
+        mGlobalPreferences = SemaphoreApp.applicationContext().preferences
 
-        val dialogView = activity?.layoutInflater?.inflate(R.layout.add_workout, null)
+        val dialogView = activity?.layoutInflater?.inflate(R.layout.add_activity, null)
 
-        workout = arguments?.getParcelable("arg_workout")
-        workoutId = arguments?.getInt("arg_workout_id")
+        activityModel = arguments?.getParcelable("arg_activity")
+        activityModelId = arguments?.getInt("arg_activity_id")
 
         setupView(dialogView!!)
 
 
-        if (workout == null) {
-            builder.setTitle(R.string.add_workout)
+        if (activityModel == null) {
+            builder.setTitle(R.string.add_activity)
         } else {
-            builder.setTitle(R.string.edit_workout)
-            hoursNumberPicker?.value = workout?.hours!!
-            minutesNumberPicker?.value = workout?.minutes!!
-            secondsNumberPicker?.value = workout?.seconds!!
-            workoutText?.setText(workout?.workoutName)
-            if (workout!!.workoutSpeech == 1) {
-                workoutSpeechValue = 1
-                workoutSpeech!!.isChecked = true
+            builder.setTitle(R.string.edit_activity)
+            hoursNumberPicker?.value = activityModel?.hours!!
+            minutesNumberPicker?.value = activityModel?.minutes!!
+            secondsNumberPicker?.value = activityModel?.seconds!!
+            activityText?.setText(activityModel?.activityName)
+            if (activityModel!!.activitySpeech == 1) {
+                activitySpeechValue = 1
+                activitySpeech!!.isChecked = true
             } else {
-                workoutSpeechValue = 0
-                workoutSpeech!!.isChecked = false
+                activitySpeechValue = 0
+                activitySpeech!!.isChecked = false
             }
 
-            if (workout?.workoutImage != null) {
-                workoutImage!!.visibility = View.VISIBLE
-                workoutImagePlaceholder!!.visibility = View.GONE
-                Glide.with(this).load(Uri.fromFile(File(workout?.workoutImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(workoutImage!!)
-                workoutImageValue = workout?.workoutImage
+            if (activityModel?.activityImage != null) {
+                activityImage!!.visibility = View.VISIBLE
+                activityImagePlaceholder!!.visibility = View.GONE
+                Glide.with(this).load(Uri.fromFile(File(activityModel?.activityImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
+                activityImageValue = activityModel?.activityImage
             } else {
-                workoutImage!!.visibility = View.GONE
-                workoutImagePlaceholder!!.visibility = View.VISIBLE
+                activityImage!!.visibility = View.GONE
+                activityImagePlaceholder!!.visibility = View.VISIBLE
             }
         }
 
         builder.setView(dialogView)
             .setPositiveButton(R.string.save) { dialog, id ->
-                mGlobalPreferences!!.workoutModified = true
+                mGlobalPreferences!!.activityModified = true
                 validateImagePath()
-                newWorkoutDialogListener?.onSaveClick(this, Workout(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, workoutName = workoutValue, workoutImage = workoutImageValue, workoutSpeech = workoutSpeechValue))
+                newActivityDialogListener?.onSaveClick(this, ActivityModel(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, activityName = activityValue, activityImage = activityImageValue, activitySpeech = activitySpeechValue))
             }
             .setNegativeButton(R.string.close) { dialog, id ->
                 // TODO: If cancel is selected and image isn't null, delete anything created
-                newWorkoutDialogListener?.onCancelClick(this)
+                newActivityDialogListener?.onCancelClick(this)
             }
 
 
@@ -168,36 +159,36 @@ class NewWorkoutDialogFragment: DialogFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
-            newWorkoutDialogListener = activity as NewWorkoutDialogListener
+            newActivityDialogListener = activity as NewActivityDialogListener
         } catch (e: ClassCastException) {
-            throw ClassCastException(activity.toString() + "must implement NewWorkoutDialogListener")
+            throw ClassCastException(activity.toString() + "must implement NewActivityDialogListener")
         }
     }
 
     fun setupView(dialogView: View) {
 
-        fullControls = dialogView.findViewById(R.id.workout_content_view)
-        workoutText = dialogView.findViewById(R.id.workout_text)
+        fullControls = dialogView.findViewById(R.id.activity_content_view)
+        activityText = dialogView.findViewById(R.id.activity_text)
         giphyView = dialogView.findViewById(R.id.search_giphy_view)
         val closeGiphyButton = dialogView.findViewById<Button>(R.id.close_giphysearch_button)
         searchGiphyLayout = dialogView.findViewById(R.id.gif_search_view)
-        workoutSpeech = dialogView.findViewById(R.id.workout_to_speech)
+        activitySpeech = dialogView.findViewById(R.id.activity_to_speech)
         hoursNumberPicker = dialogView.findViewById(R.id.hours_number_picker)
         minutesNumberPicker = dialogView.findViewById(R.id.minutes_number_picker)
         secondsNumberPicker = dialogView.findViewById(R.id.seconds_number_picker)
-        workoutImage = dialogView.findViewById<ImageView>(R.id.selected_image)
-        workoutImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
+        activityImage = dialogView.findViewById<ImageView>(R.id.selected_image)
+        activityImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
 
         // TODO: Get API Key from Giphy
         // TODO: Create separate Alert Dialog for this with a callback
         giphyView?.setSelectedCallback {
 
             // Make images visible
-            workoutImage!!.visibility = View.VISIBLE
-            workoutImagePlaceholder!!.visibility = View.GONE
+            activityImage!!.visibility = View.VISIBLE
+            activityImagePlaceholder!!.visibility = View.GONE
 
             gifImageLocation = it.path?.toString()
-            Glide.with(this).load(it).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(workoutImage!!)
+            Glide.with(this).load(it).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
             galleryImageLocation = null
             imagePath = null
             searchGiphyLayout?.visibility = View.GONE
@@ -205,15 +196,15 @@ class NewWorkoutDialogFragment: DialogFragment() {
         }
 
 
-        workoutText!!.addTextChangedListener(object: TextWatcher {
+        activityText!!.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                workoutValue = s.toString()
+                activityValue = s.toString()
                 positiveButton?.isEnabled = s.toString().length >= 2
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                workoutValue = s.toString()
+                activityValue = s.toString()
                 positiveButton?.isEnabled = s.toString().length >= 2
             }
 
@@ -225,14 +216,14 @@ class NewWorkoutDialogFragment: DialogFragment() {
             showControlButtons()
         }
 
-        workoutSpeech!!.setOnCheckedChangeListener { _, isChecked ->
+        activitySpeech!!.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                workoutSpeechValue = 1
-                if (workoutText?.text.toString() != "") {
-                    context?.speakText(workoutText?.text.toString())
+                activitySpeechValue = 1
+                if (activityText?.text.toString() != "") {
+                    context?.speakText(activityText?.text.toString())
                 }
             } else {
-                workoutSpeechValue = 0
+                activitySpeechValue = 0
             }
         }
 
@@ -251,10 +242,10 @@ class NewWorkoutDialogFragment: DialogFragment() {
             secondsValue = newVal
         }
 
-        workoutImage?.setOnClickListener {
-            tapWorkoutImage()
+        activityImage?.setOnClickListener {
+            tapActivityImage()
         }
-        workoutImagePlaceholder?.setOnClickListener {
+        activityImagePlaceholder?.setOnClickListener {
             tapPlaceholderImage()
         }
 
@@ -262,21 +253,21 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     private fun validateImagePath() {
         when {
-            // For New Workouts
+            // For New Activities
             imagePath != null && gifImageLocation == null -> {
                 saveSelectedImage(imagePath!!)
-                workoutImageValue = galleryImageLocation
+                activityImageValue = galleryImageLocation
             }
             gifImageLocation != null && imagePath == null -> {
-                workoutImageValue = gifImageLocation
+                activityImageValue = gifImageLocation
             }
-            // For Existing Workouts
-            imagePath != null && workoutImageValue != workout?.workoutImage -> {
+            // For Existing Activities
+            imagePath != null && activityImageValue != activityModel?.activityImage -> {
                 saveSelectedImage(imagePath!!)
-                workoutImageValue = galleryImageLocation
+                activityImageValue = galleryImageLocation
             }
-            gifImageLocation != null  && workoutImageValue != workout?.workoutImage -> {
-                workoutImageValue = gifImageLocation
+            gifImageLocation != null  && activityImageValue != activityModel?.activityImage -> {
+                activityImageValue = gifImageLocation
             }
         }
     }
@@ -339,11 +330,11 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
                     imagePath = ImageFilePath.getPath(this.activity!!, uri)
 
-                    workoutImage!!.visibility = View.VISIBLE
-                    workoutImagePlaceholder!!.visibility = View.GONE
+                    activityImage!!.visibility = View.VISIBLE
+                    activityImagePlaceholder!!.visibility = View.GONE
 
                     try {
-                        Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(workoutImage!!)
+                        Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -356,12 +347,12 @@ class NewWorkoutDialogFragment: DialogFragment() {
         }
     }
 
-    fun tapWorkoutImage() {
+    fun tapActivityImage() {
         val builder = AlertDialog.Builder(this.activity!!)
-        if (workout == null) {
-            builder.setTitle(R.string.add_workout_image)
+        if (activityModel == null) {
+            builder.setTitle(R.string.add_activity_image)
         } else {
-            builder.setTitle(R.string.edit_workout_image)
+            builder.setTitle(R.string.edit_activity_image)
         }
         val options = arrayOf<String>(getString(R.string.upload_image), getString(R.string.search_gif), getString(R.string.remove_current_image))
         builder.setItems(options) { dialog, which ->
@@ -379,18 +370,18 @@ class NewWorkoutDialogFragment: DialogFragment() {
                     hideControlButtons()
                 }
                 2 -> { // Remove Current Image
-                    if (workout != null) {
+                    if (activityModel != null) {
                         // Delete File associated from cache
-                        if (workout?.workoutImage != null) {
-                            File(workout?.workoutImage).delete()
+                        if (activityModel?.activityImage != null) {
+                            File(activityModel?.activityImage).delete()
                         }
-                        Glide.with(this.activity!!).clear(workoutImage!!)
+                        Glide.with(this.activity!!).clear(activityImage!!)
                         // Glide clearing Imageview
                         // Update in the database
-                        WorkoutDatabase(this.activity!!, null).updateWorkoutImage(workoutId!!)
-                        // Update workout image views
-                        workoutImagePlaceholder!!.visibility = View.VISIBLE
-                        workoutImage!!.visibility = View.GONE
+                        ActivityDatabase(this.activity!!, null).updateActivityImage(activityModelId!!)
+                        // Update activityModel image views
+                        activityImagePlaceholder!!.visibility = View.VISIBLE
+                        activityImage!!.visibility = View.GONE
                         // Preferences to indicate image removed
                         mGlobalPreferences!!.currentImageRemoved = true
                     } else {
@@ -400,22 +391,22 @@ class NewWorkoutDialogFragment: DialogFragment() {
                             val gif = File(gifImageLocation)
                             if (gif.exists()) {
                                 gif.delete()
-                                Glide.with(this.activity!!).clear(workoutImage!!)
+                                Glide.with(this.activity!!).clear(activityImage!!)
                             }
 
-                            workoutImage?.visibility = View.GONE
-                            workoutImagePlaceholder?.visibility = View.VISIBLE
+                            activityImage?.visibility = View.GONE
+                            activityImagePlaceholder?.visibility = View.VISIBLE
                         }
 
                         if (imagePath != null) {
                             val img = File(imagePath)
                             if (img.exists()) {
                                 img.delete()
-                                Glide.with(this.activity!!).clear(workoutImage!!)
+                                Glide.with(this.activity!!).clear(activityImage!!)
                             }
 
-                            workoutImage?.visibility = View.GONE
-                            workoutImagePlaceholder?.visibility = View.VISIBLE
+                            activityImage?.visibility = View.GONE
+                            activityImagePlaceholder?.visibility = View.VISIBLE
                         }
 
                     }
@@ -427,10 +418,10 @@ class NewWorkoutDialogFragment: DialogFragment() {
 
     fun tapPlaceholderImage() {
         val builder = AlertDialog.Builder(this.activity!!)
-        if (workout?.workoutImage == null) {
-            builder.setTitle(R.string.add_workout_image)
+        if (activityModel?.activityImage == null) {
+            builder.setTitle(R.string.add_activity_image)
         } else {
-            builder.setTitle(R.string.edit_workout_image)
+            builder.setTitle(R.string.edit_activity_image)
         }
         val options = arrayOf<String>(getString(R.string.upload_image), getString(R.string.search_gif))
         builder.setItems(options) { dialog, which ->

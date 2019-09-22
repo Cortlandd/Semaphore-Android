@@ -23,7 +23,7 @@
         <item name="android:color">@android:color/black</item>
     </style>
 
-    <style name="WorkoutDialogSwitch" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
+    <style name="ActivityDialogSwitch" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
         <!-- active thumb and track color (30% transparency) -->
         <item name="colorControlActivated">#46bdbf</item>
 

@@ -5,7 +5,7 @@ import kotlinx.android.parcel.Parcelize
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 
 @Parcelize
-data class Workout(var hours: Int?, var minutes: Int?, var seconds: Int?, var workoutName: String?, var workoutImage: String?, var workoutSpeech: Int?): Parcelable {
+data class ActivityModel(var hours: Int?, var minutes: Int?, var seconds: Int?, var activityName: String?, var activityImage: String?, var activitySpeech: Int?): Parcelable {
 
     var id: Int? = null
     var isPlaying: Boolean? = false

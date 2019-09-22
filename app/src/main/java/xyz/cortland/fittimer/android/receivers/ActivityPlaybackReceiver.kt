@@ -1,17 +1,12 @@
 package xyz.cortland.fittimer.android.receivers
 
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.core.app.NotificationCompat
 import org.greenrobot.eventbus.EventBus
 import xyz.cortland.fittimer.android.custom.CountDownTimer
-import xyz.cortland.fittimer.android.helpers.WORKOUT_CHANNEL
-import xyz.cortland.fittimer.android.helpers.WORKOUT_FINISHED_ID
-import xyz.cortland.fittimer.android.model.Workout
 
-class WorkoutPlaybackReceiver : BroadcastReceiver() {
+class ActivityPlaybackReceiver : BroadcastReceiver() {
 
     var countdown: CountDownTimer? = null
 
@@ -27,22 +22,22 @@ class WorkoutPlaybackReceiver : BroadcastReceiver() {
             countdown = stickyEvent.countdownTimer
 
             when (action) {
-                "workout.stop" -> {
+                "activityModel.stop" -> {
                     if (countdown != null) {
-                        println("Stopped Workout")
+                        println("Stopped ActivityModel")
                         countdown?.cancel()
                     }
                 }
-                "workout.pause" -> {
+                "activityModel.pause" -> {
                     if (countdown != null) {
-                        println("Paused Workout")
+                        println("Paused ActivityModel")
                         countdown?.pause()
 
                     }
                 }
-                "workout.resume" -> {
+                "activityModel.resume" -> {
                     if (countdown != null) {
-                        println("Resumed Workout")
+                        println("Resumed ActivityModel")
                         countdown?.resume()
                     }
                 }

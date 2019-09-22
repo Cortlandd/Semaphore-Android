@@ -9,11 +9,11 @@
     <string name="stop">Detener</string>
     <string name="pause">Pausa</string>
     <string name="resume">Currículum</string>
-    <string name="add_workout">Agregar entrenamiento</string>
-    <string name="edit_workout">Editar entrenamiento</string>
+    <string name="add_activity">Agregar entrenamiento</string>
+    <string name="edit_activity">Editar entrenamiento</string>
     <string name="seconds">Segundos</string>
-    <string name="switch_workout_to_speech_audio">Audio de texto a voz</string>
-    <string name="hint_enter_workout_here">Ingrese el entrenamiento aquí</string>
+    <string name="switch_activity_to_speech_audio">Audio de texto a voz</string>
+    <string name="hint_enter_activity_here">Ingrese el entrenamiento aquí</string>
     <string name="hint_tap_image">Toque la imagen para cambiar su imagen de entrenamiento</string>
     <string name="close">Cerca</string>
     <string name="save">Salvar</string>
@@ -25,8 +25,8 @@
     <string name="open_source_licenses">Licencias de código abierto</string>
     <string name="faq">Preguntas más frecuentes</string>
     <string name="export">Exportar</string>
-    <string name="add_workout_image">Agregar imagen de entrenamiento</string>
-    <string name="edit_workout_image">Editar imagen de entrenamiento</string>
+    <string name="add_activity_image">Agregar imagen de entrenamiento</string>
+    <string name="edit_activity_image">Editar imagen de entrenamiento</string>
     <string name="upload_image">Cargar imagen</string>
     <string name="search_gif">Buscar GIF</string>
     <string name="remove_current_image">Eliminar imagen actual</string>

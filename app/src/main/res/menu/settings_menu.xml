@@ -8,13 +8,13 @@
     <item android:title="@string/general">
         <menu>
             <item
-                android:id="@+id/nav_export_workout"
+                android:id="@+id/nav_export_activity"
                 android:visible="false"
                 android:title="@string/export"/>
             <item
                 android:id="@+id/nav_speech_language"
                 android:icon="@drawable/ic_record_voice_over_purp_24dp"
-                android:title="@string/switch_workout_to_speech_audio" />
+                android:title="@string/switch_activity_to_speech_audio" />
             <item
                 android:id="@+id/nav_sendfeedback"
                 android:icon="@drawable/ic_mail_outline_purp_24dp"

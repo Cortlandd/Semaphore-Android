@@ -9,11 +9,11 @@
     <string name="stop">Arrêtez</string>
     <string name="pause">Pause</string>
     <string name="resume">Reprendre</string>
-    <string name="add_workout">Ajouter un entraînement</string>
-    <string name="edit_workout">Modifier l\'entraînement</string>
+    <string name="add_activity">Ajouter un entraînement</string>
+    <string name="edit_activity">Modifier l\'entraînement</string>
     <string name="seconds">Secondes</string>
-    <string name="switch_workout_to_speech_audio">Audio de synthèse vocale</string>
-    <string name="hint_enter_workout_here">Entrez l\'entraînement ici</string>
+    <string name="switch_activity_to_speech_audio">Audio de synthèse vocale</string>
+    <string name="hint_enter_activity_here">Entrez l\'entraînement ici</string>
     <string name="hint_tap_image">Appuyez sur l\'image pour changer votre image d\'entraînement</string>
     <string name="close">Fermer</string>
     <string name="save">sauvegarder</string>
@@ -25,8 +25,8 @@
     <string name="open_source_licenses">Licences Open Source</string>
     <string name="faq">FAQ</string>
     <string name="export">Exportation</string>
-    <string name="add_workout_image">Ajouter une image d\'entraînement</string>
-    <string name="edit_workout_image">Modifier l\'image d\'entraînement</string>
+    <string name="add_activity_image">Ajouter une image d\'entraînement</string>
+    <string name="edit_activity_image">Modifier l\'image d\'entraînement</string>
     <string name="upload_image">Upload Image</string>
     <string name="search_gif">Recherche GIF</string>
     <string name="remove_current_image">Supprimer l\'image actuelle</string>

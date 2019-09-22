@@ -15,20 +15,20 @@ class GlobalPreferences(context: Context) {
 
     /**
      *
-     * Get the value indicating if a Workout has been edited.
-     * Set rather or not a Workout has been edited.
+     * Get the value indicating if a ActivityModel has been edited.
+     * Set rather or not a ActivityModel has been edited.
      *
      * @return [Boolean]
      *
      */
-    var workoutModified: Boolean
-        get() = mSharedPreferences!!.getBoolean(HAS_WORKOUT_EDITED, false)
-        set(value) = with(mSharedPreferences!!.edit()) { this.putBoolean(HAS_WORKOUT_EDITED, value).apply() }
+    var activityModified: Boolean
+        get() = mSharedPreferences!!.getBoolean(HAS_ACTIVITY_EDITED, false)
+        set(value) = with(mSharedPreferences!!.edit()) { this.putBoolean(HAS_ACTIVITY_EDITED, value).apply() }
 
     /**
      *
      * Get value indicating rather or not the current image has been removed.
-     * Set rather or not the current workout image has been removed.
+     * Set rather or not the current activityModel image has been removed.
      *
      * Set the text-to-speech language for the app.
      *
@@ -49,44 +49,44 @@ class GlobalPreferences(context: Context) {
 
     /**
      *
-     * Get the index of the currently playing Workout from Playing All.
-     * Set the index of the currently playing Workout from Playing All.
+     * Get the index of the currently playing ActivityModel from Playing All.
+     * Set the index of the currently playing ActivityModel from Playing All.
      *
-     * @return [Int]: The remaining seconds until a workout is complete
+     * @return [Int]: The remaining seconds until a activityModel is complete
      *
      */
-    var currentPlayingAllWorkoutPosition: Int
-        get() = mSharedPreferences!!.getInt(CURRENT_PLAYING_ALL_WORKOUT_POSITION, -1)
-        set(position) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_WORKOUT_POSITION, position).apply() }
+    var currentPlayingAllActivityPosition: Int
+        get() = mSharedPreferences!!.getInt(CURRENT_PLAYING_ALL_ACTIVITY_POSITION, -1)
+        set(position) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_ACTIVITY_POSITION, position).apply() }
 
     /**
-     * Get/Set the current workout, from Playing All's, remaining time.
+     * Get/Set the current activityModel, from Playing All's, remaining time.
      */
     var currentPlayingAllRemainingTime: Long
-        get() = mSharedPreferences!!.getLong(CURRENT_PLAYING_ALL_WORKOUT_REMAINING, 0)
-        set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putLong(CURRENT_PLAYING_ALL_WORKOUT_REMAINING, remainingTime).apply() }
+        get() = mSharedPreferences!!.getLong(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING, 0)
+        set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putLong(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING, remainingTime).apply() }
 
     /**
-     * Get/Set rather or not the workout is playing from longpress
+     * Get/Set rather or not the activityModel is playing from longpress
      *
-     * @return [Boolean]: true or false rather a user is modifying a workout through long pressing
+     * @return [Boolean]: true or false rather a user is modifying a activityModel through long pressing
      */
-    var editingLongPressWorkout: Boolean
-        get() = mSharedPreferences!!.getBoolean(EDITING_WORKOUT, false)
-        set(editing) = with(mSharedPreferences!!.edit()) { this.putBoolean(EDITING_WORKOUT, editing).apply() }
+    var editingLongPressActivity: Boolean
+        get() = mSharedPreferences!!.getBoolean(EDITING_ACTIVITY, false)
+        set(editing) = with(mSharedPreferences!!.edit()) { this.putBoolean(EDITING_ACTIVITY, editing).apply() }
 
-    var longPressWorkoutId: Int
-        get() = mSharedPreferences!!.getInt(LONGPRESS_WORKOUT_ID, -1)
-        set(workoutId) = with(mSharedPreferences!!.edit()) { this.putInt(LONGPRESS_WORKOUT_ID, workoutId).apply() }
+    var longPressActivityId: Int
+        get() = mSharedPreferences!!.getInt(LONGPRESS_ACTIVITY_ID, -1)
+        set(activityId) = with(mSharedPreferences!!.edit()) { this.putInt(LONGPRESS_ACTIVITY_ID, activityId).apply() }
 
     /**
-     * Get/Set rather a not the app is playing all workouts vs a single workout
+     * Get/Set rather a not the app is playing all activities vs a single activityModel
      *
-     * @return [Boolean]: true or false rather the app is playing all workouts or a single workout
+     * @return [Boolean]: true or false rather the app is playing all activities or a single activityModel
      */
-    var isPlayingAllWorkouts: Boolean
-        get() = mSharedPreferences!!.getBoolean(IS_PLAYING_ALL_WORKOUTS,false)
-        set(isPlaying) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_PLAYING_ALL_WORKOUTS, isPlaying).apply() }
+    var isPlayingAllActivities: Boolean
+        get() = mSharedPreferences!!.getBoolean(IS_PLAYING_ALL_ACTIVITIES,false)
+        set(isPlaying) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_PLAYING_ALL_ACTIVITIES, isPlaying).apply() }
 
     /**
      *

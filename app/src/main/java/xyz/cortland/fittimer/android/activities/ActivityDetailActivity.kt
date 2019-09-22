@@ -6,45 +6,45 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
-import kotlinx.android.synthetic.main.activity_workout_detail.*
-import xyz.cortland.fittimer.android.FitTimer
+import kotlinx.android.synthetic.main.activity_activity_detail.*
+import xyz.cortland.fittimer.android.SemaphoreApp
 import xyz.cortland.fittimer.android.R
-import xyz.cortland.fittimer.android.database.WorkoutDatabase
+import xyz.cortland.fittimer.android.database.ActivityDatabase
 import xyz.cortland.fittimer.android.extensions.dbHandler
-import xyz.cortland.fittimer.android.fragments.NewWorkoutDialogFragment
-import xyz.cortland.fittimer.android.fragments.WorkoutDetailFragment
-import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.fragments.NewActivityDialogFragment
+import xyz.cortland.fittimer.android.fragments.ActivityDetailFragment
+import xyz.cortland.fittimer.android.model.ActivityModel
 import xyz.cortland.fittimer.android.utils.GlobalPreferences
 
 /**
  * An activity representing a single Item detail screen. This
  * activity is only used on narrow width devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
- * in a [WorkoutListActivity].
+ * in a [ActivityListActivity].
  */
-class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewWorkoutDialogListener {
+class ActivityDetailActivity : AppCompatActivity(), NewActivityDialogFragment.NewActivityDialogListener {
 
-    var workout: Workout? = null
-    var workoutId: Int? = null
+    var activityModel: ActivityModel? = null
+    var activityId: Int? = null
 
-    var fragment: WorkoutDetailFragment? = null
+    var fragment: ActivityDetailFragment? = null
 
     var prefs: GlobalPreferences? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_workout_detail)
+        setContentView(R.layout.activity_activity_detail)
         setSupportActionBar(detail_toolbar)
 
-        prefs = FitTimer.applicationContext().preferences
+        prefs = SemaphoreApp.applicationContext().preferences
 
-        workout = intent.getParcelableExtra("arg_parcel_workout")
-        workoutId = intent.getIntExtra("arg_workout_id", 0)
+        activityModel = intent.getParcelableExtra("arg_parcel_workout")
+        activityId = intent.getIntExtra("arg_workout_id", 0)
 
-        fab_edit_workout.setOnClickListener { view ->
+        fab_edit_activity.setOnClickListener { view ->
 
-            if (workout != null) {
-                val newWorkoutFragment = NewWorkoutDialogFragment.newInstance(workout!!, workoutId!!)
+            if (activityModel != null) {
+                val newWorkoutFragment = NewActivityDialogFragment.newInstance(activityModel!!, activityId!!)
                 newWorkoutFragment.show(supportFragmentManager, "ModifyWorkout")
             } else {
                 Snackbar.make(view, "Something is wrong", Snackbar.LENGTH_LONG).setAction("Action", null).show()
@@ -67,10 +67,10 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
-            fragment = WorkoutDetailFragment().apply {
+            fragment = ActivityDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelable(WorkoutDetailFragment.ARG_ITEM_ID, intent.getParcelableExtra("arg_parcel_workout"))
-                    putInt(WorkoutDetailFragment.ARG_WORKOUT_ID, intent.getIntExtra("arg_workout_id", 0))
+                    putParcelable(ActivityDetailFragment.ARG_ITEM_ID, intent.getParcelableExtra("arg_parcel_workout"))
+                    putInt(ActivityDetailFragment.ARG_ACTIVITY_ID, intent.getIntExtra("arg_workout_id", 0))
                 }
             }
 
@@ -80,8 +80,8 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
         }
     }
 
-    override fun onSaveClick(dialog: DialogFragment, workout: Workout) {
-        updateWorkoutItem(workoutId!!, workout)
+    override fun onSaveClick(dialog: DialogFragment, activityModel: ActivityModel) {
+        updateActivityItem(activityId!!, activityModel)
         dialog.dismiss()
         supportFinishAfterTransition()
     }
@@ -90,23 +90,23 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
      * Used to remove swiped Workouts
      *
      * @param id: The id of the book
-     * @param workout: The workout to be updated
+     * @param activityModel: The activityModel to be updated
      */
-    private fun updateWorkoutItem(id: Int, workout: Workout) {
+    private fun updateActivityItem(id: Int, activityModel: ActivityModel) {
         val db = dbHandler.writableDatabase
         val values = ContentValues()
-        values.put(WorkoutDatabase.COLUMN_HOURS, workout.hours)
-        values.put(WorkoutDatabase.COLUMN_MINUTES, workout.minutes)
-        values.put(WorkoutDatabase.COLUMN_SECONDS, workout.seconds)
-        values.put(WorkoutDatabase.COLUMN_WORKOUT, workout.workoutName)
+        values.put(ActivityDatabase.COLUMN_HOURS, activityModel.hours)
+        values.put(ActivityDatabase.COLUMN_MINUTES, activityModel.minutes)
+        values.put(ActivityDatabase.COLUMN_SECONDS, activityModel.seconds)
+        values.put(ActivityDatabase.COLUMN_ACTIVITY, activityModel.activityName)
         if (prefs!!.currentImageRemoved) {
-            values.putNull(WorkoutDatabase.COLUMN_WORKOUTIMAGE)
+            values.putNull(ActivityDatabase.COLUMN_ACTIVITYIMAGE)
             prefs!!.currentImageRemoved = false
         } else {
-            values.put(WorkoutDatabase.COLUMN_WORKOUTIMAGE, workout.workoutImage)
+            values.put(ActivityDatabase.COLUMN_ACTIVITYIMAGE, activityModel.activityImage)
         }
-        values.put(WorkoutDatabase.COLUMN_WORKOUTSPEECH, workout.workoutSpeech)
-        db.update(WorkoutDatabase.TABLE_NAME, values, WorkoutDatabase.COLUMN_ID + "=" + id, null)
+        values.put(ActivityDatabase.COLUMN_ACTIVITYSPEECH, activityModel.activitySpeech)
+        db.update(ActivityDatabase.TABLE_NAME, values, ActivityDatabase.COLUMN_ID + "=" + id, null)
         db.close()
     }
 
@@ -116,7 +116,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
 
     override fun onBackPressed() {
         super.onBackPressed()
-        //navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+        //navigateUpTo(Intent(this, ActivityListActivity::class.java))
         supportFinishAfterTransition()
     }
 
@@ -129,7 +129,7 @@ class WorkoutDetailActivity : AppCompatActivity(), NewWorkoutDialogFragment.NewW
                 //
                 // http://developer.android.com/design/patterns/navigation.html#up-vs-back
 
-                //navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+                //navigateUpTo(Intent(this, ActivityListActivity::class.java))
                 supportFinishAfterTransition()
                 true
             }

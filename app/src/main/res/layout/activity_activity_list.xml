@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context=".activities.WorkoutListActivity">
+    tools:context=".activities.ActivityListActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -27,7 +27,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
-        android:id="@+id/workout_list_activity"
+        android:id="@+id/activity_list_activity"
         android:animateLayoutChanges="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -56,7 +56,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/no_workouts_message"
+        android:id="@+id/no_activities_message"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:layout_gravity="center_horizontal|center_vertical"
@@ -79,7 +79,7 @@
             app:borderWidth="0dp" />
 
         <TextView
-            android:text="@string/no_workouts_message"
+            android:text="@string/no_activities_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -87,13 +87,13 @@
 
     <FrameLayout
         android:id="@+id/frameLayout"
-        android:transitionName="viewWorkout"
+        android:transitionName="viewActivity"
         android:animateLayoutChanges="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <include layout="@layout/workout_list" />
+        <include layout="@layout/activity_list" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"

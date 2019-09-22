@@ -34,7 +34,7 @@
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/workout_content_view"
+        android:id="@+id/activity_content_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -124,9 +124,9 @@
                 android:layout_height="wrap_content">
 
                 <EditText
-                    android:id="@+id/workout_text"
+                    android:id="@+id/activity_text"
                     android:inputType="text"
-                    android:hint="@string/hint_enter_workout_here"
+                    android:hint="@string/hint_enter_activity_here"
                     android:gravity="center"
                     android:maxLines="1"
                     android:singleLine="true"
@@ -171,11 +171,11 @@
                     android:layout_height="wrap_content">
 
                     <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/workout_to_speech"
+                        android:id="@+id/activity_to_speech"
                         android:checked="true"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/switch_workout_to_speech_audio" />
+                        android:text="@string/switch_activity_to_speech_audio" />
 
                 </LinearLayout>
 

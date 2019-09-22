@@ -11,42 +11,42 @@ import android.speech.tts.TextToSpeech
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.EventBus
-import xyz.cortland.fittimer.android.FitTimer
+import xyz.cortland.fittimer.android.SemaphoreApp
 import xyz.cortland.fittimer.android.R
-import xyz.cortland.fittimer.android.database.WorkoutDatabase
-import xyz.cortland.fittimer.android.helpers.WORKOUT_CHANNEL
-import xyz.cortland.fittimer.android.helpers.WORKOUT_FINISHED_ID
+import xyz.cortland.fittimer.android.database.ActivityDatabase
+import xyz.cortland.fittimer.android.helpers.ACTIVITY_CHANNEL
+import xyz.cortland.fittimer.android.helpers.ACTIVITY_FINISHED_ID
 import xyz.cortland.fittimer.android.helpers.prefs
-import xyz.cortland.fittimer.android.model.Workout
+import xyz.cortland.fittimer.android.model.ActivityModel
 import xyz.cortland.fittimer.android.receivers.CountDownEvent
-import xyz.cortland.fittimer.android.receivers.WorkoutPlaybackReceiver
+import xyz.cortland.fittimer.android.receivers.ActivityPlaybackReceiver
 import java.util.concurrent.TimeUnit
 
 fun Context.speakText(text: String) {
-    FitTimer.applicationContext().textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    SemaphoreApp.applicationContext().textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
 }
 
-val Context.dbHandler: WorkoutDatabase get() = WorkoutDatabase(applicationContext, null)
+val Context.dbHandler: ActivityDatabase get() = ActivityDatabase(applicationContext, null)
 
-fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notification {
+fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolean): Notification {
 
-    EventBus.getDefault().postSticky(CountDownEvent(workout.countDownTimer!!))
+    EventBus.getDefault().postSticky(CountDownEvent(activityModel.countDownTimer!!))
 
     val intent = Intent(this, this::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
-    val stopIntent = Intent(this, WorkoutPlaybackReceiver::class.java)
-    stopIntent.action = "workout.stop"
+    val stopIntent = Intent(this, ActivityPlaybackReceiver::class.java)
+    stopIntent.action = "activityModel.stop"
 
-    val pauseIntent = Intent(this, WorkoutPlaybackReceiver::class.java)
-    pauseIntent.action = "workout.pause"
+    val pauseIntent = Intent(this, ActivityPlaybackReceiver::class.java)
+    pauseIntent.action = "activityModel.pause"
 
-    val resumeIntent = Intent(this, WorkoutPlaybackReceiver::class.java)
-    resumeIntent.action = "workout.resume"
+    val resumeIntent = Intent(this, ActivityPlaybackReceiver::class.java)
+    resumeIntent.action = "activityModel.resume"
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        NotificationChannel(WORKOUT_CHANNEL, "workout_channel", NotificationManager.IMPORTANCE_DEFAULT).apply {
+        NotificationChannel(ACTIVITY_CHANNEL, "activity_channel", NotificationManager.IMPORTANCE_DEFAULT).apply {
             enableVibration(true)
             setSound(null, null)
             notificationManager.createNotificationChannel(this)
@@ -60,9 +60,9 @@ fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notifica
     var numMessages = 0
 
     // TODO: Figure out why contentIntent doesn't just open activity after a while
-    val notificationBuider = NotificationCompat.Builder(this, WORKOUT_CHANNEL)
+    val notificationBuider = NotificationCompat.Builder(this, ACTIVITY_CHANNEL)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentTitle(workout.workoutName)
+        .setContentTitle(activityModel.activityName)
         .setContentText("$_hours hr $_minutes min $_seconds sec remaining.")
         .setNumber(++numMessages)
         .setSound(null)
@@ -85,10 +85,10 @@ fun Context.createTimerNotification(workout: Workout, paused: Boolean): Notifica
 
 }
 
-fun Context.showTimerNotification(workout: Workout, paused: Boolean) {
-    val notification = createTimerNotification(workout, paused)
+fun Context.showTimerNotification(activityModel: ActivityModel, paused: Boolean) {
+    val notification = createTimerNotification(activityModel, paused)
     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    notificationManager.notify(WORKOUT_FINISHED_ID, notification)
+    notificationManager.notify(ACTIVITY_FINISHED_ID, notification)
 }
 
 fun Context.hideTimerNotificationHelper(id: Int) {
@@ -97,5 +97,5 @@ fun Context.hideTimerNotificationHelper(id: Int) {
 }
 
 fun Context.hideTimerNotification(){
-    hideTimerNotificationHelper(WORKOUT_FINISHED_ID)
+    hideTimerNotificationHelper(ACTIVITY_FINISHED_ID)
 }

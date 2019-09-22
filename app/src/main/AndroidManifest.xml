@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".FitTimer"
+        android:name=".SemaphoreApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -14,17 +14,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <receiver
-            android:name=".receivers.WorkoutPlaybackReceiver"
+            android:name=".receivers.ActivityPlaybackReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="workout.stop" />
-                <action android:name="workout.pause" />
-                <action android:name="workout.resume" />
+                <action android:name="activityModel.stop" />
+                <action android:name="activityModel.pause" />
+                <action android:name="activityModel.resume" />
             </intent-filter>
         </receiver>
         <activity
-            android:name=".activities.WorkoutListActivity"
+            android:name=".activities.ActivityListActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -35,28 +35,28 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.WorkoutDetailActivity"
+            android:name=".activities.ActivityDetailActivity"
             android:label="@string/title_item_detail"
-            android:parentActivityName=".activities.WorkoutListActivity"
+            android:parentActivityName=".activities.ActivityListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="xyz.cortland.fittimer.android.activities.WorkoutListActivity" />
+                android:value="xyz.cortland.fittimer.android.activities.ActivityListActivity" />
         </activity>
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_settings"
-            android:parentActivityName=".activities.WorkoutListActivity"
+            android:parentActivityName=".activities.ActivityListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <receiver
-            android:name=".receivers.WorkoutFinishedReceiver"
+            android:name=".receivers.ActivityFinishedReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="playingall.workout.finished" />
+                <action android:name="playingall.activityModel.finished" />
             </intent-filter>
         </receiver>
     </application>

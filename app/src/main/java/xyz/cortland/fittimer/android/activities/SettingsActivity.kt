@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.settings_activity.*
 import xyz.cortland.fittimer.android.BuildConfig
-import xyz.cortland.fittimer.android.FitTimer
+import xyz.cortland.fittimer.android.SemaphoreApp
 import xyz.cortland.fittimer.android.R
 import android.widget.ArrayAdapter
 import android.widget.EditText
@@ -58,12 +58,12 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         val language = locale?.displayLanguage
 
         val speechLanguage = menu!!.findItem(R.id.nav_speech_language)
-        speechLanguage.title = "${getString(R.string.switch_workout_to_speech_audio)} ($language)"
+        speechLanguage.title = "${getString(R.string.switch_activity_to_speech_audio)} ($language)"
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
-        navigateUpTo(Intent(this, WorkoutListActivity::class.java))
+        navigateUpTo(Intent(this, ActivityListActivity::class.java))
         this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
 
@@ -120,8 +120,8 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 val list = ArrayList<String>()
                 val listLanguage = ArrayList<String>()
 
-                for (i in FitTimer.applicationContext().availableLanguages) {
-                    if (FitTimer.applicationContext().textToSpeech!!.isLanguageAvailable(i) >= TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+                for (i in SemaphoreApp.applicationContext().availableLanguages) {
+                    if (SemaphoreApp.applicationContext().textToSpeech!!.isLanguageAvailable(i) >= TextToSpeech.LANG_COUNTRY_AVAILABLE) {
                         list.add(i.displayName)
                         listLanguage.add(i.language)
                     }
