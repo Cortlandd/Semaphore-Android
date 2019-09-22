@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Fit Timer</string>
+    <string name="app_name">Semaphore</string>
     <string name="title_item_detail">Détails d\'entraînement</string>
     <string name="title_settings">Réglages</string>
     <string name="play_all">Jouer à tous</string>
