@@ -1,3 +1,3 @@
-# Fit Timer
+# Semaphore: A Personal Activity tracker.
 
-_Fit Timer Android App_
+_Semaphore Android App_

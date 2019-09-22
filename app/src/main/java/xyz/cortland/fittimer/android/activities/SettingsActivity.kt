@@ -97,7 +97,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                 val body =
                     """
                         -------------------- <br/>
-                        App: Fit Timer <br/>
+                        App: Semaphore <br/>
                         Version: $appVersion <br/>
                         Device: $deviceModel
                     """.trimIndent()
