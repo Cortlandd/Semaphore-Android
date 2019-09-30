@@ -256,7 +256,7 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                             finishedActivities()
                         } else {
                             Alerter.create(parentActivity)
-                                .setTitle("ActivityModel Complete!")
+                                .setTitle("Activity Complete!")
                                 .setDuration(500)
                                 .setBackgroundColorRes(R.color.colorAccent)
                                 .enableSwipeToDismiss()
@@ -337,13 +337,17 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                 }
 
                 override fun countdownPause() {
-                    parentActivity!!.showTimerNotification(activityModel, true)
+                    if (parentActivity!!.isPaused!!) {
+                        parentActivity!!.showTimerNotification(activityModel, true)
+                    }
                     mHolder.pauseButton.hide()
                     mHolder.resumeButton.show()
                 }
 
                 override fun countdownResume() {
-                    parentActivity!!.showTimerNotification(activityModel, false)
+                    if (parentActivity!!.isPaused!!) {
+                        parentActivity!!.showTimerNotification(activityModel, false)
+                    }
                     mHolder.resumeButton.hide()
                     mHolder.pauseButton.show()
                 }
