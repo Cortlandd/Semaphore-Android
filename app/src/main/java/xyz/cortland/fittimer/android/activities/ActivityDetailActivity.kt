@@ -38,8 +38,9 @@ class ActivityDetailActivity : AppCompatActivity(), NewActivityDialogFragment.Ne
 
         prefs = SemaphoreApp.applicationContext().preferences
 
-        activityModel = intent.getParcelableExtra("arg_parcel_workout")
-        activityId = intent.getIntExtra("arg_workout_id", 0)
+        // Retrieved from click inside ActivityAdapter.
+        activityModel = intent.getParcelableExtra("arg_parcel_activity")
+        activityId = intent.getIntExtra("arg_activity_id", 0)
 
         fab_edit_activity.setOnClickListener { view ->
 
@@ -69,8 +70,8 @@ class ActivityDetailActivity : AppCompatActivity(), NewActivityDialogFragment.Ne
             // using a fragment transaction.
             fragment = ActivityDetailFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelable(ActivityDetailFragment.ARG_ITEM_ID, intent.getParcelableExtra("arg_parcel_workout"))
-                    putInt(ActivityDetailFragment.ARG_ACTIVITY_ID, intent.getIntExtra("arg_workout_id", 0))
+                    putParcelable(ActivityDetailFragment.ARG_ITEM_ID, intent.getParcelableExtra("arg_parcel_activity"))
+                    putInt(ActivityDetailFragment.ARG_ACTIVITY_ID, intent.getIntExtra("arg_activity_id", 0))
                 }
             }
 

@@ -118,8 +118,11 @@ class NewActivityDialogFragment: DialogFragment() {
             builder.setTitle(R.string.add_activity)
         } else {
             builder.setTitle(R.string.edit_activity)
+            hoursValue = activityModel?.hours!!
             hoursNumberPicker?.value = activityModel?.hours!!
+            minutesValue = activityModel?.minutes!!
             minutesNumberPicker?.value = activityModel?.minutes!!
+            secondsValue = activityModel?.seconds!!
             secondsNumberPicker?.value = activityModel?.seconds!!
             activityText?.setText(activityModel?.activityName)
             if (activityModel!!.activitySpeech == 1) {
@@ -228,17 +231,17 @@ class NewActivityDialogFragment: DialogFragment() {
         }
 
         hoursValue = hoursNumberPicker!!.value
-        hoursNumberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+        hoursNumberPicker!!.setOnValueChangedListener { picker, oldVal, newVal ->
             hoursValue = newVal
         }
 
         minutesValue = minutesNumberPicker!!.value
-        minutesNumberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+        minutesNumberPicker!!.setOnValueChangedListener { picker, oldVal, newVal ->
             minutesValue = newVal
         }
 
         secondsValue = secondsNumberPicker!!.value
-        secondsNumberPicker?.setOnValueChangedListener { picker, oldVal, newVal ->
+        secondsNumberPicker!!.setOnValueChangedListener { picker, oldVal, newVal ->
             secondsValue = newVal
         }
 

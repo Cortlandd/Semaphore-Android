@@ -9,11 +9,17 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import kotlinx.android.synthetic.main.activity_activity_detail.*
+import kotlinx.android.synthetic.main.activity_detail.*
+import org.w3c.dom.Text
 import xyz.cortland.fittimer.android.R
 import xyz.cortland.fittimer.android.activities.ActivityDetailActivity
+import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.model.ActivityModel
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 /**
  * A fragment representing a single Item detail screen.
@@ -28,7 +34,11 @@ class ActivityDetailFragment : Fragment() {
      */
     private var item: ActivityModel? = null
     private var activityModelId: Int? = null
+    var hoursView: TextView? = null
+    var minutesView: TextView? = null
     var secondsView: TextView? = null
+    var progress: CircularProgressBar? = null
+    var totalTimeInMillis: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +58,25 @@ class ActivityDetailFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.activity_detail, container, false)
 
-        secondsView = rootView.findViewById(R.id.item_detail_seconds)
+        hoursView = rootView.findViewById(R.id.detail_hours)
+        minutesView = rootView.findViewById(R.id.detail_minutes)
+        secondsView = rootView.findViewById(R.id.detail_seconds)
+        progress = rootView.findViewById(R.id.detail_progress_bar)
 
         // Show the ActivityModel content as text in a TextView.
         item.let {
-            secondsView?.text = it?.seconds.toString()
+
+            var hours = it?.hours
+            var minutes = it?.minutes
+            var seconds = it?.seconds
+
+            totalTimeInMillis = hours?.times(3600000)!! + minutes?.times(60000)!! + seconds?.times(1000)!!
+
+            hoursView?.text = if (it?.hours in 0..9) "0${it?.hours} hr" else "${it?.hours} hr" //it?.hours.toString()
+            minutesView?.text = if (it?.minutes in 0..9) "0${it?.minutes} min" else "${it?.minutes} min"
+            secondsView?.text = if (it?.seconds in 0..9) "0${it?.seconds} sec" else "${it?.seconds} sec"
+            progress?.progressMax = (totalTimeInMillis / 1000).toFloat()
+            progress?.progress = (totalTimeInMillis / 1000).toFloat()
             if (it?.activityImage != null) {
                 Glide.with(activity!!).load(File(it.activityImage)).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).into(activity!!.activity_image_detail)
             }

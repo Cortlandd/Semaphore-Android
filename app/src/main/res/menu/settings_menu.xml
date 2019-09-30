@@ -30,6 +30,7 @@
                 android:title="@string/open_source_licenses"/>
             <item
                 android:id="@+id/nav_faq"
+                android:visible="false"
                 android:icon="@drawable/ic_help_outline_purp_24dp"
                 android:title="@string/faq" />
             <item

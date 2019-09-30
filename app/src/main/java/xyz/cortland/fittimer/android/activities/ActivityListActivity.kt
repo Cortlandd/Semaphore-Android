@@ -295,7 +295,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     }
 
     /**
-     * Used to remove swiped Workouts
+     * Used to update long pressed Activities
      *
      * @param id: The id of the book
      * @param activityModel: The activityModel to be updated
@@ -304,6 +304,8 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         val dbHelper = ActivityDatabase(this, null)
         val db = dbHelper.writableDatabase
         val values = ContentValues()
+        values.put(ActivityDatabase.COLUMN_HOURS, activityModel.hours)
+        values.put(ActivityDatabase.COLUMN_MINUTES, activityModel.minutes)
         values.put(ActivityDatabase.COLUMN_SECONDS, activityModel.seconds)
         values.put(ActivityDatabase.COLUMN_ACTIVITY, activityModel.activityName)
         if (prefs.currentImageRemoved) {
