@@ -47,7 +47,6 @@ fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolea
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         NotificationChannel(ACTIVITY_CHANNEL, "activity_channel", NotificationManager.IMPORTANCE_DEFAULT).apply {
-            enableVibration(true)
             setSound(null, null)
             notificationManager.createNotificationChannel(this)
         }
