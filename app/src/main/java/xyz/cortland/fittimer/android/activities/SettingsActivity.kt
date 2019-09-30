@@ -104,7 +104,7 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
 
                 val emailIntent = Intent(Intent.ACTION_SENDTO)
                 emailIntent.type = "message/rfc822"
-                emailIntent.data = Uri.parse("mailto:cortlandjwalker@gmail.com")
+                emailIntent.data = Uri.parse("mailto:cortland1568@gmail.com")
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback - Android")
                 emailIntent.putExtra(Intent.EXTRA_TEXT, body)
                 startActivity(Intent.createChooser(emailIntent, "Send Feedback"))
