@@ -67,19 +67,6 @@ class GlobalPreferences(context: Context) {
         set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putLong(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING, remainingTime).apply() }
 
     /**
-     * Get/Set rather or not the activityModel is playing from longpress
-     *
-     * @return [Boolean]: true or false rather a user is modifying a activityModel through long pressing
-     */
-    var editingLongPressActivity: Boolean
-        get() = mSharedPreferences!!.getBoolean(EDITING_ACTIVITY, false)
-        set(editing) = with(mSharedPreferences!!.edit()) { this.putBoolean(EDITING_ACTIVITY, editing).apply() }
-
-    var longPressActivityId: Int
-        get() = mSharedPreferences!!.getInt(LONGPRESS_ACTIVITY_ID, -1)
-        set(activityId) = with(mSharedPreferences!!.edit()) { this.putInt(LONGPRESS_ACTIVITY_ID, activityId).apply() }
-
-    /**
      * Get/Set rather a not the app is playing all activities vs a single activityModel
      *
      * @return [Boolean]: true or false rather the app is playing all activities or a single activityModel

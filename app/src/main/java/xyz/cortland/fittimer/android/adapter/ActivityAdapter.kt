@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit
 class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityModels: List<ActivityModel>) : RecyclerView.Adapter<ActivityAdapter.ViewHolder>() {
 
     private val onClickListener: View.OnClickListener
-    private val onLongClickListener: View.OnLongClickListener
 
     var activityId: Int? = null
 
@@ -53,26 +52,8 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                 putExtra("arg_activity_id", activityId!!)
             }
 
-            // TODO: Setup preferences to pause and later resume.
-//            if (item.countDownTimer?.hasStarted != null && item.countDownTimer?.hasStarted!!) {
-//                item.countDownTimer?.cancel()
-//                item.isDefaultState = true
-//                notifyDataSetChanged()
-//            }
-
             val options = ActivityOptionsCompat.makeSceneTransitionAnimation(parentActivity!!, v, "viewActivity")
             v.context.startActivity(intent, options.toBundle())
-        }
-
-        // TODO: Resolve issue where a activityModel is playing and edited
-        onLongClickListener = View.OnLongClickListener { v ->
-            val activityModel = v.tag as ActivityModel
-            activityId = v.id
-            prefs.longPressActivityId = v.id
-            prefs.editingLongPressActivity = true
-            val newActivityDialogFragment: NewActivityDialogFragment = NewActivityDialogFragment.newInstance(activityModel, activityId!!)
-            newActivityDialogFragment.show(parentActivity!!.supportFragmentManager, "ModifyActivity")
-            true
         }
     }
 
@@ -199,10 +180,10 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
 
         with(holder.itemView) {
             holder.itemView.id = cursor.getInt(cursor.getColumnIndex(ActivityDatabase.COLUMN_ID))
+            parentActivity!!.dbHandler.setPosition(cursor.getInt(cursor.getColumnIndex(ActivityDatabase.COLUMN_ID)), position)
             cursor.close()
             tag = activityModel
             setOnClickListener(onClickListener)
-            setOnLongClickListener(onLongClickListener)
         }
     }
 
@@ -322,7 +303,7 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                                 finishedActivities()
                             } else {
                                 Alerter.create(parentActivity)
-                                    .setTitle("ActivityModel Complete!")
+                                    .setTitle("Activity Complete!")
                                     .setDuration(500)
                                     .enableSwipeToDismiss()
                                     .enableVibration(true)

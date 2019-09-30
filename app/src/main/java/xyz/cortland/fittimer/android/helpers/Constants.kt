@@ -12,7 +12,5 @@ const val HAS_CURRENT_IMAGE_REMOVED = "has_current_image_removed"
 const val CURRENT_LOCAL_LANGUAGE = "current_local_language"
 const val CURRENT_PLAYING_ALL_ACTIVITY_POSITION = "current_playing_all_activity_position"
 const val CURRENT_PLAYING_ALL_ACTIVITY_REMAINING = "current_playing_all_activity_remaining"
-const val EDITING_ACTIVITY = "editing_activity"
-const val LONGPRESS_ACTIVITY_ID = "longpress_activity_id"
 const val IS_PLAYING_ALL_ACTIVITIES = "is_playing_all_activities"
 val prefs = SemaphoreApp.applicationContext().preferences!!

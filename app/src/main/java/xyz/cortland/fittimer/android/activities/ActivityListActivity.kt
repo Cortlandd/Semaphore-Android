@@ -14,6 +14,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
+import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 import kotlinx.android.synthetic.main.activity_activity_list.*
@@ -76,10 +77,19 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         activityAdapter = ActivityAdapter(this, mActivityModels)
         item_list.adapter = activityAdapter
 
-        val itemTouchCallback = object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        val itemTouchCallback = object: ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.START or ItemTouchHelper.END, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
-            override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
-                return false
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+
+                val adapter = recyclerView.adapter as ActivityAdapter
+                val from = viewHolder.adapterPosition
+                val to = target.adapterPosition
+
+                moveItem(from, to)
+
+                adapter.notifyItemMoved(from, to)
+
+                return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -93,6 +103,23 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
                     df.delete()
                 }
                 validateActivityCount()
+            }
+
+            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+                super.onSelectedChanged(viewHolder, actionState)
+                if (actionState == ACTION_STATE_DRAG) {
+                    viewHolder?.itemView?.alpha = 0.5f
+                }
+            }
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                viewHolder.itemView.alpha = 1.0f
+
+                // Store new position in database after moving
+                mActivityModels.forEachIndexed { index, activity ->
+                    dbHandler.setPosition(activity.id, index)
+                }
             }
 
         }
@@ -137,7 +164,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
             EventBus.getDefault().removeAllStickyEvents()
         }
 
-        // Used for Editing Workouts
+        // Used for Editing Activities
         if (prefs.activityModified) {
             mActivityModels.clear()
             item_list.invalidate()
@@ -164,7 +191,8 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     }
 
     /**
-     * Used to remove swiped Workouts
+     * Used to remove swiped Activities.
+     *
      * @param id: The id of the book
      */
     fun removeActivityItem(id: Int) {
@@ -205,13 +233,13 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         }
 
         fab.setOnClickListener {
-            val newWorkoutFragment = NewActivityDialogFragment()
-            newWorkoutFragment.show(supportFragmentManager, "newWorkout")
+            val newActivityFragment = NewActivityDialogFragment()
+            newActivityFragment.show(supportFragmentManager, "newActivity")
         }
 
         fab_placeholder.setOnClickListener {
-            val newWorkoutFragment = NewActivityDialogFragment()
-            newWorkoutFragment.show(supportFragmentManager, "newWorkout")
+            val newActivityFragment = NewActivityDialogFragment()
+            newActivityFragment.show(supportFragmentManager, "newActivity")
         }
 
         activity_list_activity.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
@@ -219,24 +247,17 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     }
 
     override fun onSaveClick(dialog: DialogFragment, activityModel: ActivityModel) {
-        if (prefs.editingLongPressActivity) {
-            updateActivityItem(prefs.longPressActivityId, activityModel)
-            SemaphoreApp.applicationContext().preferences!!.removePreferences(EDITING_ACTIVITY) // Remove editing activityModel from preferences
-            SemaphoreApp.applicationContext().preferences!!.removePreferences(LONGPRESS_ACTIVITY_ID) // Remove longpressed activityModel id from preferences
-            // TODO: Shouldn't have to clear all then add again. Also need animations for insert and remove
-            mActivityModels.clear()
-            mActivityModels.addAll(dbHandler.allActivitiesList())
-            activityAdapter?.notifyDataSetChanged()
-            validateActivityCount()
-            dialog.dismiss()
-        } else {
-            dbHandler.addActivity(activityModel)
-            mActivityModels.clear()
-            mActivityModels.addAll(dbHandler.allActivitiesList())
-            activityAdapter!!.notifyDataSetChanged()
-            validateActivityCount()
-            dialog.dismiss()
-        }
+        dbHandler.addActivity(activityModel)
+        mActivityModels.add(activityModel)
+        //mActivityModels.clear()
+        //mActivityModels.addAll(dbHandler.allActivitiesList())
+        activityAdapter!!.notifyDataSetChanged()
+        // Store new position in database after moving
+//        mActivityModels.forEachIndexed { index, activity ->
+//            dbHandler.setPosition(activity.id, index)
+//        }
+        validateActivityCount()
+        dialog.dismiss()
     }
 
     override fun onCancelClick(dialog: DialogFragment) {
@@ -252,7 +273,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         when (item?.itemId) {
             R.id.settings_menu -> {
                 if (prefs.isPlayingAllActivities) {
-                    Toast.makeText(this, "Stop All Workouts before changing Settings.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Stop All Activities before changing Settings.", Toast.LENGTH_SHORT).show()
                 } else {
                     val i = Intent(this, SettingsActivity::class.java)
                     startActivity(i)
@@ -317,6 +338,16 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         values.put(ActivityDatabase.COLUMN_ACTIVITYSPEECH, activityModel.activitySpeech)
         db.update(ActivityDatabase.TABLE_NAME, values, ActivityDatabase.COLUMN_ID + "=" + id, null)
         db.close()
+    }
+
+    fun moveItem(from: Int, to: Int) {
+        val fromActivity = mActivityModels[from]
+        mActivityModels.removeAt(from)
+        if (to < from) {
+            mActivityModels.add(to, fromActivity)
+        } else {
+            mActivityModels.add(to - 1, fromActivity)
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
