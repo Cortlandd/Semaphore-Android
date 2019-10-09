@@ -374,7 +374,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
 
                     showPlayButtons()
 
-                    semaphore?.drainPermits()
+                    semaphore!!.drainPermits()
 
                     activityAdapter?.stopAllActivities()
                 }
