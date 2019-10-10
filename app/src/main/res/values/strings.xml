@@ -3,6 +3,7 @@
     <string name="title_item_detail">Activity Details</string>
     <string name="title_settings">Settings</string>
     <string name="play_all">Play All</string>
+    <string name="play_all_in_order">Play All In Order</string>
     <string name="stop_all">Stop All</string>
     <string name="play">Play</string>
     <string name="stop">Stop</string>

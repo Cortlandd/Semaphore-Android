@@ -26,11 +26,10 @@ import xyz.cortland.fittimer.android.extensions.dbHandler
 import xyz.cortland.fittimer.android.extensions.hideTimerNotification
 import xyz.cortland.fittimer.android.extensions.showTimerNotification
 import xyz.cortland.fittimer.android.extensions.speakText
-import xyz.cortland.fittimer.android.fragments.NewActivityDialogFragment
-import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_ACTIVITY_POSITION
+import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION
 import xyz.cortland.fittimer.android.model.ActivityModel
 import xyz.cortland.fittimer.android.receivers.ActivityFinishedReceiver
-import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_ACTIVITY_REMAINING
+import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING
 import xyz.cortland.fittimer.android.helpers.prefs
 import java.io.File
 import java.util.concurrent.Semaphore
@@ -229,9 +228,9 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
 
                 override fun onFinish() {
                     if (position == mActivityModels.size - 1) {
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_POSITION)
-                        prefs.isPlayingAllActivities = false
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION)
+                        prefs.isPlayingAllInOrderActivities = false
                         if (parentActivity!!.isPaused!!) {
                             parentActivity!!.hideTimerNotification()
                             finishedActivities()
@@ -253,8 +252,8 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                         mHolder.minutesView.text = "00"
                         mHolder.secondsView.text = "00"
                         mHolder.activityProgressBar.progress = 0f
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING)
-                        prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_POSITION)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING)
+                        prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION)
                         semaphore.release()
                     }
                 }
@@ -285,19 +284,19 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                             mHolder.minutesView.text = "00"
                             mHolder.secondsView.text = "00"
                             mHolder.activityProgressBar.progress = 0f
-                            prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING)
-                            prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_POSITION)
+                            prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING)
+                            prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION)
                             //mHolder.activityProgressBar.progress = 0
-                            if (prefs.isPlayingAllActivities) {
+                            if (prefs.isPlayingAllInOrderActivities) {
                                 semaphore.release()
                             } else {
                                 return
                             }
                         }
                         position == mActivityModels.size - 1 -> {
-                            prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING)
-                            prefs.removePreferences(CURRENT_PLAYING_ALL_ACTIVITY_POSITION)
-                            prefs.isPlayingAllActivities = false
+                            prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING)
+                            prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION)
+                            prefs.isPlayingAllInOrderActivities = false
                             if (parentActivity!!.isPaused!!) {
                                 parentActivity!!.hideTimerNotification()
                                 finishedActivities()

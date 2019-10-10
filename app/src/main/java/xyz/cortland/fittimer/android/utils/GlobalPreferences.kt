@@ -56,15 +56,15 @@ class GlobalPreferences(context: Context) {
      *
      */
     var currentPlayingAllActivityPosition: Int
-        get() = mSharedPreferences!!.getInt(CURRENT_PLAYING_ALL_ACTIVITY_POSITION, -1)
-        set(position) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_ACTIVITY_POSITION, position).apply() }
+        get() = mSharedPreferences!!.getInt(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION, -1)
+        set(position) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION, position).apply() }
 
     /**
      * Get/Set the current activityModel, from Playing All's, remaining time.
      */
     var currentPlayingAllRemainingTime: Long
-        get() = mSharedPreferences!!.getLong(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING, 0)
-        set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putLong(CURRENT_PLAYING_ALL_ACTIVITY_REMAINING, remainingTime).apply() }
+        get() = mSharedPreferences!!.getLong(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING, 0)
+        set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putLong(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING, remainingTime).apply() }
 
     /**
      * Get/Set rather a not the app is playing all activities vs a single activityModel
@@ -86,6 +86,15 @@ class GlobalPreferences(context: Context) {
             this.apply()
         }
     }
+
+    /**
+     * Get/Set rather or not the app is playing all activities in order
+     *
+     * @return [Boolean]: true or false rather the app is playing all activities in order or not
+     */
+    var isPlayingAllInOrderActivities: Boolean
+        get() = mSharedPreferences!!.getBoolean(IS_PLAYING_ALL_IN_ORDER_ACTIVITIES, false)
+        set(isPlayingAllInOrder) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_PLAYING_ALL_IN_ORDER_ACTIVITIES, isPlayingAllInOrder).apply() }
 
     /**
      *

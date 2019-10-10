@@ -64,6 +64,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     var isPaused: Boolean? = false
 
     var playAllButton: Button? = null
+    var playAllInOrderButton: Button? = null
     var stopAllButton: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,6 +146,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         dbHandler.close()
         activityAdapter?.stopAllActivities()
         prefs.isPlayingAllActivities = false
+        prefs.isPlayingAllInOrderActivities = false
         prefs.mSharedPreferences?.unregisterOnSharedPreferenceChangeListener(this) // Register prefs for change listening in this Activity
     }
 
@@ -160,7 +162,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
 
         hideTimerNotification()
 
-        if (prefs.isPlayingAllActivities) {
+        if (prefs.isPlayingAllInOrderActivities) {
             EventBus.getDefault().removeAllStickyEvents()
         }
 
@@ -205,6 +207,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     private fun setupView() {
 
         playAllButton = findViewById<Button>(R.id.play_all_button)
+        playAllInOrderButton = findViewById<Button>(R.id.play_all_in_order_button)
         stopAllButton = findViewById<Button>(R.id.stop_all_button)
 
         validateActivityCount()
@@ -212,6 +215,17 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         playAllButton!!.setOnClickListener {
 
             prefs.isPlayingAllActivities = true
+
+            mActivityModels.forEachIndexed { index, activityModel ->
+                val holder = item_list.getChildViewHolder(item_list.getChildAt(index)) as ActivityAdapter.ViewHolder?
+                holder!!.itemView.isEnabled = false
+                activityModel.countDownTimer?.start()
+            }
+        }
+
+        playAllInOrderButton!!.setOnClickListener {
+
+            prefs.isPlayingAllInOrderActivities = true
 
             semaphore?.drainPermits() // Just in case
             semaphore = Semaphore(1)
@@ -229,7 +243,13 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         }
 
         stopAllButton!!.setOnClickListener {
-            prefs.isPlayingAllActivities = false
+
+            if (prefs.isPlayingAllActivities) {
+                prefs.isPlayingAllActivities = false
+            }
+            if (prefs.isPlayingAllInOrderActivities) {
+                prefs.isPlayingAllInOrderActivities = false
+            }
         }
 
         fab.setOnClickListener {
@@ -272,7 +292,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.settings_menu -> {
-                if (prefs.isPlayingAllActivities) {
+                if (prefs.isPlayingAllActivities || prefs.isPlayingAllInOrderActivities) {
                     Toast.makeText(this, "Stop All Activities before changing Settings.", Toast.LENGTH_SHORT).show()
                 } else {
                     val i = Intent(this, SettingsActivity::class.java)
@@ -295,8 +315,10 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
 
         if (mActivityModels.size <= 1 || mActivityModels == null) {
             playAllButton!!.visibility = View.GONE
+            playAllInOrderButton!!.visibility = View.GONE
         } else {
             playAllButton!!.visibility = View.VISIBLE
+            playAllInOrderButton!!.visibility = View.VISIBLE
         }
     }
 
@@ -352,6 +374,35 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
+            IS_PLAYING_ALL_IN_ORDER_ACTIVITIES -> {
+                if (prefs.isPlayingAllInOrderActivities) {
+                    // Hide Add ActivityModel Button
+                    fab.hide()
+                    // Disable swiping while playing
+                    itemTouchHelper!!.attachToRecyclerView(null)
+                    // Update Play All and Stop All buttons
+                    stopAllButton!!.visibility = View.VISIBLE
+                    playAllButton!!.visibility = View.GONE
+                    playAllInOrderButton!!.visibility = View.GONE
+
+                    hidePlayButtons()
+                } else {
+                    // Update Play All and Stop All buttons
+                    stopAllButton!!.visibility = View.GONE
+                    playAllButton!!.visibility = View.VISIBLE
+                    playAllInOrderButton!!.visibility = View.VISIBLE
+                    // Show Add ActivityModel Button
+                    fab.show()
+                    // Enable swiping while playing
+                    itemTouchHelper!!.attachToRecyclerView(item_list)
+
+                    showPlayButtons()
+
+                    semaphore!!.drainPermits()
+
+                    activityAdapter?.stopAllActivities()
+                }
+            }
             IS_PLAYING_ALL_ACTIVITIES -> {
                 if (prefs.isPlayingAllActivities) {
                     // Hide Add ActivityModel Button
@@ -361,20 +412,19 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.VISIBLE
                     playAllButton!!.visibility = View.GONE
+                    playAllInOrderButton!!.visibility = View.GONE
 
-                    hidePlayButtons()
                 } else {
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.GONE
                     playAllButton!!.visibility = View.VISIBLE
+                    playAllInOrderButton!!.visibility = View.VISIBLE
                     // Show Add ActivityModel Button
                     fab.show()
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(item_list)
 
                     showPlayButtons()
-
-                    semaphore!!.drainPermits()
 
                     activityAdapter?.stopAllActivities()
                 }
