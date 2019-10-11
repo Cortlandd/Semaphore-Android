@@ -5,9 +5,11 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.speech.tts.TextToSpeech
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.EventBus
@@ -98,4 +100,16 @@ fun Context.hideTimerNotificationHelper(id: Int) {
 
 fun Context.hideTimerNotification(){
     hideTimerNotificationHelper(ACTIVITY_FINISHED_ID)
+}
+
+fun Context.showAlert(title: String, message: String, OnClickListener: DialogInterface.OnClickListener, hasNegativeButton: Boolean = false) {
+
+    val dialog = AlertDialog.Builder(this, R.style.AlertDialogTheme)
+    dialog.setTitle(title)
+    dialog.setMessage(message)
+    dialog.setPositiveButton("OK", OnClickListener)
+    if (hasNegativeButton) {
+        dialog.setNegativeButton("Cancel", null)
+    }
+    dialog.show()
 }

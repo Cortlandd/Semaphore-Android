@@ -1,6 +1,7 @@
 package xyz.cortland.fittimer.android.adapter
 
 import android.app.PendingIntent
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
@@ -15,7 +16,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
-import com.tapadoo.alerter.Alerter
 import io.karn.notify.Notify
 import kotlinx.android.synthetic.main.activity_list_content.view.*
 import xyz.cortland.fittimer.android.R
@@ -23,10 +23,7 @@ import xyz.cortland.fittimer.android.activities.ActivityDetailActivity
 import xyz.cortland.fittimer.android.activities.ActivityListActivity
 import xyz.cortland.fittimer.android.custom.CountDownTimer
 import xyz.cortland.fittimer.android.database.ActivityDatabase
-import xyz.cortland.fittimer.android.extensions.dbHandler
-import xyz.cortland.fittimer.android.extensions.hideTimerNotification
-import xyz.cortland.fittimer.android.extensions.showTimerNotification
-import xyz.cortland.fittimer.android.extensions.speakText
+import xyz.cortland.fittimer.android.extensions.*
 import xyz.cortland.fittimer.android.fragments.NewActivityDialogFragment
 import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION
 import xyz.cortland.fittimer.android.model.ActivityModel
@@ -269,13 +266,9 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                             parentActivity!!.hideTimerNotification()
                             finishedActivities()
                         } else {
-                            Alerter.create(parentActivity)
-                                .setTitle("Activity Complete!")
-                                .setDuration(500)
-                                .setBackgroundColorRes(R.color.colorAccent)
-                                .enableSwipeToDismiss()
-                                .enableVibration(true)
-                                .show()
+                            parentActivity!!.showAlert("Activities Complete", "Your Activities have been completed.", DialogInterface.OnClickListener { dialog, _ ->
+                                dialog.dismiss()
+                            }, hasNegativeButton = false)
                         }
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
@@ -336,13 +329,9 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                                 parentActivity!!.hideTimerNotification()
                                 finishedActivities()
                             } else {
-                                Alerter.create(parentActivity)
-                                    .setTitle("Activity Complete!")
-                                    .setDuration(500)
-                                    .enableSwipeToDismiss()
-                                    .enableVibration(true)
-                                    .setBackgroundColorRes(R.color.colorAccent)
-                                    .show()
+                                parentActivity!!.showAlert("Activities Complete", "Your Activities have been completed.", DialogInterface.OnClickListener { dialog, _ ->
+                                    dialog.dismiss()
+                                }, hasNegativeButton = false)
                             }
                         }
                         else -> {
