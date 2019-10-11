@@ -45,7 +45,6 @@ class NewActivityDialogFragment: DialogFragment() {
     var mGlobalPreferences: GlobalPreferences? = null
 
     var activityImage: ImageView? = null
-    var activityImagePlaceholder: ImageView? = null
     var hoursNumberPicker: NumberPicker? = null
     var minutesNumberPicker: NumberPicker? = null
     var secondsNumberPicker: NumberPicker? = null
@@ -54,6 +53,7 @@ class NewActivityDialogFragment: DialogFragment() {
     var giphyView: GiphyView? = null
     var activityText: EditText? = null
     var fullControls: NestedScrollView? = null
+    var addImageButton: Button? = null
 
     var activityValue: String? = ""
     var hoursValue: Int? = null
@@ -135,12 +135,12 @@ class NewActivityDialogFragment: DialogFragment() {
 
             if (activityModel?.activityImage != null) {
                 activityImage!!.visibility = View.VISIBLE
-                activityImagePlaceholder!!.visibility = View.GONE
+                addImageButton!!.visibility = View.GONE
                 Glide.with(this).load(Uri.fromFile(File(activityModel?.activityImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
                 activityImageValue = activityModel?.activityImage
             } else {
                 activityImage!!.visibility = View.GONE
-                activityImagePlaceholder!!.visibility = View.VISIBLE
+                addImageButton!!.visibility = View.VISIBLE
             }
         }
 
@@ -180,7 +180,7 @@ class NewActivityDialogFragment: DialogFragment() {
         minutesNumberPicker = dialogView.findViewById(R.id.minutes_number_picker)
         secondsNumberPicker = dialogView.findViewById(R.id.seconds_number_picker)
         activityImage = dialogView.findViewById<ImageView>(R.id.selected_image)
-        activityImagePlaceholder = dialogView.findViewById(R.id.selected_image_placeholder)
+        addImageButton = dialogView.findViewById(R.id.add_image_button)
 
         // TODO: Get API Key from Giphy
         // TODO: Create separate Alert Dialog for this with a callback
@@ -188,7 +188,7 @@ class NewActivityDialogFragment: DialogFragment() {
 
             // Make images visible
             activityImage!!.visibility = View.VISIBLE
-            activityImagePlaceholder!!.visibility = View.GONE
+            addImageButton!!.visibility = View.GONE
 
             gifImageLocation = it.path?.toString()
             Glide.with(this).load(it).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
@@ -248,7 +248,7 @@ class NewActivityDialogFragment: DialogFragment() {
         activityImage?.setOnClickListener {
             tapActivityImage()
         }
-        activityImagePlaceholder?.setOnClickListener {
+        addImageButton?.setOnClickListener {
             tapPlaceholderImage()
         }
 
@@ -334,7 +334,7 @@ class NewActivityDialogFragment: DialogFragment() {
                     imagePath = ImageFilePath.getPath(this.activity!!, uri)
 
                     activityImage!!.visibility = View.VISIBLE
-                    activityImagePlaceholder!!.visibility = View.GONE
+                    addImageButton!!.visibility = View.GONE
 
                     try {
                         Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
@@ -383,7 +383,7 @@ class NewActivityDialogFragment: DialogFragment() {
                         // Update in the database
                         ActivityDatabase(this.activity!!, null).updateActivityImage(activityModelId!!)
                         // Update activityModel image views
-                        activityImagePlaceholder!!.visibility = View.VISIBLE
+                        addImageButton!!.visibility = View.VISIBLE
                         activityImage!!.visibility = View.GONE
                         // Preferences to indicate image removed
                         mGlobalPreferences!!.currentImageRemoved = true
@@ -398,7 +398,7 @@ class NewActivityDialogFragment: DialogFragment() {
                             }
 
                             activityImage?.visibility = View.GONE
-                            activityImagePlaceholder?.visibility = View.VISIBLE
+                            addImageButton?.visibility = View.VISIBLE
                         }
 
                         if (imagePath != null) {
@@ -409,7 +409,7 @@ class NewActivityDialogFragment: DialogFragment() {
                             }
 
                             activityImage?.visibility = View.GONE
-                            activityImagePlaceholder?.visibility = View.VISIBLE
+                            addImageButton?.visibility = View.VISIBLE
                         }
 
                     }
