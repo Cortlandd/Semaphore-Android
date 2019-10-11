@@ -166,16 +166,22 @@
                 <LinearLayout
                     android:layout_marginTop="5dp"
                     android:gravity="center_horizontal"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/activity_to_speech"
-                        android:checked="true"
+                        android:checked="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/switch_activity_to_speech_audio" />
+
+                    <TextView
+                        android:hint="Will say the name of the Activity when started."
+                        android:textSize="10sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
 

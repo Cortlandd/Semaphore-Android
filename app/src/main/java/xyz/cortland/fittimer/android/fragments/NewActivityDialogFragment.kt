@@ -60,7 +60,7 @@ class NewActivityDialogFragment: DialogFragment() {
     var minutesValue: Int? = null
     var secondsValue: Int? = null
     var activityImageValue: String? = null
-    var activitySpeechValue: Int? = 1
+    var activitySpeechValue: Int? = 0
 
     var activityModel: ActivityModel? = null
     var activityModelId: Int? = null

@@ -12,8 +12,8 @@
     <string name="add_activity">Add Activity</string>
     <string name="edit_activity">Edit Activity</string>
     <string name="seconds">Seconds</string>
-    <string name="switch_activity_to_speech_audio">Text-to-Speech Audio</string>
-    <string name="hint_enter_activity_here">Enter Activity Here</string>
+    <string name="switch_activity_to_speech_audio">Text-to-Speech</string>
+    <string name="hint_enter_activity_here">Enter Activity Name here</string>
     <string name="hint_tap_image">Tap the image to change your Activiy Image</string>
     <string name="close">Close</string>
     <string name="close_giphy_search" translatable="false">Close Giphy Search</string>
