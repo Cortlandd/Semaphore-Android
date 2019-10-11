@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityOptionsCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -26,6 +27,7 @@ import xyz.cortland.fittimer.android.extensions.dbHandler
 import xyz.cortland.fittimer.android.extensions.hideTimerNotification
 import xyz.cortland.fittimer.android.extensions.showTimerNotification
 import xyz.cortland.fittimer.android.extensions.speakText
+import xyz.cortland.fittimer.android.fragments.NewActivityDialogFragment
 import xyz.cortland.fittimer.android.helpers.CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION
 import xyz.cortland.fittimer.android.model.ActivityModel
 import xyz.cortland.fittimer.android.receivers.ActivityFinishedReceiver
@@ -79,6 +81,7 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
             holder.stopButton.show()
             holder.playButton.show()
             holder.activityControls.visibility = View.GONE
+            holder.activityOptionsButton.visibility = View.VISIBLE
             holder.resumeButton.hide()
             holder.pauseButton.show()
             holder.activityImage.visibility = View.VISIBLE
@@ -138,6 +141,7 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                 }
 
                 holder.playButton.hide()
+                holder.activityOptionsButton.visibility = View.GONE
 
                 holder.activityControls.visibility = View.VISIBLE
 
@@ -175,6 +179,36 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
 
         holder.resumeButton.setOnClickListener {
             activityModel.countDownTimer!!.resume()
+        }
+
+        holder.activityOptionsButton.setOnClickListener {
+
+            prefs.isOptionEditingActivity = true
+            prefs.optionEditSelectedActivityId = activityModel.id!!
+
+            activityId = activityModel.id
+
+            // Create popup menu
+            val popup = PopupMenu(parentActivity!!, holder.activityOptionsButton)
+
+            // Inflate Activity Options Menu
+            popup.inflate(R.menu.activity_options_menu)
+
+            popup.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.option_edit_activity -> {
+                        val newActivityDialogFragment: NewActivityDialogFragment = NewActivityDialogFragment.newInstance(activityModel, activityId!!)
+                        newActivityDialogFragment.show(parentActivity!!.supportFragmentManager, "ModifyActivity")
+                    }
+                    R.id.option_copy_activity -> {
+                        print("")
+                    }
+                }
+                true
+            }
+
+            popup.show()
+
         }
 
         with(holder.itemView) {
@@ -268,6 +302,7 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                     }
 
                     mHolder.activityControls.visibility = View.VISIBLE
+                    mHolder.activityOptionsButton.visibility = View.GONE
 
                     mHolder.playButton.hide()
 
@@ -385,6 +420,7 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
         var activityImage: ImageView = view.activity_image
         var activityControls: LinearLayout = view.activity_controls
         var activityProgressBar: CircularProgressBar = view.activity_progress_bar
+        var activityOptionsButton: TextView = view.activity_options
     }
 
 }

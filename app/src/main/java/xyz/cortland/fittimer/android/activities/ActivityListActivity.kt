@@ -267,17 +267,29 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     }
 
     override fun onSaveClick(dialog: DialogFragment, activityModel: ActivityModel) {
-        dbHandler.addActivity(activityModel)
-        mActivityModels.add(activityModel)
-        //mActivityModels.clear()
-        //mActivityModels.addAll(dbHandler.allActivitiesList())
-        activityAdapter!!.notifyDataSetChanged()
-        // Store new position in database after moving
-//        mActivityModels.forEachIndexed { index, activity ->
-//            dbHandler.setPosition(activity.id, index)
-//        }
-        validateActivityCount()
-        dialog.dismiss()
+        if (prefs.isOptionEditingActivity) {
+            updateActivityItem(prefs.optionEditSelectedActivityId, activityModel)
+            SemaphoreApp.applicationContext().preferences!!.removePreferences(IS_OPTION_EDITING_ACTIVITY) // Remove editing activityModel from preferences
+            SemaphoreApp.applicationContext().preferences!!.removePreferences(OPTION_EDITING_ACTIVITY_ID) // Remove selected activityModel id from preferences
+            // TODO: Shouldn't have to clear all then add again. Also need animations for insert and remove
+            mActivityModels.clear()
+            mActivityModels.addAll(dbHandler.allActivitiesList())
+            activityAdapter?.notifyDataSetChanged()
+            validateActivityCount()
+            dialog.dismiss()
+        } else {
+            dbHandler.addActivity(activityModel)
+            mActivityModels.add(activityModel)
+            //mActivityModels.clear()
+            //mActivityModels.addAll(dbHandler.allActivitiesList())
+            activityAdapter!!.notifyDataSetChanged()
+            // Store new position in database after moving
+            //mActivityModels.forEachIndexed { index, activity ->
+            //    dbHandler.setPosition(activity.id, index)
+            //}
+            validateActivityCount()
+            dialog.dismiss()
+        }
     }
 
     override fun onCancelClick(dialog: DialogFragment) {
@@ -340,7 +352,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     /**
      * Used to update long pressed Activities
      *
-     * @param id: The id of the book
+     * @param id: The id of the Activity
      * @param activityModel: The activityModel to be updated
      */
     private fun updateActivityItem(id: Int, activityModel: ActivityModel) {

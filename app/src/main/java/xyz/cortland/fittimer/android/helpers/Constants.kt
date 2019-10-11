@@ -14,4 +14,6 @@ const val CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION = "current_playing_all_
 const val CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING = "current_playing_all_activity_remaining"
 const val IS_PLAYING_ALL_ACTIVITIES = "is_playing_all_activities"
 const val IS_PLAYING_ALL_IN_ORDER_ACTIVITIES = "is_playing_all_in_order_activities"
+const val IS_OPTION_EDITING_ACTIVITY = "is_option_editing_activity"
+const val OPTION_EDITING_ACTIVITY_ID = "option_editing_activity_id"
 val prefs = SemaphoreApp.applicationContext().preferences!!

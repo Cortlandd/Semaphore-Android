@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/option_edit_activity"
+        android:icon="@android:drawable/edit_text"
+        android:title="Edit" />
+
+    <item
+        android:id="@+id/option_copy_activity"
+        android:title="Copy" />
+
+</menu>

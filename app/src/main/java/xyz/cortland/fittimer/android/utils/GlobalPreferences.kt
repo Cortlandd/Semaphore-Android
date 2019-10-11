@@ -76,6 +76,24 @@ class GlobalPreferences(context: Context) {
         set(isPlaying) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_PLAYING_ALL_ACTIVITIES, isPlaying).apply() }
 
     /**
+     * Get/Set rather or not you're editing an Activity from options menu
+     *
+     * @return [Boolean]: true or false
+     */
+    var isOptionEditingActivity: Boolean
+        get() = mSharedPreferences!!.getBoolean(IS_OPTION_EDITING_ACTIVITY, false)
+        set(isEditing) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_OPTION_EDITING_ACTIVITY, isEditing).apply() }
+
+    /**
+     * Get/Set the int of the selected Activity to be edited from the options menu.
+     *
+     * @return [Int]: selected Activity Id
+     */
+    var optionEditSelectedActivityId: Int
+        get() = mSharedPreferences!!.getInt(OPTION_EDITING_ACTIVITY_ID, 0)
+        set(activityId) = with(mSharedPreferences!!.edit()) { this.putInt(OPTION_EDITING_ACTIVITY_ID, activityId).apply() }
+
+    /**
      *
      * Method used to remove preferences
      *
