@@ -198,7 +198,11 @@ class ActivityAdapter(var parentActivity: ActivityListActivity?, var mActivityMo
                         newActivityDialogFragment.show(parentActivity!!.supportFragmentManager, "ModifyActivity")
                     }
                     R.id.option_copy_activity -> {
-                        print("")
+                        // TODO: This is pretty coupled...
+                        parentActivity!!.dbHandler.addActivity(activityModel)
+                        parentActivity!!.mActivityModels.add(activityModel)
+                        parentActivity!!.activityAdapter!!.notifyDataSetChanged()
+                        parentActivity!!.validateActivityCount()
                     }
                 }
                 true
