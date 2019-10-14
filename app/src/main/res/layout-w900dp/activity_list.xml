@@ -27,7 +27,7 @@
                                             android:layout_marginLeft="16dp"
                                             android:layout_marginRight="16dp"
                                             app:layoutManager="LinearLayoutManager"
-                                            tools:context="xyz.cortland.fittimer.android.activities.ActivityListActivity"
+                                            tools:context="xyz.cortland.semaphore.android.activities.ActivityListActivity"
                                             tools:listitem="@layout/activity_list_content"/>
 
     <FrameLayout
