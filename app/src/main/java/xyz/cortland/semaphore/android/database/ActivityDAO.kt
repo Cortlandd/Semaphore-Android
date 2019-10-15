@@ -8,10 +8,10 @@ import xyz.cortland.semaphore.android.model.ActivityEntity
 @Dao
 interface ActivityDAO {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertActivityEntity(activityEntity: ActivityEntity)
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.ABORT)
     fun updateActivityEntity(activityEntity: ActivityEntity)
 
     @Delete
@@ -24,5 +24,5 @@ interface ActivityDAO {
     fun getActivityEntities(): LiveData<List<ActivityEntity>>
 
     @Query("UPDATE ActivityEntity SET position=:position WHERE id = :activityEntityId")
-    fun updateActivityEntity(position: Int?, activityEntityId: Int?)
+    fun updateActivityEntityPosition(position: Int?, activityEntityId: Int?)
 }

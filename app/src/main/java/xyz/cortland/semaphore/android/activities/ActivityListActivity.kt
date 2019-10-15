@@ -120,10 +120,9 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
             //updateActivityItem(prefs.optionEditSelectedActivityId, activityEntity)
             prefs.removePreferences(IS_OPTION_EDITING_ACTIVITY) // Remove editing activityEntity from preferences
             prefs.removePreferences(OPTION_EDITING_ACTIVITY_ID) // Remove selected activityEntity id from preferences
-            // TODO: Shouldn't have to clear all then add again. Also need animations for insert and remove
-            //mActivityModels.clear()
-            //mActivityModels.addAll(dbHandler.allActivitiesList())
-            //validateActivityCount()
+            AppExecutors.getInstance().diskIO().execute {
+                semaphoreDB!!.activityDao().updateActivityEntity(activityEntity)
+            }
             dialog.dismiss()
         } else {
             AppExecutors.getInstance().diskIO().execute {

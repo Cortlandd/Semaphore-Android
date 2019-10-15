@@ -195,7 +195,7 @@ class ActivityRecyclerViewAdapter(
                         newActivityDialogFragment.show(c.supportFragmentManager, "ModifyActivity")
                     }
                     R.id.option_copy_activity -> {
-                        doAsync {
+                        AppExecutors.getInstance().diskIO().execute {
                             // TODO: Issue with unique id
                             holder.semaphoreDB?.activityDao()?.insertActivityEntity(activityEntity)
                         }

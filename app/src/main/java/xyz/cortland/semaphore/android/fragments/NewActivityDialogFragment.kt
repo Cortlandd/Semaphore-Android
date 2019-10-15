@@ -253,7 +253,19 @@ class NewActivityDialogFragment: DialogFragment() {
 
     fun saveClick() {
         validateImagePath()
-        newActivityDialogListener?.onSaveClick(this, ActivityEntity(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, activityName = activityValue, activityImage = activityImageValue, activitySpeech = activitySpeechValue))
+        //activityEntity = context.semaphoreDB?.activityDao()?.getActivityEntityById(activityModelId!!)
+        if (activityEntity != null) {
+            newActivityDialogListener?.onSaveClick(this, activityEntity!!.apply {
+                hours = hoursValue
+                minutes = minutesValue
+                seconds = secondsValue
+                activityName = activityValue
+                activityImage = activityImageValue
+                activitySpeech = activitySpeechValue
+            })
+        } else {
+            newActivityDialogListener?.onSaveClick(this, ActivityEntity(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, activityName = activityValue, activityImage = activityImageValue, activitySpeech = activitySpeechValue))
+        }
     }
 
     private fun validateImagePath() {

@@ -110,8 +110,8 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
 
                 // Store new position in database after moving
                 adapter?.mActivityEntity?.forEachIndexed { index, activity ->
-                    doAsync {
-                        semaphoreDB?.activityDao()?.updateActivityEntity(activity.id, index)
+                    AppExecutors.getInstance().diskIO().execute {
+                        semaphoreDB?.activityDao()?.updateActivityEntityPosition(activity.id, index)
                     }
                 }
             }
@@ -258,7 +258,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     playAllButton!!.visibility = View.GONE
                     playAllInOrderButton!!.visibility = View.GONE
 
-                    hidePlayButtons()
+                    //hidePlayButtons()
                 } else {
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.GONE
@@ -268,7 +268,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(recyclerView)
 
-                    showPlayButtons()
+                    //showPlayButtons()
 
                     semaphore!!.drainPermits()
 
@@ -279,6 +279,8 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                 if (prefs.isPlayingAllActivities) {
                     // Disable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(null)
+
+                    //hidePlayButtons()
 
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.VISIBLE
@@ -293,7 +295,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(recyclerView)
 
-                    showPlayButtons()
+                    //showPlayButtons()
 
                     adapter?.stopAllActivities()
                 }
