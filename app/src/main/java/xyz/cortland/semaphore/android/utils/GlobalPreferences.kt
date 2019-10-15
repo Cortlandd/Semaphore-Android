@@ -28,7 +28,7 @@ class GlobalPreferences(context: Context) {
     /**
      *
      * Get value indicating rather or not the current image has been removed.
-     * Set rather or not the current activityModel image has been removed.
+     * Set rather or not the current activityEntity image has been removed.
      *
      * Set the text-to-speech language for the app.
      *
@@ -52,7 +52,7 @@ class GlobalPreferences(context: Context) {
      * Get the index of the currently playing ActivityModel from Playing All.
      * Set the index of the currently playing ActivityModel from Playing All.
      *
-     * @return [Int]: The remaining seconds until a activityModel is complete
+     * @return [Int]: The remaining seconds until a activityEntity is complete
      *
      */
     var currentPlayingAllActivityPosition: Int
@@ -60,16 +60,16 @@ class GlobalPreferences(context: Context) {
         set(position) = with(mSharedPreferences!!.edit()) { this.putInt(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION, position).apply() }
 
     /**
-     * Get/Set the current activityModel, from Playing All's, remaining time.
+     * Get/Set the current activityEntity, from Playing All's, remaining time.
      */
     var currentPlayingAllRemainingTime: Long
         get() = mSharedPreferences!!.getLong(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING, 0)
         set(remainingTime) = with(mSharedPreferences!!.edit()) { this.putLong(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING, remainingTime).apply() }
 
     /**
-     * Get/Set rather a not the app is playing all activities vs a single activityModel
+     * Get/Set rather a not the app is playing all activities vs a single activityEntity
      *
-     * @return [Boolean]: true or false rather the app is playing all activities or a single activityModel
+     * @return [Boolean]: true or false rather the app is playing all activities or a single activityEntity
      */
     var isPlayingAllActivities: Boolean
         get() = mSharedPreferences!!.getBoolean(IS_PLAYING_ALL_ACTIVITIES,false)
@@ -92,6 +92,15 @@ class GlobalPreferences(context: Context) {
     var optionEditSelectedActivityId: Int
         get() = mSharedPreferences!!.getInt(OPTION_EDITING_ACTIVITY_ID, 0)
         set(activityId) = with(mSharedPreferences!!.edit()) { this.putInt(OPTION_EDITING_ACTIVITY_ID, activityId).apply() }
+
+    /**
+     * Get/Set rather or not ActivityFragment is in the Foreground.
+     *
+     * @return [Boolean]: is ActivityFragment in the Foreground or not?
+     */
+    var isActivityFragmentForeground: Boolean
+        get() = mSharedPreferences!!.getBoolean(IS_ACTIVITY_FRAGMENT_FOREGROUND, true)
+        set(isForeground) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_ACTIVITY_FRAGMENT_FOREGROUND, isForeground).apply() }
 
     /**
      *

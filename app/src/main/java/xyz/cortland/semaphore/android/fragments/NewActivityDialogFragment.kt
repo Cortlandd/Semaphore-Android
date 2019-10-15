@@ -13,7 +13,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import xyz.cortland.semaphore.android.R
-import xyz.cortland.semaphore.android.model.ActivityModel
 import xyz.klinker.giphy.GiphyView
 import java.lang.ClassCastException
 import androidx.core.app.ActivityCompat
@@ -24,11 +23,12 @@ import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.shawnlin.numberpicker.NumberPicker
-import xyz.cortland.semaphore.android.SemaphoreApp
-import xyz.cortland.semaphore.android.database.ActivityDatabase
+import org.jetbrains.anko.doAsync
+import xyz.cortland.semaphore.android.extensions.semaphoreDB
 import xyz.cortland.semaphore.android.extensions.speakText
 import xyz.cortland.semaphore.android.helpers.IMAGE_PICK_CODE
-import xyz.cortland.semaphore.android.utils.GlobalPreferences
+import xyz.cortland.semaphore.android.helpers.prefs
+import xyz.cortland.semaphore.android.model.ActivityEntity
 import xyz.cortland.semaphore.android.utils.ImageFilePath
 import java.io.File
 import java.io.FileInputStream
@@ -42,7 +42,6 @@ class NewActivityDialogFragment: DialogFragment() {
     var gifImageLocation: String? = null
     var galleryImageLocation: String? = null
     var imagePath: String? = null
-    var mGlobalPreferences: GlobalPreferences? = null
 
     var activityImage: ImageView? = null
     var hoursNumberPicker: NumberPicker? = null
@@ -62,24 +61,23 @@ class NewActivityDialogFragment: DialogFragment() {
     var activityImageValue: String? = null
     var activitySpeechValue: Int? = 0
 
-    var activityModel: ActivityModel? = null
+    var activityEntity: ActivityEntity? = null
     var activityModelId: Int? = null
 
     var positiveButton: Button? = null
     var negativeButton: Button? = null
 
     interface NewActivityDialogListener {
-        fun onSaveClick(dialog: DialogFragment, activityModel: ActivityModel)
+        fun onSaveClick(dialog: DialogFragment, activityEntity: ActivityEntity)
         fun onCancelClick(dialog: DialogFragment)
     }
 
     var newActivityDialogListener: NewActivityDialogListener? = null
 
     companion object {
-        fun newInstance(activityModel: ActivityModel, id: Int): NewActivityDialogFragment {
+        fun newInstance(id: Int): NewActivityDialogFragment {
             val newActivityDialogFragment = NewActivityDialogFragment()
             val args = Bundle()
-            args.putParcelable("arg_activity", activityModel)
             args.putInt("arg_activity_id", id)
             newActivityDialogFragment.arguments = args
             return newActivityDialogFragment
@@ -104,28 +102,23 @@ class NewActivityDialogFragment: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         isCancelable = false
         val builder = AlertDialog.Builder(this.activity!!, R.style.AlertDialogTheme)
-        mGlobalPreferences = SemaphoreApp.applicationContext().preferences
 
         val dialogView = activity?.layoutInflater?.inflate(R.layout.add_activity, null)
 
-        activityModel = arguments?.getParcelable("arg_activity")
-        activityModelId = arguments?.getInt("arg_activity_id")
-
         setupView(dialogView!!)
 
-
-        if (activityModel == null) {
+        if (activityEntity == null) {
             builder.setTitle(R.string.add_activity)
         } else {
             builder.setTitle(R.string.edit_activity)
-            hoursValue = activityModel?.hours!!
-            hoursNumberPicker?.value = activityModel?.hours!!
-            minutesValue = activityModel?.minutes!!
-            minutesNumberPicker?.value = activityModel?.minutes!!
-            secondsValue = activityModel?.seconds!!
-            secondsNumberPicker?.value = activityModel?.seconds!!
-            activityText?.setText(activityModel?.activityName)
-            if (activityModel!!.activitySpeech == 1) {
+            hoursValue = activityEntity?.hours
+            hoursNumberPicker?.value = activityEntity?.hours!!
+            minutesValue = activityEntity?.minutes!!
+            minutesNumberPicker?.value = activityEntity?.minutes!!
+            secondsValue = activityEntity?.seconds!!
+            secondsNumberPicker?.value = activityEntity?.seconds!!
+            activityText?.setText(activityEntity?.activityName)
+            if (activityEntity!!.activitySpeech == 1) {
                 activitySpeechValue = 1
                 activitySpeech!!.isChecked = true
             } else {
@@ -133,11 +126,11 @@ class NewActivityDialogFragment: DialogFragment() {
                 activitySpeech!!.isChecked = false
             }
 
-            if (activityModel?.activityImage != null) {
+            if (activityEntity?.activityImage != null) {
                 activityImage!!.visibility = View.VISIBLE
                 addImageButton!!.visibility = View.GONE
-                Glide.with(this).load(Uri.fromFile(File(activityModel?.activityImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
-                activityImageValue = activityModel?.activityImage
+                Glide.with(this).load(Uri.fromFile(File(activityEntity?.activityImage))).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).placeholder(R.drawable.circular_progress_bar).into(activityImage!!)
+                activityImageValue = activityEntity?.activityImage
             } else {
                 activityImage!!.visibility = View.GONE
                 addImageButton!!.visibility = View.VISIBLE
@@ -145,10 +138,8 @@ class NewActivityDialogFragment: DialogFragment() {
         }
 
         builder.setView(dialogView)
-            .setPositiveButton(R.string.save) { dialog, id ->
-                mGlobalPreferences!!.activityModified = true
-                validateImagePath()
-                newActivityDialogListener?.onSaveClick(this, ActivityModel(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, activityName = activityValue, activityImage = activityImageValue, activitySpeech = activitySpeechValue))
+            .setPositiveButton(R.string.save) { _, _ ->
+                saveClick()
             }
             .setNegativeButton(R.string.close) { dialog, id ->
                 // TODO: If cancel is selected and image isn't null, delete anything created
@@ -163,6 +154,12 @@ class NewActivityDialogFragment: DialogFragment() {
         super.onAttach(context)
         try {
             newActivityDialogListener = activity as NewActivityDialogListener
+            activityModelId = arguments?.getInt("arg_activity_id")
+            if (activityModelId != null) {
+                doAsync {
+                    activityEntity = context.semaphoreDB?.activityDao()?.getActivityEntityById(activityModelId!!)
+                }
+            }
         } catch (e: ClassCastException) {
             throw ClassCastException(activity.toString() + "must implement NewActivityDialogListener")
         }
@@ -254,6 +251,11 @@ class NewActivityDialogFragment: DialogFragment() {
 
     }
 
+    fun saveClick() {
+        validateImagePath()
+        newActivityDialogListener?.onSaveClick(this, ActivityEntity(hours = hoursValue, minutes = minutesValue, seconds = secondsValue, activityName = activityValue, activityImage = activityImageValue, activitySpeech = activitySpeechValue))
+    }
+
     private fun validateImagePath() {
         when {
             // For New Activities
@@ -265,11 +267,11 @@ class NewActivityDialogFragment: DialogFragment() {
                 activityImageValue = gifImageLocation
             }
             // For Existing Activities
-            imagePath != null && activityImageValue != activityModel?.activityImage -> {
+            imagePath != null && activityImageValue != activityEntity?.activityImage -> {
                 saveSelectedImage(imagePath!!)
                 activityImageValue = galleryImageLocation
             }
-            gifImageLocation != null  && activityImageValue != activityModel?.activityImage -> {
+            gifImageLocation != null  && activityImageValue != activityEntity?.activityImage -> {
                 activityImageValue = gifImageLocation
             }
         }
@@ -352,7 +354,7 @@ class NewActivityDialogFragment: DialogFragment() {
 
     fun tapActivityImage() {
         val builder = AlertDialog.Builder(this.activity!!)
-        if (activityModel == null) {
+        if (activityEntity == null) {
             builder.setTitle(R.string.add_activity_image)
         } else {
             builder.setTitle(R.string.edit_activity_image)
@@ -373,20 +375,17 @@ class NewActivityDialogFragment: DialogFragment() {
                     hideControlButtons()
                 }
                 2 -> { // Remove Current Image
-                    if (activityModel != null) {
+                    if (activityEntity != null) {
                         // Delete File associated from cache
-                        if (activityModel?.activityImage != null) {
-                            File(activityModel?.activityImage).delete()
+                        if (activityEntity?.activityImage != null) {
+                            File(activityEntity?.activityImage).delete()
                         }
                         Glide.with(this.activity!!).clear(activityImage!!)
-                        // Glide clearing Imageview
-                        // Update in the database
-                        ActivityDatabase(this.activity!!, null).updateActivityImage(activityModelId!!)
-                        // Update activityModel image views
+                        // Update activityEntity image views
                         addImageButton!!.visibility = View.VISIBLE
                         activityImage!!.visibility = View.GONE
                         // Preferences to indicate image removed
-                        mGlobalPreferences!!.currentImageRemoved = true
+                        prefs.currentImageRemoved = true
                     } else {
 
                         if (gifImageLocation != null) {
@@ -421,7 +420,7 @@ class NewActivityDialogFragment: DialogFragment() {
 
     fun tapPlaceholderImage() {
         val builder = AlertDialog.Builder(this.activity!!)
-        if (activityModel?.activityImage == null) {
+        if (activityEntity?.activityImage == null) {
             builder.setTitle(R.string.add_activity_image)
         } else {
             builder.setTitle(R.string.edit_activity_image)

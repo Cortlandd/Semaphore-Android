@@ -16,4 +16,5 @@ const val IS_PLAYING_ALL_ACTIVITIES = "is_playing_all_activities"
 const val IS_PLAYING_ALL_IN_ORDER_ACTIVITIES = "is_playing_all_in_order_activities"
 const val IS_OPTION_EDITING_ACTIVITY = "is_option_editing_activity"
 const val OPTION_EDITING_ACTIVITY_ID = "option_editing_activity_id"
+const val IS_ACTIVITY_FRAGMENT_FOREGROUND = "is_activity_fragment_foreground"
 val prefs = SemaphoreApp.applicationContext().preferences!!

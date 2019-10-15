@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.MaterialComponents.CardView"
+    card_view:cardBackgroundColor="@color/light_gray"
+    android:id="@+id/activity_card_view_"
+    android:layout_width="match_parent"
+    card_view:cardElevation="3dp"
+    card_view:cardCornerRadius="5dp"
+    android:animateLayoutChanges="true"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:animateLayoutChanges="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/activityEntityName_"
+                android:hint="Activity"
+                android:textColorHint="@android:color/white"
+                android:maxWidth="90dp"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:textAppearance="?attr/textAppearanceListItem"/>
+
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_centerInParent="true"
+                    android:gravity="center_horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/hours_"
+                        android:textStyle="bold"
+                        android:hint="00"
+                        android:textColorHint="@android:color/white"
+                        android:textSize="20sp"
+                        android:textColor="@android:color/white"
+                        android:textAppearance="?attr/textAppearanceListItem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text=":"
+                        android:textColorHint="@android:color/white"
+                        android:textAppearance="?attr/textAppearanceListItem"
+                        android:textColor="@android:color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/minutes_"
+                        android:textStyle="bold"
+                        android:hint="00"
+                        android:textSize="20sp"
+                        android:textColorHint="@android:color/white"
+                        android:textColor="@android:color/white"
+                        android:textAppearance="?attr/textAppearanceListItem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:text=":"
+                        android:textColorHint="@android:color/white"
+                        android:textAppearance="?attr/textAppearanceListItem"
+                        android:textColor="@android:color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/seconds_"
+                        android:textStyle="bold"
+                        android:textColorHint="@android:color/white"
+                        android:hint="00"
+                        android:textSize="20sp"
+                        android:textColor="@android:color/white"
+                        android:gravity="center_horizontal"
+                        android:textAppearance="?attr/textAppearanceListItem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+
+                <ProgressBar
+                    android:visibility="gone"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:background="@drawable/drawable_circle_dark_blue"
+                    android:layout_centerInParent="true"
+                    android:progressDrawable="@drawable/drawable_circle_green"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="100"
+                    android:rotation="-90"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp" />
+
+                <com.mikhaellopez.circularprogressbar.CircularProgressBar
+                    android:id="@+id/activity_progress_bar_"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    card_view:cpb_progressbar_width="5dp"
+                    card_view:cpb_progress_direction="to_left"
+                    card_view:cpb_progress_max="100"
+                    card_view:cpb_progress="100"
+                    card_view:cpb_progressbar_color="@color/colorAccent"
+                    card_view:cpb_background_progressbar_color="@android:color/white"
+                    />
+
+            </RelativeLayout>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/single_play_button_"
+                android:layout_margin="15dp"
+                android:src="@android:drawable/ic_media_play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/activity_options_"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:textSize="32sp"
+                android:textColor="@android:color/white"
+                android:layout_margin="10sp"
+                android:padding="10dp"
+                android:text="&#8942;"
+                android:textAppearance="?android:textAppearanceLarge" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/activity_controls_"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/single_stop_button_"
+                    android:src="@drawable/ic_stop_24dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/single_pause_button_"
+                    android:src="@android:drawable/ic_media_pause"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/single_resume_button_"
+                    android:src="@android:drawable/ic_media_play"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="5dp"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/activity_image_"
+                    android:scaleType="fitCenter"
+                    android:paddingBottom="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

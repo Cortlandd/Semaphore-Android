@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.EventBus
 import xyz.cortland.semaphore.android.SemaphoreApp
 import xyz.cortland.semaphore.android.R
-import xyz.cortland.semaphore.android.database.ActivityDatabase
+import xyz.cortland.semaphore.android.database.AppDatabase
 import xyz.cortland.semaphore.android.helpers.ACTIVITY_CHANNEL
 import xyz.cortland.semaphore.android.helpers.ACTIVITY_FINISHED_ID
 import xyz.cortland.semaphore.android.helpers.prefs
@@ -28,8 +28,6 @@ fun Context.speakText(text: String) {
     SemaphoreApp.applicationContext().textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
 }
 
-val Context.dbHandler: ActivityDatabase get() = ActivityDatabase(applicationContext, null)
-
 fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolean): Notification {
 
     EventBus.getDefault().postSticky(CountDownEvent(activityModel.countDownTimer!!))
@@ -38,13 +36,13 @@ fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolea
     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
     val stopIntent = Intent(this, ActivityPlaybackReceiver::class.java)
-    stopIntent.action = "activityModel.stop"
+    stopIntent.action = "activityEntity.stop"
 
     val pauseIntent = Intent(this, ActivityPlaybackReceiver::class.java)
-    pauseIntent.action = "activityModel.pause"
+    pauseIntent.action = "activityEntity.pause"
 
     val resumeIntent = Intent(this, ActivityPlaybackReceiver::class.java)
-    resumeIntent.action = "activityModel.resume"
+    resumeIntent.action = "activityEntity.resume"
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -113,3 +111,5 @@ fun Context.showAlert(title: String, message: String, OnClickListener: DialogInt
     }
     dialog.show()
 }
+
+val Context.semaphoreDB: AppDatabase? get() = AppDatabase.getAppDataBase(this)

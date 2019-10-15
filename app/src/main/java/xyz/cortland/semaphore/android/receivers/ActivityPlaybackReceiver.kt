@@ -22,20 +22,20 @@ class ActivityPlaybackReceiver : BroadcastReceiver() {
             countdown = stickyEvent.countdownTimer
 
             when (action) {
-                "activityModel.stop" -> {
+                "activityEntity.stop" -> {
                     if (countdown != null) {
                         println("Stopped ActivityModel")
                         countdown?.cancel()
                     }
                 }
-                "activityModel.pause" -> {
+                "activityEntity.pause" -> {
                     if (countdown != null) {
                         println("Paused ActivityModel")
                         countdown?.pause()
 
                     }
                 }
-                "activityModel.resume" -> {
+                "activityEntity.resume" -> {
                     if (countdown != null) {
                         println("Resumed ActivityModel")
                         countdown?.resume()
