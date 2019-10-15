@@ -261,8 +261,7 @@ class ActivityRecyclerViewAdapter(
                     prefs.currentPlayingAllRemainingTime = millisUntilFinished
 
                     if (!prefs.isActivityFragmentForeground) {
-                        //updateNotification(activityEntity,"${millisUntilFinished / 1000} seconds remaining.")
-                        //context.showTimerNotification(activityEntity, false)
+                        context.showTimerNotification(activityEntity, false)
                     }
                     mHolder.activityProgressBar.setProgressWithAnimation((millisUntilFinished / 1000).toFloat())
                 }
@@ -352,7 +351,7 @@ class ActivityRecyclerViewAdapter(
 
                 override fun countdownPause() {
                     if (!prefs.isActivityFragmentForeground) {
-                        //context.showTimerNotification(activityEntity, true)
+                        context.showTimerNotification(activityEntity, true)
                     }
                     mHolder.pauseButton.hide()
                     mHolder.resumeButton.show()
@@ -360,7 +359,7 @@ class ActivityRecyclerViewAdapter(
 
                 override fun countdownResume() {
                     if (!prefs.isActivityFragmentForeground) {
-                        //context.showTimerNotification(activityEntity, false)
+                        context.showTimerNotification(activityEntity, false)
                     }
                     mHolder.resumeButton.hide()
                     mHolder.pauseButton.show()

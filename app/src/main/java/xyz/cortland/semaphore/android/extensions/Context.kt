@@ -19,7 +19,7 @@ import xyz.cortland.semaphore.android.database.AppDatabase
 import xyz.cortland.semaphore.android.helpers.ACTIVITY_CHANNEL
 import xyz.cortland.semaphore.android.helpers.ACTIVITY_FINISHED_ID
 import xyz.cortland.semaphore.android.helpers.prefs
-import xyz.cortland.semaphore.android.model.ActivityModel
+import xyz.cortland.semaphore.android.model.ActivityEntity
 import xyz.cortland.semaphore.android.receivers.CountDownEvent
 import xyz.cortland.semaphore.android.receivers.ActivityPlaybackReceiver
 import java.util.concurrent.TimeUnit
@@ -28,9 +28,9 @@ fun Context.speakText(text: String) {
     SemaphoreApp.applicationContext().textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
 }
 
-fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolean): Notification {
+fun Context.createTimerNotification(activityEntity: ActivityEntity, paused: Boolean): Notification {
 
-    EventBus.getDefault().postSticky(CountDownEvent(activityModel.countDownTimer!!))
+    EventBus.getDefault().postSticky(CountDownEvent(activityEntity.countDownTimer!!))
 
     val intent = Intent(this, this::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -62,7 +62,7 @@ fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolea
     // TODO: Figure out why contentIntent doesn't just open activity after a while
     val notificationBuider = NotificationCompat.Builder(this, ACTIVITY_CHANNEL)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentTitle(activityModel.activityName)
+        .setContentTitle(activityEntity.activityName)
         .setContentText("$_hours hr $_minutes min $_seconds sec remaining.")
         .setNumber(++numMessages)
         .setSound(null)
@@ -85,8 +85,8 @@ fun Context.createTimerNotification(activityModel: ActivityModel, paused: Boolea
 
 }
 
-fun Context.showTimerNotification(activityModel: ActivityModel, paused: Boolean) {
-    val notification = createTimerNotification(activityModel, paused)
+fun Context.showTimerNotification(activityEntity: ActivityEntity, paused: Boolean) {
+    val notification = createTimerNotification(activityEntity, paused)
     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.notify(ACTIVITY_FINISHED_ID, notification)
 }

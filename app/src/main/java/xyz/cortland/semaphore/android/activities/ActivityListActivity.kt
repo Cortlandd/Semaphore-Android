@@ -1,6 +1,5 @@
 package xyz.cortland.semaphore.android.activities
 
-import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -23,9 +22,7 @@ import xyz.cortland.semaphore.android.fragments.NewActivityDialogFragment
 import xyz.cortland.semaphore.android.helpers.*
 import xyz.cortland.semaphore.android.model.ActivityEntity
 
-import xyz.cortland.semaphore.android.model.ActivityModel
 import xyz.cortland.semaphore.android.receivers.CountDownEvent
-import java.util.*
 
 
 /**

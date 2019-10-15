@@ -12,16 +12,12 @@ import android.widget.Button
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.android.synthetic.main.activity_activity_list.*
-import kotlinx.android.synthetic.main.activity_list.*
-import kotlinx.android.synthetic.main.fragment_activity_list.*
 import org.jetbrains.anko.doAsync
 import xyz.cortland.semaphore.android.R
 import xyz.cortland.semaphore.android.adapter.ActivityRecyclerViewAdapter
 
 import xyz.cortland.semaphore.android.helpers.prefs
 import xyz.cortland.semaphore.android.model.ActivityEntity
-import xyz.cortland.semaphore.android.model.ActivityModel
 import xyz.cortland.semaphore.android.utils.ActivitiesAdapterObserver
 import xyz.cortland.semaphore.android.database.AppExecutors
 import xyz.cortland.semaphore.android.database.AppDatabase
@@ -140,6 +136,11 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
         prefs.isActivityFragmentForeground = false
     }
 
+    override fun onPause() {
+        super.onPause()
+        prefs.isActivityFragmentForeground = false
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
 //        if (context is OnListFragmentInteractionListener) {
@@ -249,10 +250,9 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
         when (key) {
             IS_PLAYING_ALL_IN_ORDER_ACTIVITIES -> {
                 if (prefs.isPlayingAllInOrderActivities) {
-                    // Hide Add ActivityModel Button
-                    //fab.hide()
                     // Disable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(null)
+
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.VISIBLE
                     playAllButton!!.visibility = View.GONE
@@ -264,8 +264,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     stopAllButton!!.visibility = View.GONE
                     playAllButton!!.visibility = View.VISIBLE
                     playAllInOrderButton!!.visibility = View.VISIBLE
-                    // Show Add ActivityModel Button
-                    //fab.show()
+
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(recyclerView)
 
@@ -278,22 +277,19 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
             }
             IS_PLAYING_ALL_ACTIVITIES -> {
                 if (prefs.isPlayingAllActivities) {
-                    // Hide Add ActivityModel Button
-                    //fab.hide()
                     // Disable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(null)
+
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.VISIBLE
                     playAllButton!!.visibility = View.GONE
                     playAllInOrderButton!!.visibility = View.GONE
-
                 } else {
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.GONE
                     playAllButton!!.visibility = View.VISIBLE
                     playAllInOrderButton!!.visibility = View.VISIBLE
-                    // Show Add ActivityModel Button
-                    //fab.show()
+
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(recyclerView)
 
