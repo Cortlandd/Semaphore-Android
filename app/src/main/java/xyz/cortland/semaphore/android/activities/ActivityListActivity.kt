@@ -91,18 +91,6 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
             EventBus.getDefault().removeAllStickyEvents()
         }
 
-        // Used for Editing Activities
-//        if (prefs.activityModified) {
-//            mActivityModels.clear()
-//            item_list.invalidate()
-//            mActivityModels.addAll(dbHandler.allActivitiesList())
-//            activityAdapter!!.notifyDataSetChanged()
-//            validateActivityCount()
-//            prefs.activityModified = false
-//        } else {
-//            return
-//        }
-
     }
 
     override fun onPause() {
@@ -156,31 +144,6 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
 
         return true
     }
-
-    /**
-     * Used to update long pressed Activities
-     *
-     * @param id: The id of the Activity
-     * @param activityEntity: The activityEntity to be updated
-     */
-//    private fun updateActivityItem(id: Int, activityEntity: ActivityEntity) {
-//        val dbHelper = ActivityDatabase(this, null)
-//        val db = dbHelper.writableDatabase
-//        val values = ContentValues()
-//        values.put(ActivityDatabase.COLUMN_HOURS, activityEntity.hours)
-//        values.put(ActivityDatabase.COLUMN_MINUTES, activityEntity.minutes)
-//        values.put(ActivityDatabase.COLUMN_SECONDS, activityEntity.seconds)
-//        values.put(ActivityDatabase.COLUMN_ACTIVITY, activityEntity.activityName)
-//        if (prefs.currentImageRemoved) {
-//            values.putNull(ActivityDatabase.COLUMN_ACTIVITYIMAGE)
-//            prefs.currentImageRemoved = false
-//        } else {
-//            values.put(ActivityDatabase.COLUMN_ACTIVITYIMAGE, activityEntity.activityImage)
-//        }
-//        values.put(ActivityDatabase.COLUMN_ACTIVITYSPEECH, activityEntity.activitySpeech)
-//        db.update(ActivityDatabase.TABLE_NAME, values, ActivityDatabase.COLUMN_ID + "=" + id, null)
-//        db.close()
-//    }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {

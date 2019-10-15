@@ -15,18 +15,6 @@ class GlobalPreferences(context: Context) {
 
     /**
      *
-     * Get the value indicating if a ActivityModel has been edited.
-     * Set rather or not a ActivityModel has been edited.
-     *
-     * @return [Boolean]
-     *
-     */
-    var activityModified: Boolean
-        get() = mSharedPreferences!!.getBoolean(HAS_ACTIVITY_EDITED, false)
-        set(value) = with(mSharedPreferences!!.edit()) { this.putBoolean(HAS_ACTIVITY_EDITED, value).apply() }
-
-    /**
-     *
      * Get value indicating rather or not the current image has been removed.
      * Set rather or not the current activityEntity image has been removed.
      *
