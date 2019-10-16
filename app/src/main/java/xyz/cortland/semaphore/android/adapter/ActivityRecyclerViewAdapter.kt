@@ -264,6 +264,7 @@ class ActivityRecyclerViewAdapter(
                 }
 
                 override fun onFinish() {
+                    activityEntity.activityEntityState = "Finished"
                     if (position == mActivityEntity!!.size - 1) {
                         prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_REMAINING)
                         prefs.removePreferences(CURRENT_PLAYING_ALL_IN_ORDER_ACTIVITY_POSITION)
@@ -289,6 +290,10 @@ class ActivityRecyclerViewAdapter(
 
                 override fun countdownStart() {
 
+                    prefs.totalActivitiesHours = prefs.totalActivitiesHours!!.plus(hours)
+                    prefs.totalActivitiesMinutes = prefs.totalActivitiesMinutes!!.plus(minutes)
+                    prefs.totalActivitiesSeconds = prefs.totalActivitiesSeconds!!.plus(seconds)
+
                     prefs.currentPlayingAllActivityPosition = position
 
                     if (activityEntity.activitySpeech == 1) {
@@ -304,7 +309,7 @@ class ActivityRecyclerViewAdapter(
                 }
 
                 override fun countdownCancel() {
-
+                    activityEntity.activityEntityState = "Cancelled"
                     when {
                         position != mActivityEntity?.size?.minus(1) -> {
                             if (!prefs.isActivityFragmentForeground) {

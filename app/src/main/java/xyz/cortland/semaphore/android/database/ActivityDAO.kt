@@ -23,6 +23,9 @@ interface ActivityDAO {
     @Query("SELECT * FROM ActivityEntity ORDER BY id")
     fun getActivityEntities(): LiveData<List<ActivityEntity>>
 
-    @Query("UPDATE ActivityEntity SET position=:position WHERE id = :activityEntityId")
+    @Query("SELECT * FROM ActivityEntity ORDER BY id")
+    fun getActivityEntitiesList(): List<ActivityEntity>
+
+    @Query("UPDATE ActivityEntity SET position = :position WHERE id = :activityEntityId")
     fun updateActivityEntityPosition(position: Int?, activityEntityId: Int?)
 }

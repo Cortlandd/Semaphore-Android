@@ -20,5 +20,6 @@ data class ActivityEntity (
     var position: Int? = null
     var isDefaultState: Boolean? = true
     @Ignore var countDownTimer: CountDownTimer? = null
+    @Ignore var activityEntityState: String = "Not Started"
 
 }

@@ -17,13 +17,11 @@ import org.jetbrains.anko.doAsync
 import xyz.cortland.semaphore.android.R
 import xyz.cortland.semaphore.android.adapter.ActivityRecyclerViewAdapter
 
-import xyz.cortland.semaphore.android.helpers.prefs
 import xyz.cortland.semaphore.android.model.ActivityEntity
 import xyz.cortland.semaphore.android.utils.ActivitiesAdapterObserver
 import xyz.cortland.semaphore.android.database.AppExecutors
 import xyz.cortland.semaphore.android.database.AppDatabase
-import xyz.cortland.semaphore.android.helpers.IS_PLAYING_ALL_ACTIVITIES
-import xyz.cortland.semaphore.android.helpers.IS_PLAYING_ALL_IN_ORDER_ACTIVITIES
+import xyz.cortland.semaphore.android.helpers.*
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
@@ -191,15 +189,16 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
 
         playAllInOrderButton!!.setOnClickListener {
 
+            prefs.removePreferences(ACTIVITIES_TOTAL_HOURS)
+            prefs.removePreferences(ACTIVITIES_TOTAL_MINUTES)
+            prefs.removePreferences(ACTIVITIES_TOTAL_SECONDS)
+
             prefs.isPlayingAllInOrderActivities = true
 
             semaphore?.drainPermits() // Just in case
             semaphore = Semaphore(1)
 
             for (i in adapter?.mActivityEntity!!.indices) {
-                prefs.totalActivitiesHours = prefs.totalActivitiesHours?.plus(adapter?.mActivityEntity!![i].hours!!)
-                prefs.totalActivitiesMinutes = prefs.totalActivitiesMinutes?.plus(adapter?.mActivityEntity!![i].minutes!!)
-                prefs.totalActivitiesSeconds = prefs.totalActivitiesSeconds?.plus(adapter?.mActivityEntity!![i].seconds!!)
                 val holder = recyclerView!!.getChildViewHolder(recyclerView!!.getChildAt(i)) as ActivityRecyclerViewAdapter.ViewHolder?
                 holder!!.itemView.isEnabled = false
                 thread {
