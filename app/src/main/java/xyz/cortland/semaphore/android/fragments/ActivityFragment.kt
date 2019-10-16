@@ -231,6 +231,13 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
     fun retrieveActivityEntities() {
         semaphoreDB?.activityDao()?.getActivityEntities()?.observe(this, Observer<List<ActivityEntity>> { activityentity ->
             //adapter?.mActivityEntity = activityentity as ArrayList<ActivityEntity>?
+            if (activityentity.size > 1) {
+                playAllInOrderButton?.visibility = View.VISIBLE
+                playAllButton?.visibility = View.VISIBLE
+            } else {
+                playAllInOrderButton?.visibility = View.GONE
+                playAllButton?.visibility = View.GONE
+            }
             adapter?.setActivities(activityentity as ArrayList<ActivityEntity>)
         })
     }
