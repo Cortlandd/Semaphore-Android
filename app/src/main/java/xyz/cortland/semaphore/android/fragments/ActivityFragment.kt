@@ -266,7 +266,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     playAllButton!!.visibility = View.GONE
                     playAllInOrderButton!!.visibility = View.GONE
 
-                    //hidePlayButtons()
+                    hidePlayButtons()
                 } else {
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.GONE
@@ -276,7 +276,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(recyclerView)
 
-                    //showPlayButtons()
+                    showPlayButtons()
 
                     semaphore!!.drainPermits()
 
@@ -288,7 +288,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     // Disable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(null)
 
-                    //hidePlayButtons()
+                    hidePlayButtons()
 
                     // Update Play All and Stop All buttons
                     stopAllButton!!.visibility = View.VISIBLE
@@ -303,7 +303,7 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                     // Enable swiping while playing
                     itemTouchHelper!!.attachToRecyclerView(recyclerView)
 
-                    //showPlayButtons()
+                    showPlayButtons()
 
                     adapter?.stopAllActivities()
                 }
