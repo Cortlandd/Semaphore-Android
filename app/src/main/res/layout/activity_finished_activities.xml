@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="10dp"
+    tools:context=".activities.FinishedActivitiesActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:text="Activities Complete"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:textSize="32sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_weight=".3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:id="@+id/activity_complete_detail"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.mikhaellopez.circularprogressbar.CircularProgressBar
+                android:id="@+id/activity_progress_bar"
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cpb_progressbar_width="5dp"
+                app:cpb_progress_direction="to_left"
+                app:cpb_progress_max="100"
+                app:cpb_progress="100"
+                app:cpb_progressbar_color="@color/colorAccent"
+                app:cpb_background_progressbar_color="@android:color/white" />
+
+            <RelativeLayout
+                android:layout_above="@id/activities_complete_total_time_title"
+                android:gravity="center_horizontal"
+                android:layout_centerInParent="true"
+                android:layout_width="200dp"
+                android:layout_height="100dp">
+
+                <TextView
+                    android:hint="Completed Activities"
+                    android:visibility="gone"
+                    android:layout_above="@id/activities_completed_list"
+                    android:gravity="center"
+                    android:textStyle="italic"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <ListView
+                    android:id="@+id/activities_completed_list"
+                    android:layout_centerInParent="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/activities_complete_total_time_title"
+                android:text="Total Time"
+                android:textSize="28sp"
+                android:textColor="@android:color/black"
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:id="@+id/total_time"
+                android:layout_below="@id/activities_complete_total_time_title"
+                android:layout_centerInParent="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/activities_complete_hours"
+                    android:textStyle="bold"
+                    android:hint="00"
+                    android:textColorHint="@android:color/black"
+                    android:textSize="22sp"
+                    android:textColor="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text=" : "
+                    android:textColorHint="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:textColor="@android:color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/activities_complete_minutes"
+                    android:textStyle="bold"
+                    android:hint="00"
+                    android:textSize="22sp"
+                    android:textColorHint="@android:color/black"
+                    android:textColor="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text=" : "
+                    android:textColorHint="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:textColor="@android:color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/activities_complete_seconds"
+                    android:textStyle="bold"
+                    android:textColorHint="@android:color/black"
+                    android:hint="00"
+                    android:textSize="22sp"
+                    android:textColor="@android:color/black"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:visibility="gone"
+                android:layout_below="@id/total_time"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:textStyle="bold"
+                    android:hint="hr"
+                    android:textColorHint="@android:color/black"
+                    android:textSize="20sp"
+                    android:textColor="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text=" "
+                    android:textColorHint="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:textColor="@android:color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:textStyle="bold"
+                    android:hint="min"
+                    android:textSize="20sp"
+                    android:textColorHint="@android:color/black"
+                    android:textColor="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text=" "
+                    android:textColorHint="@android:color/black"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:textColor="@android:color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:textStyle="bold"
+                    android:textColorHint="@android:color/black"
+                    android:hint="sec"
+                    android:textSize="20sp"
+                    android:textColor="@android:color/black"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="?attr/textAppearanceListItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/close_completed_activities_button"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:text="@string/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

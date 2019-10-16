@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -196,6 +197,9 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
             semaphore = Semaphore(1)
 
             for (i in adapter?.mActivityEntity!!.indices) {
+                prefs.totalActivitiesHours = prefs.totalActivitiesHours?.plus(adapter?.mActivityEntity!![i].hours!!)
+                prefs.totalActivitiesMinutes = prefs.totalActivitiesMinutes?.plus(adapter?.mActivityEntity!![i].minutes!!)
+                prefs.totalActivitiesSeconds = prefs.totalActivitiesSeconds?.plus(adapter?.mActivityEntity!![i].seconds!!)
                 val holder = recyclerView!!.getChildViewHolder(recyclerView!!.getChildAt(i)) as ActivityRecyclerViewAdapter.ViewHolder?
                 holder!!.itemView.isEnabled = false
                 thread {
@@ -235,14 +239,18 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
     fun showPlayButtons() {
         for (i in 0 until recyclerView!!.childCount) {
             val playButton = recyclerView?.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button_)
+            val options = recyclerView?.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<TextView>(R.id.activity_options_)
             playButton.show()
+            options.visibility = View.VISIBLE
         }
     }
 
     fun hidePlayButtons() {
         for (i in 0 until recyclerView!!.childCount) {
             val playButton = recyclerView?.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<FloatingActionButton>(R.id.single_play_button_)
+            val options = recyclerView?.findViewHolderForAdapterPosition(i)!!.itemView.findViewById<TextView>(R.id.activity_options_)
             playButton.hide()
+            options.visibility = View.GONE
         }
     }
 

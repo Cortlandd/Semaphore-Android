@@ -113,9 +113,6 @@ class ActivityRecyclerViewAdapter(
             }
 
             override fun onFinish() {
-                if (!prefs.isActivityFragmentForeground) {
-                    //finishedActivityNotification(activityEntity)
-                }
                 holder.playButton.show()
                 holder.hoursView.text = if (hours in 0..9) "0${activityEntity.hours.toString()}" else activityEntity.hours.toString()
                 holder.minutesView.text = if (minutes in 0..9) "0${activityEntity.minutes.toString()}" else activityEntity.minutes.toString()
@@ -273,12 +270,8 @@ class ActivityRecyclerViewAdapter(
                         prefs.isPlayingAllInOrderActivities = false
                         if (!prefs.isActivityFragmentForeground) {
                             context.hideTimerNotification()
-                            finishedActivities()
-                        } else {
-                            context.showAlert("Activities Complete", "Your Activities have been completed.", DialogInterface.OnClickListener { dialog, _ ->
-                                dialog.dismiss()
-                            }, hasNegativeButton = false)
                         }
+                        finishedActivities()
                     } else {
                         // Necessary because countdowntimer is weird and stops doing shit at 1
                         if (!prefs.isActivityFragmentForeground) {
@@ -336,12 +329,8 @@ class ActivityRecyclerViewAdapter(
                             prefs.isPlayingAllInOrderActivities = false
                             if (!prefs.isActivityFragmentForeground) {
                                 context.hideTimerNotification()
-                                finishedActivities()
-                            } else {
-                                context.showAlert("Activities Complete", "Your Activities have been completed.", DialogInterface.OnClickListener { dialog, _ ->
-                                    dialog.dismiss()
-                                }, hasNegativeButton = false)
                             }
+                            finishedActivities()
                         }
                         else -> {
                             return
@@ -370,26 +359,6 @@ class ActivityRecyclerViewAdapter(
         }
     }
 
-    fun finishedActivityNotification(activityEntity: ActivityEntity) {
-
-        val resultIntent = Intent(context.applicationContext, context::class.java)
-        resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-
-        Notify
-            .with(context)
-            .content {
-                title = "Finished"
-                text = "${activityEntity.activityName}\nfor ${activityEntity.seconds.toString()} seconds."
-            }
-            .meta {
-                clickIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-            }
-            .header {
-                color = 0x706DF8 // Set the color of the bell icon
-            }
-            .show()
-    }
-
     fun stopAllActivities() {
         mActivityEntity?.forEach {
             it.countDownTimer?.cancel()
@@ -400,7 +369,6 @@ class ActivityRecyclerViewAdapter(
 
     fun finishedActivities() {
         val intent = Intent(context, ActivityFinishedReceiver::class.java)
-        intent.action = "playingall.activityEntity.finished"
         context.sendBroadcast(intent)
     }
 

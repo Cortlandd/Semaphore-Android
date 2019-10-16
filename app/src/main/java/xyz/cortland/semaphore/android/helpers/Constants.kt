@@ -17,4 +17,7 @@ const val IS_PLAYING_ALL_IN_ORDER_ACTIVITIES = "is_playing_all_in_order_activiti
 const val IS_OPTION_EDITING_ACTIVITY = "is_option_editing_activity"
 const val OPTION_EDITING_ACTIVITY_ID = "option_editing_activity_id"
 const val IS_ACTIVITY_FRAGMENT_FOREGROUND = "is_activity_fragment_foreground"
+const val ACTIVITIES_TOTAL_HOURS = "activities_total_hours"
+const val ACTIVITIES_TOTAL_MINUTES = "activities_total_minutes"
+const val ACTIVITIES_TOTAL_SECONDS = "activities_total_seconds"
 val prefs = SemaphoreApp.applicationContext().preferences!!

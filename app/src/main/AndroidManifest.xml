@@ -6,15 +6,22 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name="xyz.cortland.semaphore.android.SemaphoreApp"
+        android:name=".SemaphoreApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".activities.FinishedActivitiesActivity"
+            android:label="Activities Complete"
+            android:parentActivityName=".activities.ActivityListActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
         <receiver
-            android:name="xyz.cortland.semaphore.android.receivers.ActivityPlaybackReceiver"
+            android:name=".receivers.ActivityPlaybackReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -23,8 +30,9 @@
                 <action android:name="activityModel.resume" />
             </intent-filter>
         </receiver>
+
         <activity
-            android:name="xyz.cortland.semaphore.android.activities.ActivityListActivity"
+            android:name=".activities.ActivityListActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -35,24 +43,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="xyz.cortland.semaphore.android.activities.ActivityDetailActivity"
-            android:label="@string/title_item_detail"
-            android:parentActivityName="xyz.cortland.semaphore.android.activities.ActivityListActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="xyz.cortland.semaphore.android.activities.ActivityListActivity" />
-        </activity>
-        <activity
-            android:name="xyz.cortland.semaphore.android.activities.SettingsActivity"
+            android:name=".activities.SettingsActivity"
             android:label="@string/title_settings"
-            android:parentActivityName="xyz.cortland.semaphore.android.activities.ActivityListActivity"
+            android:parentActivityName=".activities.ActivityListActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
         <receiver
-            android:name="xyz.cortland.semaphore.android.receivers.ActivityFinishedReceiver"
+            android:name=".receivers.ActivityFinishedReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

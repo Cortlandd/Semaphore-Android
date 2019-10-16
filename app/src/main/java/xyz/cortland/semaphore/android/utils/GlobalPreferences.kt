@@ -111,6 +111,18 @@ class GlobalPreferences(context: Context) {
         get() = mSharedPreferences!!.getBoolean(IS_PLAYING_ALL_IN_ORDER_ACTIVITIES, false)
         set(isPlayingAllInOrder) = with(mSharedPreferences!!.edit()) { this.putBoolean(IS_PLAYING_ALL_IN_ORDER_ACTIVITIES, isPlayingAllInOrder).apply() }
 
+    var totalActivitiesHours: Int?
+        get() = mSharedPreferences!!.getInt(ACTIVITIES_TOTAL_HOURS, 0)
+        set(totalHours) = with(mSharedPreferences!!.edit()) { this.putInt(ACTIVITIES_TOTAL_HOURS, totalHours!!).apply() }
+
+    var totalActivitiesMinutes: Int?
+        get() = mSharedPreferences!!.getInt(ACTIVITIES_TOTAL_MINUTES, 0)
+        set(totalMinutes) = with(mSharedPreferences!!.edit()) { this.putInt(ACTIVITIES_TOTAL_MINUTES, totalMinutes!!).apply() }
+
+    var totalActivitiesSeconds: Int?
+        get() = mSharedPreferences!!.getInt(ACTIVITIES_TOTAL_SECONDS, 0)
+        set(totalSeconds) = with(mSharedPreferences!!.edit()) { this.putInt(ACTIVITIES_TOTAL_SECONDS, totalSeconds!!).apply() }
+
     /**
      *
      * Return global SharedPreferences variable in GlobalPreferences.
