@@ -13,12 +13,41 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".activities.FAQActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".activities.SettingsActivity"
+            android:label="@string/faq">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="xyz.cortland.semaphore.android.activities.SettingsActivity" />
+        </activity>
+
+        <activity
+            android:name=".activities.OpenSourceLicensesActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".activities.SettingsActivity"
+            android:label="@string/open_source_licenses">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="xyz.cortland.semaphore.android.activities.SettingsActivity" />
+        </activity>
+
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".activities.ActivityListActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="xyz.cortland.semaphore.android.activities.ActivityListActivity" />
+        </activity>
 
         <activity
             android:name=".activities.FinishedActivitiesActivity"
             android:label="Activities Complete"
             android:parentActivityName=".activities.ActivityListActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <receiver
             android:name=".receivers.ActivityPlaybackReceiver"
@@ -34,8 +63,8 @@
         <activity
             android:name=".activities.ActivityListActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,12 +72,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.SettingsActivity"
-            android:label="@string/title_settings"
-            android:parentActivityName=".activities.ActivityListActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <receiver
             android:name=".receivers.ActivityFinishedReceiver"

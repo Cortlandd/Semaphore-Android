@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2018 The app Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="General" app:iconSpaceReserved="false" >
+
+        <Preference
+            app:key="send_feedback"
+            app:summary="Send me an Email with any questions or concerns."
+            app:icon="@drawable/ic_mail_outline_purp_24dp"
+            app:title="@string/send_feedback" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="About" app:iconSpaceReserved="false" >
+
+
+        <Preference
+            app:key="open_source_licenses"
+            app:summary="Open Source libraries that make Semaphore possible."
+            app:icon="@drawable/ic_code_purp_24dp"
+            app:title="@string/open_source_licenses" />
+
+        <Preference
+            app:key="faq"
+            app:summary="Any questions you may have."
+            app:icon="@drawable/ic_help_outline_purp_24dp"
+            app:title="@string/faq" />
+
+        <Preference
+            app:key="rate_app"
+            app:summary="Rate Semaphore in the Play Store!"
+            app:title="Rate App" />
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

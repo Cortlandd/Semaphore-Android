@@ -33,6 +33,7 @@
     <string name="remove_current_image">Remove Current Image</string>
     <string name="tap">Tap</string>
     <string name="no_activities_message">to add a new Activity.</string>
+    <string name="copyright">Copyright © Cortland Walker</string>
 
     <!-- Open Source Licenses -->
     <string name="giphy_android_search_library_title" translatable="false">Giphy Android Search Library</string>
@@ -121,4 +122,19 @@
         OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     </string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

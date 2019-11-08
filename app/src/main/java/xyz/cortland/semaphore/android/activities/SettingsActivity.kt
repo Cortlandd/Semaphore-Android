@@ -8,57 +8,36 @@ import android.speech.tts.TextToSpeech
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
+import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.navigation.NavigationView
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import kotlinx.android.synthetic.main.settings_activity.*
 import xyz.cortland.semaphore.android.BuildConfig
-import xyz.cortland.semaphore.android.SemaphoreApp
 import xyz.cortland.semaphore.android.R
-import android.widget.ArrayAdapter
-import android.widget.EditText
+import xyz.cortland.semaphore.android.SemaphoreApp
 import xyz.cortland.semaphore.android.helpers.prefs
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.properties.Delegates
 
-
-class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
-    var locale: Locale? = null
-
-    var language: String? by Delegates.observable(initialValue = locale?.displayLanguage) { _, _, _ ->
-        setSpeechTitle()
-    }
+class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
-        setSupportActionBar(settings_toolbar)
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.settings, SettingsFragment())
+            .commit()
+
+        app_version.text = "v${BuildConfig.VERSION_NAME}"
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        settings_navigation.setNavigationItemSelectedListener(this)
-        // Give nav icons color
-        settings_navigation.itemIconTintList = null
-
-        // Initialize language here to trigger setSpeechTitle()
-        language = String()
-
-    }
-
-    // Do again what was initially done on Create
-    fun setSpeechTitle() {
-
-        locale = Locale(prefs?.speechLanguage)
-
-        val menu = settings_navigation.menu
-
-        val language = locale?.displayLanguage
-
-        val speechLanguage = menu!!.findItem(R.id.nav_speech_language)
-        speechLanguage.title = "${getString(R.string.switch_activity_to_speech_audio)} ($language)"
     }
 
     override fun onBackPressed() {
@@ -67,119 +46,9 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
         this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-
-        when (item.itemId) {
-            R.id.nav_about -> {
-                val aboutAlert = AlertDialog.Builder(this)
-                aboutAlert.setTitle(R.string.about)
-                aboutAlert.setMessage("${getString(R.string.app_name)} ${BuildConfig.VERSION_NAME}\nCopyright © Cortland Walker")
-                // TODO: aboutAlert.setIcon = App Icon
-                aboutAlert.setPositiveButton("OK") { dialog, _ ->
-                    dialog.dismiss()
-                }.create().show()
-            }
-            R.id.nav_faq -> {
-                Toast.makeText(this, "FAQ", Toast.LENGTH_SHORT).show()
-            }
-            R.id.nav_licenses -> {
-                val opensourceAlert = AlertDialog.Builder(this)
-                val opensourceView = this.layoutInflater.inflate(R.layout.open_source_licenses, null)
-                opensourceAlert.setTitle(R.string.open_source_licenses)
-                opensourceAlert.setView(opensourceView)
-                opensourceAlert.setPositiveButton("OK") { dialog, _ ->
-                    dialog.dismiss()
-                }.create().show()
-            }
-            R.id.nav_sendfeedback -> {
-                val deviceModel = Build.MODEL
-                val appVersion = BuildConfig.VERSION_NAME
-                val body =
-                    """
-                        -------------------- <br/>
-                        App: Semaphore <br/>
-                        Version: $appVersion <br/>
-                        Device: $deviceModel
-                    """.trimIndent()
-
-                val emailIntent = Intent(Intent.ACTION_SENDTO)
-                emailIntent.type = "message/rfc822"
-                emailIntent.data = Uri.parse("mailto:cortland1568@gmail.com")
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback - Android")
-                emailIntent.putExtra(Intent.EXTRA_TEXT, body)
-                startActivity(Intent.createChooser(emailIntent, "Send Feedback"))
-            }
-            R.id.nav_speech_language -> {
-
-                var selectedLanguage: String? = null
-                val builder = AlertDialog.Builder(this, R.style.AlertDialogTheme)
-                val dialogView = this.layoutInflater.inflate(R.layout.speech_language_selection_dialog, null)
-                val listview = dialogView.findViewById<ListView>(R.id.speech_language_list_view)
-                val filterText = dialogView.findViewById<EditText>(R.id.speech_language_filter)
-
-                val list = ArrayList<String>()
-                val listLanguage = ArrayList<String>()
-
-                for (i in SemaphoreApp.applicationContext().availableLanguages) {
-                    if (SemaphoreApp.applicationContext().textToSpeech!!.isLanguageAvailable(i) >= TextToSpeech.LANG_COUNTRY_AVAILABLE) {
-                        list.add(i.displayName)
-                        listLanguage.add(i.language)
-                    }
-                }
-
-                listview.choiceMode = ListView.CHOICE_MODE_SINGLE
-
-                val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_single_choice, list)
-                listview.adapter = adapter
-
-                listview.setOnItemClickListener { parent, view, position, id ->
-                    selectedLanguage = listLanguage[position]
-                }
-
-                builder.setView(dialogView)
-                builder.setPositiveButton(R.string.save) { dialog, which ->
-                    if (selectedLanguage != null) {
-                        prefs!!.speechLanguage = selectedLanguage!!
-                        language = selectedLanguage
-                    } else {
-                        dialog.dismiss()
-                    }
-                }
-                builder.setNegativeButton(R.string.close) { dialog, which ->
-                    dialog.dismiss()
-                }
-
-                filterText.addTextChangedListener(object: TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-
-                    }
-
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-                    }
-
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                        adapter.filter.filter(s)
-                    }
-
-                })
-
-                builder.create().show()
-            }
-        }
-
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem) =
         when (item.itemId) {
             android.R.id.home -> {
-                // This ID represents the Home or Up button. In the case of this
-                // activity, the Up button is shown. For
-                // more details, see the Navigation pattern on Android Design:
-                //
-                // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-
                 finish()
                 this.overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
                 true
@@ -187,4 +56,99 @@ class SettingsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
             else -> super.onOptionsItemSelected(item)
         }
 
+    class SettingsFragment : PreferenceFragmentCompat() {
+
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            setPreferencesFromResource(R.xml.root_preferences, rootKey)
+
+            intializePreferences()
+        }
+
+        fun intializePreferences() {
+
+
+            preferenceScreen.findPreference<Preference>("send_feedback").also {
+                it?.setOnPreferenceClickListener {
+                    sendFeedback()
+                    true
+                }
+            }
+
+            preferenceScreen.findPreference<Preference>("open_source_licenses").also {
+                it?.setOnPreferenceClickListener {
+                    Intent(context!!, OpenSourceLicensesActivity::class.java).also { i ->
+                        startActivity(i)
+                    }
+                    true
+                }
+            }
+
+            preferenceScreen.findPreference<Preference>("faq").also {
+                it?.setOnPreferenceClickListener {
+                    Intent(context!!, FAQActivity::class.java).also { i ->
+                        startActivity(i)
+                    }
+                    true
+                }
+            }
+
+            preferenceScreen.findPreference<Preference>("rate_app").also {
+                it?.setOnPreferenceClickListener {
+                    rateApp()
+                    true
+                }
+            }
+
+        }
+
+        fun sendFeedback() {
+            val deviceModel = Build.MODEL
+            val appVersion = BuildConfig.VERSION_NAME
+            val body =
+                """
+                        -------------------- <br/>
+                        App: Semaphore <br/>
+                        Version: $appVersion <br/>
+                        Device: $deviceModel
+                    """.trimIndent()
+
+            val emailIntent = Intent(Intent.ACTION_SENDTO)
+            emailIntent.type = "message/rfc822"
+            emailIntent.data = Uri.parse("mailto:cortland1568@gmail.com")
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback - Android")
+            emailIntent.putExtra(Intent.EXTRA_TEXT, body)
+            startActivity(Intent.createChooser(emailIntent, "Send Feedback"))
+        }
+
+        /**
+         *
+         * Start with rating the app
+         * Determine if the Play Store is installed on the device
+         *
+         * */
+        fun rateApp() {
+            val uri = Uri.parse("market://details?id=" + BuildConfig.APPLICATION_ID)
+            var intent = Intent(Intent.ACTION_VIEW, uri)
+            // To count with Play market backstack, After pressing back button,
+            // to taken back to our application, we need to add following flags to intent.
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or
+                    Intent.FLAG_ACTIVITY_NEW_DOCUMENT or
+                    Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+
+            if (intent.resolveActivity(context!!.packageManager) != null) {
+                startActivity(intent)
+            }
+            else {
+                intent = Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID))
+                if (intent.resolveActivity(context!!.packageManager) != null) {
+                    startActivity(intent)
+                }
+                else {
+                    Toast.makeText(context, "The app currently isn't in the Play Store.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+    }
 }

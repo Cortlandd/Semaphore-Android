@@ -18,7 +18,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mikhaellopez.circularprogressbar.CircularProgressBar
-import io.karn.notify.Notify
 import xyz.cortland.semaphore.android.R
 
 import kotlinx.android.synthetic.main.fragment_activity.view.*
