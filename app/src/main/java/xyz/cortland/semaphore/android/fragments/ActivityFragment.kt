@@ -46,17 +46,10 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
     var playAllInOrderButton: Button? = null
     var stopAllButton: Button? = null
 
-    // TODO: Customize parameters
-    private var columnCount = 1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         semaphoreDB = AppDatabase.getAppDataBase(context!!)
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -153,6 +146,8 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
 
     override fun onDestroy() {
         super.onDestroy()
+        semaphore?.drainPermits()
+        semaphoreDB?.close()
         adapter?.stopAllActivities()
         prefs.isPlayingAllActivities = false
         prefs.isPlayingAllInOrderActivities = false
@@ -315,20 +310,5 @@ class ActivityFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeL
                 }
             }
         }
-    }
-
-    companion object {
-
-        // TODO: Customize parameter argument names
-        const val ARG_COLUMN_COUNT = "column-count"
-
-        // TODO: Customize parameter initialization
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-            ActivityFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
-                }
-            }
     }
 }
