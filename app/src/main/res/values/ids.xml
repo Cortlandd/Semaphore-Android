@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="fab_add_activity" type="id" />
+    <item name="fab_import_activities" type="id" />
+    <item name="fab_export_activities" type="id" />
+    <item name="fab_activities_history" type="id" />
+    <item name="fab_create_group_of_activities" type="id" />
+</resources>

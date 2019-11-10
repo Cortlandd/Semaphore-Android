@@ -7,7 +7,10 @@ import android.view.Menu
 import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import com.leinardi.android.speeddial.SpeedDialActionItem
+import com.leinardi.android.speeddial.SpeedDialView
 
 import kotlinx.android.synthetic.main.activity_activity_list.*
 import org.greenrobot.eventbus.EventBus
@@ -58,10 +61,7 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
                 .commit()
         }
 
-        fab.setOnClickListener {
-            val newActivityFragment = NewActivityDialogFragment()
-            newActivityFragment.show(supportFragmentManager, "newActivity")
-        }
+        setupView()
 
     }
 
@@ -103,6 +103,62 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
         currentCountDownTimer = event.countdownTimer
     }
 
+    fun setupView() {
+
+        speedDialView.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_add_activity, R.drawable.ic_add_black_24dp).setLabel("Add Activity").create()
+        )
+        speedDialView.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_import_activities, R.drawable.ic_file_upload_white_24dp).setLabel("Import Activities").create()
+        )
+        speedDialView.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_activities_history, R.drawable.ic_history_white_24dp).setLabel("Play All History").create()
+        )
+        speedDialView.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_export_activities, R.drawable.ic_file_download_white_24dp).setLabel("Export Activities").create()
+        )
+        speedDialView.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_create_group_of_activities, R.drawable.ic_add_black_24dp).setLabel("Add Activities Group").create()
+        )
+
+        speedDialView.setOnActionSelectedListener( SpeedDialView.OnActionSelectedListener { actionItem ->
+            when (actionItem.id) {
+                R.id.fab_add_activity -> {
+                    val newActivityFragment = NewActivityDialogFragment()
+                    newActivityFragment.show(supportFragmentManager, "newActivity")
+                    return@OnActionSelectedListener true
+                }
+
+                R.id.fab_import_activities -> {
+                    Toast.makeText(this, "Implement Activities Importing", Toast.LENGTH_SHORT).show()
+                    //speedDialView.close()
+                    return@OnActionSelectedListener true
+                }
+
+                R.id.fab_activities_history -> {
+                    Toast.makeText(this, "Implement Activities History", Toast.LENGTH_SHORT).show()
+                    //speedDialView.close()
+                    return@OnActionSelectedListener true
+                }
+
+                R.id.fab_export_activities -> {
+                    Toast.makeText(this, "Implement Activities Exporting", Toast.LENGTH_SHORT).show()
+                    //speedDialView.close()
+                    return@OnActionSelectedListener true
+                }
+
+                R.id.fab_create_group_of_activities -> {
+                    Toast.makeText(this, "Implement Activities Grouping", Toast.LENGTH_SHORT).show()
+                    //speedDialView.close()
+                    return@OnActionSelectedListener true
+                }
+
+            }
+            false
+        })
+
+    }
+
     override fun onSaveClick(dialog: DialogFragment, activityEntity: ActivityEntity) {
         if (prefs.isOptionEditingActivity) {
             //updateActivityItem(prefs.optionEditSelectedActivityId, activityEntity)
@@ -111,11 +167,13 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
             AppExecutors.getInstance().diskIO().execute {
                 semaphoreDB!!.activityDao().updateActivityEntity(activityEntity)
             }
+            speedDialView.close()
             dialog.dismiss()
         } else {
             AppExecutors.getInstance().diskIO().execute {
                 semaphoreDB!!.activityDao().insertActivityEntity(activityEntity)
             }
+            speedDialView.close()
             dialog.dismiss()
         }
     }
@@ -148,19 +206,19 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
             IS_PLAYING_ALL_IN_ORDER_ACTIVITIES -> {
-                if (prefs.isPlayingAllInOrderActivities) {
-                    fab.hide()
+                if (prefs.isPlayingAllInOrderActivities == true) {
+                    speedDialView.visibility = View.GONE
                 } else {
-                    fab.show()
+                    speedDialView.visibility = View.VISIBLE
                 }
             }
             IS_PLAYING_ALL_ACTIVITIES -> {
-                if (prefs.isPlayingAllActivities) {
+                if (prefs.isPlayingAllActivities == true) {
                     // Hide Add ActivityEntity Button
-                    fab.hide()
+                    speedDialView.visibility = View.GONE
                 } else {
                     // Show Add ActivityEntity Button
-                    fab.show()
+                    speedDialView.visibility = View.VISIBLE
                 }
             }
         }
