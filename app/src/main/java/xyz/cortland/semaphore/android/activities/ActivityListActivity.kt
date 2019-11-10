@@ -105,21 +105,12 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
 
     fun setupView() {
 
-        speedDialView.addActionItem(
-            SpeedDialActionItem.Builder(R.id.fab_add_activity, R.drawable.ic_add_black_24dp).setLabel("Add Activity").create()
-        )
-        speedDialView.addActionItem(
-            SpeedDialActionItem.Builder(R.id.fab_import_activities, R.drawable.ic_file_upload_white_24dp).setLabel("Import Activities").create()
-        )
-        speedDialView.addActionItem(
-            SpeedDialActionItem.Builder(R.id.fab_activities_history, R.drawable.ic_history_white_24dp).setLabel("Play All History").create()
-        )
-        speedDialView.addActionItem(
-            SpeedDialActionItem.Builder(R.id.fab_export_activities, R.drawable.ic_file_download_white_24dp).setLabel("Export Activities").create()
-        )
-        speedDialView.addActionItem(
-            SpeedDialActionItem.Builder(R.id.fab_create_group_of_activities, R.drawable.ic_add_black_24dp).setLabel("Add Activities Group").create()
-        )
+        speedDialView.addActionItem(SpeedDialActionItem.Builder(R.id.fab_add_activity, R.drawable.ic_add_black_24dp).setLabel("Add Activity").create())
+        speedDialView.addActionItem(SpeedDialActionItem.Builder(R.id.fab_create_group_of_activities, R.drawable.ic_add_black_24dp).setLabel("Add Activities Group").create())
+        speedDialView.addActionItem(SpeedDialActionItem.Builder(R.id.fab_activities_history, R.drawable.ic_history_white_24dp).setLabel("Play All History").create())
+        //speedDialView.addActionItem(SpeedDialActionItem.Builder(R.id.fab_change_group, R.drawable.ic_file_upload_white_24dp).setLabel("Change Group").create())
+        //speedDialView.addActionItem(SpeedDialActionItem.Builder(R.id.fab_import_activities, R.drawable.ic_file_upload_white_24dp).setLabel("Import Activities").create())
+        //speedDialView.addActionItem(SpeedDialActionItem.Builder(R.id.fab_export_activities, R.drawable.ic_file_download_white_24dp).setLabel("Export Activities").create())
 
         speedDialView.setOnActionSelectedListener( SpeedDialView.OnActionSelectedListener { actionItem ->
             when (actionItem.id) {
@@ -129,11 +120,13 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
                     return@OnActionSelectedListener true
                 }
 
+                /*
                 R.id.fab_import_activities -> {
                     Toast.makeText(this, "Implement Activities Importing", Toast.LENGTH_SHORT).show()
                     //speedDialView.close()
                     return@OnActionSelectedListener true
                 }
+                */
 
                 R.id.fab_activities_history -> {
                     Toast.makeText(this, "Implement Activities History", Toast.LENGTH_SHORT).show()
@@ -141,11 +134,13 @@ class ActivityListActivity : AppCompatActivity(), NewActivityDialogFragment.NewA
                     return@OnActionSelectedListener true
                 }
 
+                /*
                 R.id.fab_export_activities -> {
                     Toast.makeText(this, "Implement Activities Exporting", Toast.LENGTH_SHORT).show()
                     //speedDialView.close()
                     return@OnActionSelectedListener true
                 }
+                */
 
                 R.id.fab_create_group_of_activities -> {
                     Toast.makeText(this, "Implement Activities Grouping", Toast.LENGTH_SHORT).show()
