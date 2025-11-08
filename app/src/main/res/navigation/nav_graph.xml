@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/workoutListFragment">
+
+    <fragment
+        android:id="@+id/workoutListFragment"
+        android:name="com.cortlandwalker.semaphore.features.workoutlist.WorkoutListFragment"
+        android:label="WorkoutListFragment" >
+        <action
+            android:id="@+id/action_workoutListFragment_to_upsertWorkoutFragment"
+            app:destination="@id/upsertWorkoutFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/upsertWorkoutFragment"
+        android:name="com.cortlandwalker.semaphore.features.upsert.UpsertWorkoutFragment"
+        android:label="UpsertWorkoutFragment" >
+        <argument
+            android:name="workoutId"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+</navigation>
