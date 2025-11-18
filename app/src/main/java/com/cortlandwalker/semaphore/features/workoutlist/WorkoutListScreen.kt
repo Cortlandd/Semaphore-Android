@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,15 +56,17 @@ fun WorkoutListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { reducer.postAction(WorkoutListAction.PlayAllTapped) }
-            ) { Icon(Icons.Default.PlayArrow, contentDescription = "Play all") }
+            if (state.workouts.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = { reducer.postAction(WorkoutListAction.PlayAllTapped) }
+                ) { Icon(Icons.Default.PlayArrow, contentDescription = "Play all") }
+            }
         }
     ) { inner ->
         val hasItems = state.workouts.isNotEmpty()
 
-        when {
-            state.isLoading && !hasItems -> {
+        when (state.displayMode) {
+            ViewDisplayMode.Loading -> {
                 Box(
                     Modifier
                         .fillMaxSize()
@@ -71,42 +74,44 @@ fun WorkoutListScreen(
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator() }
             }
-
-            !hasItems -> {
-                EmptyWorkouts(
-                    onAdd = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(inner)
-                )
+            ViewDisplayMode.Error -> {
+                Text(state.error ?: "Error")
             }
-
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(inner),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(state.workouts, key = { it.id }) { w ->
-                        WorkoutRow(
-                            workout = w,
-                            onPlayClicked = {
-                                reducer.postAction(
-                                    WorkoutListAction.SinglePlayTapped(
-                                        w.id
+            ViewDisplayMode.Content -> {
+                if (hasItems) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(inner),
+                        contentPadding = PaddingValues(vertical = 8.dp)
+                    ) {
+                        items(state.workouts, key = { it.id }) { w ->
+                            WorkoutRow(
+                                workout = w,
+                                onPlayClicked = {
+                                    reducer.postAction(
+                                        WorkoutListAction.SinglePlayTapped(
+                                            w.id
+                                        )
                                     )
-                                )
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                            onClick = {
-                                reducer.postAction(WorkoutListAction.TappedWorkout(w))
-                            },
-                            onLongPress = {}
-                        )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                onClick = {
+                                    reducer.postAction(WorkoutListAction.TappedWorkout(w))
+                                },
+                                onLongPress = {}
+                            )
+                        }
                     }
+                } else {
+                    EmptyWorkouts(
+                        onAdd = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(inner)
+                    )
                 }
             }
         }
@@ -162,7 +167,7 @@ fun WorkoutListScreenEmpty_Preview() {
         InMemoryWorkoutRepository()
     )
     WorkoutListScreen(
-        state = WorkoutListState(),
+        state = WorkoutListState(displayMode = ViewDisplayMode.Content),
         reducer = reducer
     )
 }
@@ -187,7 +192,7 @@ fun WorkoutListScreen_Preview() {
         InMemoryWorkoutRepository(sample)
     )
     WorkoutListScreen(
-        state = WorkoutListState(workouts = sample),
+        state = WorkoutListState(workouts = sample, displayMode = ViewDisplayMode.Content),
         reducer = reducer
     )
 }

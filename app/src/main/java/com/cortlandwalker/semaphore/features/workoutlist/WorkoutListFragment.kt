@@ -22,7 +22,6 @@ class WorkoutListFragment : FragmentReducer<WorkoutListState, WorkoutListAction,
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return ComposeView(requireContext()).apply {
             setContent {
-                reducer.postAction()
                 val state = vm.state.collectAsState().value
                 WorkoutListScreen(state, reducer)
             }

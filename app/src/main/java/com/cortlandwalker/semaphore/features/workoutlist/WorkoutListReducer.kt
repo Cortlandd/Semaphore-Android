@@ -2,6 +2,7 @@ package com.cortlandwalker.semaphore.features.workoutlist
 
 import android.util.Log
 import com.cortlandwalker.semaphore.core.helpers.Reducer
+import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -16,15 +17,15 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
     override suspend fun process(action: WorkoutListAction) {
         when (action) {
             WorkoutListAction.OnLoad -> {
-                state { it.copy(isLoading = true, error = null) }
+                state { it.copy(displayMode = ViewDisplayMode.Loading, error = null) }
                 collectLocalOnce(
                     key = "workouts",
                     flow = repo.observeAllOrderedByPosition(),
                     onEach = { items ->
-                        state { it.copy(workouts = items, isLoading = false, error = null) }
+                        state { it.copy(workouts = items, displayMode = ViewDisplayMode.Content, error = null) }
                     },
                     onError = { t ->
-                        state { it.copy(isLoading = false, error = t.message ?: "Failed to load workouts") }
+                        state { it.copy(displayMode = ViewDisplayMode.Error, error = t.message ?: "Failed to load workouts") }
                     }
                 )
             }

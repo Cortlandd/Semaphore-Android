@@ -1,12 +1,13 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
+import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.models.Workout
 
 data class WorkoutListState(
     val workouts: List<Workout> = emptyList(),
     var changingText: String = "testing",
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val displayMode: ViewDisplayMode = ViewDisplayMode.Loading
 )
 
 sealed interface WorkoutListAction {
