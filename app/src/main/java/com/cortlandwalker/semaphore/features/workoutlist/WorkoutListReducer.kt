@@ -1,12 +1,9 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
 import android.util.Log
-import com.cortlandwalker.semaphore.core.helpers.Reducer
+import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository) :

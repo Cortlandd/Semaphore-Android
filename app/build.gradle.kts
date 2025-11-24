@@ -60,6 +60,8 @@ android {
 
 dependencies {
 
+    implementation("com.github.Cortlandd:Ghettoxide:1.0.7")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

@@ -1,6 +1,6 @@
 package com.cortlandwalker.semaphore.features.upsert
 
-import com.cortlandwalker.semaphore.core.helpers.Reducer
+import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
 import java.util.UUID
@@ -48,7 +48,7 @@ class UpsertWorkoutReducer @Inject constructor(
             UpsertWorkoutAction.GifTapped -> emit(UpsertWorkoutEffect.OpenGifPicker)
 
             UpsertWorkoutAction.SaveClicked -> {
-                val s = read()
+                val s = currentState
                 if (s.name.isBlank() || (s.hours + s.minutes + s.seconds) == 0) {
                     emit(UpsertWorkoutEffect.ShowError("Enter a name and a non-zero duration"))
                     return
@@ -97,5 +97,9 @@ class UpsertWorkoutReducer @Inject constructor(
 
             UpsertWorkoutAction.Cancel -> emit(UpsertWorkoutEffect.Back)
         }
+    }
+
+    override fun onLoadAction(): UpsertWorkoutAction? {
+        return null
     }
 }

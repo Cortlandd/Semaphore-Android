@@ -9,12 +9,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.cortlandwalker.semaphore.core.helpers.FragmentReducer
+import com.cortlandwalker.ghettoxide.Reducer
+import com.cortlandwalker.ghettoxide.ReducerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class UpsertWorkoutFragment : FragmentReducer<UpsertWorkoutState, UpsertWorkoutAction, UpsertWorkoutEffect>() {
+class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutAction, UpsertWorkoutEffect, UpsertWorkoutReducer>() {
 
     @Inject override lateinit var reducer: UpsertWorkoutReducer
 

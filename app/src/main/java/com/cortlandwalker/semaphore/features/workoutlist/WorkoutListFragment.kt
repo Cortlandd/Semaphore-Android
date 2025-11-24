@@ -4,18 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
-import com.cortlandwalker.semaphore.core.helpers.FragmentReducer
-import com.cortlandwalker.semaphore.core.helpers.Reducer
 import javax.inject.Inject
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.fragment.findNavController
-import com.cortlandwalker.semaphore.R
+import com.cortlandwalker.ghettoxide.ReducerFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class WorkoutListFragment : FragmentReducer<WorkoutListState, WorkoutListAction, WorkoutListEffect>() {
+class WorkoutListFragment : ReducerFragment<WorkoutListState, WorkoutListAction, WorkoutListEffect, WorkoutListReducer>() {
     @Inject override lateinit var reducer: WorkoutListReducer
     override val initialState = WorkoutListState()
 
