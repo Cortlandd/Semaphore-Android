@@ -14,16 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
+import com.cortlandwalker.semaphore.data.local.room.WorkoutImageStore
+import com.klipy.klipy_ui.components.MediaItemPreview
+import com.klipy.sdk.model.MediaItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +31,7 @@ fun UpsertWorkoutScreen(
     state: UpsertWorkoutState,
     reducer: UpsertWorkoutReducer
 ) {
-    // local sheet + live preview (does not mutate state until Done)
+    // local sheet + live preview
     var sheetOpen by remember { mutableStateOf(false) }
     var previewH by remember { mutableIntStateOf(state.hours) }
     var previewM by remember { mutableIntStateOf(state.minutes) }
@@ -107,7 +107,7 @@ fun UpsertWorkoutScreen(
 
             // Tap to choose GIF (Fragment handles effect)
             MediaHeader(
-                uri = state.imageUri,
+                mediaItem = state.selectedMediaItem,
                 onTap = { if (controlsEnabled) reducer.postAction(UpsertWorkoutAction.GifTapped) }
             )
 
@@ -166,7 +166,7 @@ fun UpsertWorkoutScreen(
 
 @Composable
 private fun MediaHeader(
-    uri: String?,
+    mediaItem: MediaItem?,
     onTap: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -181,23 +181,26 @@ private fun MediaHeader(
             .clickable(onClick = onTap),
         contentAlignment = Alignment.Center
     ) {
-        if (uri.isNullOrBlank()) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.AccountBox,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+        when {
+            mediaItem != null -> {
+                MediaItemPreview(
+                    item = mediaItem,
                 )
-                Spacer(Modifier.height(6.dp))
-                Text("Tap to choose a GIF", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        } else {
-            AsyncImage(
-                model = ImageRequest.Builder(ctx).data(uri).crossfade(true).build(),
-                contentDescription = "Selected GIF",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            else -> {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.AccountBox,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Tap to choose a GIF",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
@@ -384,13 +387,13 @@ private fun hmsFromBuffer(buf: String): Triple<Int, Int, Int> {
 @Preview
 @Composable
 fun AddWorkoutPreview_Loading() {
-    val reducer = UpsertWorkoutReducer(InMemoryWorkoutRepository())
+    val reducer = UpsertWorkoutReducer(InMemoryWorkoutRepository(), imageStore = WorkoutImageStore(LocalContext.current))
     UpsertWorkoutScreen(UpsertWorkoutState(workoutId = "123", isLoading = true), reducer)
 }
 
 @Preview
 @Composable
 fun AddWorkoutPreview() {
-    val reducer = UpsertWorkoutReducer(InMemoryWorkoutRepository())
+    val reducer = UpsertWorkoutReducer(InMemoryWorkoutRepository(), imageStore = WorkoutImageStore(LocalContext.current))
     UpsertWorkoutScreen(UpsertWorkoutState(), reducer)
 }

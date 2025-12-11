@@ -61,6 +61,7 @@ android {
 dependencies {
 
     implementation("com.github.Cortlandd:Ghettoxide:1.0.7")
+    implementation("com.github.Cortlandd:klipy-android-sdk:0.1.2")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -78,6 +79,8 @@ dependencies {
     implementation(libs.androidx.databinding.adapters)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.preference)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

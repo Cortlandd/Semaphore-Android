@@ -1,13 +1,15 @@
 package com.cortlandwalker.semaphore.features.upsert
 
 import com.cortlandwalker.ghettoxide.Reducer
+import com.cortlandwalker.semaphore.data.local.room.WorkoutImageStore
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
 import java.util.UUID
 import javax.inject.Inject
 
 class UpsertWorkoutReducer @Inject constructor(
-    private val repo: WorkoutRepository
+    private val repo: WorkoutRepository,
+    private val imageStore: WorkoutImageStore
 ) : Reducer<UpsertWorkoutState, UpsertWorkoutAction, UpsertWorkoutEffect>() {
 
     private var original: Workout? = null  // only set in edit mode
@@ -42,7 +44,16 @@ class UpsertWorkoutReducer @Inject constructor(
             }
 
             is UpsertWorkoutAction.NameChanged -> state { it.copy(name = action.value) }
-            is UpsertWorkoutAction.ImageChanged -> state { it.copy(imageUri = action.uri) }
+            is UpsertWorkoutAction.ImageChanged -> {
+                val item = action.mediaItem
+                val url = item.highQualityMetaData?.url ?: item.lowQualityMetaData?.url
+                state {
+                    it.copy(
+                        selectedMediaItem = item,
+                        imageUri = url
+                    )
+                }
+            }
             is UpsertWorkoutAction.TimeSet -> state { it.copy(hours = action.h, minutes = action.m, seconds = action.s) }
 
             UpsertWorkoutAction.GifTapped -> emit(UpsertWorkoutEffect.OpenGifPicker)
@@ -50,10 +61,12 @@ class UpsertWorkoutReducer @Inject constructor(
             UpsertWorkoutAction.SaveClicked -> {
                 val s = currentState
                 if (s.name.isBlank() || (s.hours + s.minutes + s.seconds) == 0) {
-                    emit(UpsertWorkoutEffect.ShowError("Enter a name and a non-zero duration"))
+                    emit(UpsertWorkoutEffect.ShowError("Enter a name and a non-zero time"))
                     return
                 }
                 state { it.copy(isSaving = true, isLoading = true) }
+
+                val finalImageUri = resolveImageUriForSave(s)
 
                 if (!s.isEdit) {
                     // Create
@@ -62,7 +75,7 @@ class UpsertWorkoutReducer @Inject constructor(
                         id = UUID.randomUUID().toString(),
                         createdAt = System.currentTimeMillis(),
                         name = s.name.trim(),
-                        imageUri = s.imageUri ?: "",
+                        imageUri = finalImageUri,
                         hours = s.hours, minutes = s.minutes, seconds = s.seconds,
                         position = position,
                         orderId = 0
@@ -81,7 +94,7 @@ class UpsertWorkoutReducer @Inject constructor(
                     }
                     val updated = base.copy(
                         name = s.name.trim(),
-                        imageUri = s.imageUri ?: "",
+                        imageUri = finalImageUri,
                         hours = s.hours, minutes = s.minutes, seconds = s.seconds
                         // keep position/orderId
                     )
@@ -101,5 +114,23 @@ class UpsertWorkoutReducer @Inject constructor(
 
     override fun onLoadAction(): UpsertWorkoutAction? {
         return null
+    }
+
+    /**
+     * If the current state's imageUri is a remote URL, cache it locally and return the local URI.
+     * If it's already local (or null), just return it as-is.
+     */
+    private suspend fun resolveImageUriForSave(state: UpsertWorkoutState): String? {
+        val uri = state.imageUri ?: return null
+
+        // Treat http/https as remote, anything else as local
+        val lower = uri.lowercase()
+        val isRemote = lower.startsWith("http://") || lower.startsWith("https://")
+
+        if (!isRemote) return uri
+
+        // Try to cache; if it fails, fall back to the original URL so you don't lose the reference
+        return runCatching { imageStore.cacheFromRemote(uri) }
+            .getOrElse { uri }
     }
 }

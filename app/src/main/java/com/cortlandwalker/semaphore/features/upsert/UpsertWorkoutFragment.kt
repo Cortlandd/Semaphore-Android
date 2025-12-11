@@ -11,6 +11,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.ghettoxide.ReducerFragment
+import com.klipy.klipy_ui.picker.KlipyPickerConfig
+import com.klipy.klipy_ui.picker.KlipyPickerDialogFragment
+import com.klipy.klipy_ui.picker.KlipyPickerListener
+import com.klipy.sdk.model.MediaItem
+import com.klipy.sdk.model.MediaType
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -46,45 +51,36 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
             UpsertWorkoutEffect.Back -> findNavController().popBackStack()
             is UpsertWorkoutEffect.ShowError ->
                 Toast.makeText(requireContext(), effect.message, Toast.LENGTH_SHORT).show()
-            UpsertWorkoutEffect.OpenGifPicker -> {
-                // Launch your GIF picker; send result back:
-                // reducer.postAction(UpsertWorkoutAction.ImageChanged(selectedUri))
-            }
+            UpsertWorkoutEffect.OpenGifPicker -> openKlipyPicker()
         }
     }
 
-//    private fun openGiphyPicker() {
-//        val settings = GPHSettings().apply {
-//            // tweak as desired
-//            stickerColumnCount = 3
-//            mediaTypeConfig = arrayOf(GPHContentType.gif, GPHContentType.recents)
-//        }
-//
-//        val dialog = GiphyDialogFragment.newInstance(settings)
-//        dialog.gifSelectionListener = object : GiphyDialogFragment.GifSelectionListener {
-//            override fun onGifSelected(
-//                media: Media,
-//                searchTerm: String?,
-//                selectedContentType: GPHContentType
-//            ) {
-//                // Prefer a reasonably sized rendition
-//                val url =
-//                    media.images?.downsized?.gifUrl
-//                        ?: media.images?.fixedWidth?.gifUrl
-//                        ?: media.images?.original?.gifUrl
-//                        ?: return
-//
-//                //reducer.postAction(UpsertWorkoutAction.GifSelected(url))
-//            }
-//
-//            override fun didSearchTerm(term: String) {
-//
-//            }
-//
-//            override fun onDismissed(selectedContentType: GPHContentType) {
-//                // no-op
-//            }
-//        }
-//        dialog.show(childFragmentManager, "giphy_dialog")
-//    }
+    private fun openKlipyPicker() {
+        val config = KlipyPickerConfig(
+            mediaTypes = listOf(MediaType.GIF),
+            showTrending = true,
+            initialMediaType = MediaType.GIF
+        )
+        val dialog = KlipyPickerDialogFragment.newInstance(config)
+
+        dialog.listener = object : KlipyPickerListener {
+            override fun onMediaSelected(
+                item: MediaItem,
+                searchTerm: String?
+            ) {
+                reducer.postAction(UpsertWorkoutAction.ImageChanged(mediaItem = item))
+            }
+
+            override fun onDismissed(lastContentType: MediaType?) {
+
+            }
+
+            override fun didSearchTerm(term: String) {
+
+            }
+
+        }
+
+        dialog.show(childFragmentManager, "klipy_picker")
+    }
 }

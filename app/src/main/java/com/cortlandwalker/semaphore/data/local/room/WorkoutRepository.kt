@@ -52,7 +52,7 @@ class InMemoryWorkoutRepository(
 
     override fun observeAllOrderedByPosition(): Flow<List<Workout>> = state.asStateFlow()
     override suspend fun getById(id: String): Workout? {
-        TODO("Not yet implemented")
+        return state.value.firstOrNull { it.id == id }
     }
 
     override suspend fun maxPosition(): Int = (state.value.maxOfOrNull { it.position } ?: -1)
@@ -73,6 +73,10 @@ class InMemoryWorkoutRepository(
     }
 
     override suspend fun update(workout: Workout) {
-        TODO("Not yet implemented")
+        state.value = state.value
+            .map { existing ->
+                if (existing.id == workout.id) workout else existing
+            }
+            .sortedBy { it.position }
     }
 }
