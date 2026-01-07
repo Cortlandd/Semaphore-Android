@@ -1,46 +1,39 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
-import com.cortlandwalker.semaphore.data.models.Workout
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
+import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
+import com.cortlandwalker.semaphore.data.models.Workout
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListAction.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,11 +43,16 @@ fun WorkoutListScreen(
     reducer: WorkoutListReducer,
     modifier: Modifier = Modifier
 ) {
+    // Colors from design
+    val backgroundColor = Color(0xFFF8F8FA) // Light grey/white bg
+    val purplePrimary = Color(0xFF6A5ACD)
 
     val listState = rememberLazyListState()
+
+    // Drag state
     var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
     var draggingItem by remember { mutableStateOf<Workout?>(null) }
-    var draggingItemInitialOffset by remember { mutableIntStateOf(0) } // 1. New state
+    var draggingItemInitialOffset by remember { mutableIntStateOf(0) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(state.workouts) {
@@ -64,151 +62,306 @@ fun WorkoutListScreen(
     }
 
     Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text("Semaphore") },
-                actions = {
-                    IconButton(onClick = { reducer.postAction(WorkoutListAction.TappedAddWorkout) }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add workout")
+        modifier = modifier.background(backgroundColor),
+        containerColor = backgroundColor,
+        bottomBar = {
+            CustomBottomBar(
+                onPlayAll = { reducer.postAction(WorkoutListAction.PlayAllTapped) },
+                onSettings = { reducer.postAction(WorkoutListAction.TappedSettings) },
+                // Just for visual completeness based on design
+                onTimer = {}
+            )
+        }
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp) // Main visual padding
+        ) {
+            Spacer(Modifier.height(24.dp))
+
+            // 1. Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Semaphore",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.Black
+                        )
+                    )
+                    Text(
+                        text = "Ready to work out?",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                    )
+                }
+
+                // Rounded Add Button
+                IconButton(
+                    onClick = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = purplePrimary)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // 2. Dashboard Stats
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Total Time Card (Purple)
+                Card(
+                    modifier = Modifier.weight(1f).height(110.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = CardDefaults.cardColors(containerColor = purplePrimary),
+                    elevation = CardDefaults.cardElevation(8.dp)
+                ) {
+                    Box(Modifier.fillMaxSize()) {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text("TOTAL TIME", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
+                            Spacer(Modifier.height(4.dp))
+
+                            // Calculate total duration
+                            val totalSeconds = state.workouts.sumOf { (it.hours * 3600) + (it.minutes * 60) + it.seconds }
+
+                            val h = totalSeconds / 3600
+                            val m = (totalSeconds % 3600) / 60
+                            val s = totalSeconds % 60
+
+                            val timeString = when {
+                                h > 0 -> "${h}h ${m}m" // If hours exist, usually minutes are enough context
+                                m > 0 && s > 0 -> "${m}m ${s}s"
+                                m > 0 -> "${m}m"
+                                else -> "${s}s"
+                            }
+
+                            // Adjust font size slightly if text gets long
+                            val fontSize = if (timeString.length > 5) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displaySmall
+
+                            Text(
+                                text = timeString,
+                                style = fontSize.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
-            )
-        },
-        floatingActionButton = {
-            if (state.workouts.isNotEmpty()) {
-                FloatingActionButton(
-                    onClick = { reducer.postAction(WorkoutListAction.PlayAllTapped) }
-                ) { Icon(Icons.Default.PlayArrow, contentDescription = "Play all") }
-            }
-        }
-    ) { inner ->
-        val hasItems = state.workouts.isNotEmpty()
 
-        when (state.displayMode) {
-            ViewDisplayMode.Loading -> {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(inner),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator() }
-            }
-            ViewDisplayMode.Error -> {
-                Text(state.error ?: "Error")
-            }
-            ViewDisplayMode.Content -> {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(inner),
-                    contentPadding = PaddingValues(vertical = 8.dp)
+                // Workouts Count Card (White)
+                Card(
+                    modifier = Modifier.weight(1f).height(110.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(2.dp)
                 ) {
-                    items(state.workouts, key = { it.id }) { workout ->
-                        val isExpanded = state.activeWorkoutId == workout.id
-                        val isDragging = draggingItem?.id == workout.id
-
-                        WorkoutRow(
-                            workout = workout,
-                            isExpanded = isExpanded,
-                            onPlayClicked = { reducer.postAction(SinglePlayTapped(workout.id)) },
-                            onClick = { reducer.postAction(WorkoutListAction.TappedWorkout(workout)) },
-                            onLongPress = {},
-                            activeProgress = if (isExpanded) state.activeWorkoutTimer else null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                                .animateItem()
-                                .zIndex(if (isDragging) 1f else 0f)
-                                .graphicsLayer {
-                                    if (isDragging) {
-                                        val currentInfo = listState.layoutInfo.visibleItemsInfo
-                                            .firstOrNull { it.key == workout.id }
-                                        val currentOffset = currentInfo?.offset ?: draggingItemInitialOffset
-
-                                        translationY = dragOffset + (draggingItemInitialOffset - currentOffset).toFloat()
-                                        scaleX = 1.05f
-                                        scaleY = 1.05f
-                                        shadowElevation = 8f
-                                    } else {
-                                        translationY = 0f
-                                        scaleX = 1f
-                                        scaleY = 1f
-                                        shadowElevation = 0f
-                                    }
-                                }
-                                .pointerInput(Unit) {
-                                    detectDragGesturesAfterLongPress(
-                                        onDragStart = {
-                                            draggingItem = workout
-                                            draggingItemIndex = state.workouts.indexOfFirst { it.id == workout.id }
-                                            val info = listState.layoutInfo.visibleItemsInfo
-                                                .firstOrNull { it.key == workout.id }
-                                            draggingItemInitialOffset = info?.offset ?: 0
-                                            dragOffset = 0f
-                                        },
-                                        onDrag = { change, dragAmount ->
-                                            change.consume()
-                                            dragOffset += dragAmount.y
-
-                                            val currentDraggingIndex = draggingItemIndex ?: return@detectDragGesturesAfterLongPress
-                                            if (currentDraggingIndex !in state.workouts.indices) return@detectDragGesturesAfterLongPress
-
-                                            val itemsInfo = listState.layoutInfo.visibleItemsInfo
-                                            val currentItemInfo = itemsInfo.firstOrNull { it.key == draggingItem?.id }
-                                                ?: return@detectDragGesturesAfterLongPress
-
-                                            val currentItemCenter = draggingItemInitialOffset + (currentItemInfo.size / 2) + dragOffset
-
-                                            val targetItem = itemsInfo.find { item ->
-                                                val itemTop = item.offset
-                                                val itemBottom = item.offset + item.size
-                                                currentItemCenter > itemTop && currentItemCenter < itemBottom
-                                            }
-
-                                            if (targetItem != null && targetItem.key != draggingItem?.id) {
-                                                val targetIndex = state.workouts.indexOfFirst { it.id == targetItem.key }
-
-                                                if (targetIndex != -1 && targetIndex != currentDraggingIndex) {
-                                                    reducer.postAction(UpdatePosition(workout, targetIndex))
-                                                    draggingItemIndex = targetIndex
-                                                }
-                                            }
-
-                                            // Simple implementation
-                                            val viewportHeight = listState.layoutInfo.viewportSize.height
-                                            if (currentItemCenter > viewportHeight - 100) {
-                                                // trigger scroll down (requires coroutine scope)
-                                                // scope.launch { listState.scrollBy(10f) }
-                                            }
-                                        },
-                                        onDragEnd = {
-                                            if (draggingItem != null) {
-                                                val finalOrder = state.workouts.map { it.id }
-                                                reducer.postAction(WorkoutListAction.ReorderCommit(finalOrder))
-                                            }
-                                            draggingItem = null
-                                            draggingItemIndex = null
-                                            dragOffset = 0f
-                                        },
-                                        onDragCancel = {
-                                            draggingItem = null
-                                            draggingItemIndex = null
-                                            dragOffset = 0f
-                                        }
-                                    )
-                                }
+                    Box(Modifier.fillMaxSize().padding(20.dp)) {
+                        Column(modifier = Modifier.align(Alignment.CenterStart)) {
+                            Text("WORKOUTS", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                            Spacer(Modifier.height(4.dp))
+                            Text("${state.workouts.size}", style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold), color = Color.Black)
+                        }
+                        Icon(
+                            imageVector = Icons.Default.FitnessCenter,
+                            contentDescription = null,
+                            tint = Color.LightGray,
+                            modifier = Modifier.align(Alignment.CenterEnd).size(32.dp).graphicsLayer { rotationZ = -45f }
                         )
                     }
                 }
             }
-            ViewDisplayMode.Empty -> {
-                EmptyWorkouts(
-                    onAdd = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(inner)
+
+            Spacer(Modifier.height(32.dp))
+
+            // 3. Section Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Your Routine",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                TextButton(onClick = {
+
+                }) {
+                    Text("Edit List", color = purplePrimary)
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // 4. Workout List
+            when (state.displayMode) {
+                ViewDisplayMode.Loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = purplePrimary)
+                    }
+                }
+                ViewDisplayMode.Error -> { Text(state.error ?: "Error") }
+                ViewDisplayMode.Content, ViewDisplayMode.Empty -> {
+                    if (state.workouts.isEmpty()) {
+                        EmptyStateHint()
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(bottom = 100.dp) // Space for floating bottom bar
+                        ) {
+                            items(state.workouts, key = { it.id }) { workout ->
+                                val isExpanded = state.activeWorkoutId == workout.id
+                                val isDragging = draggingItem?.id == workout.id
+
+                                WorkoutRow(
+                                    workout = workout,
+                                    isExpanded = isExpanded,
+                                    activeProgress = if (isExpanded) state.activeWorkoutTimer else null,
+                                    onPlayClicked = { reducer.postAction(SinglePlayTapped(workout.id)) },
+                                    onClick = { reducer.postAction(TappedWorkout(workout)) },
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .zIndex(if (isDragging) 1f else 0f)
+                                        .graphicsLayer {
+                                            if (isDragging) {
+                                                val currentInfo = listState.layoutInfo.visibleItemsInfo
+                                                    .firstOrNull { it.key == workout.id }
+                                                val currentOffset = currentInfo?.offset ?: draggingItemInitialOffset
+                                                translationY = dragOffset + (draggingItemInitialOffset - currentOffset).toFloat()
+                                                scaleX = 1.03f
+                                                scaleY = 1.03f
+                                                shadowElevation = 16f
+                                            }
+                                        }
+                                        .pointerInput(Unit) {
+                                            detectDragGesturesAfterLongPress(
+                                                onDragStart = {
+                                                    draggingItem = workout
+                                                    draggingItemIndex = state.workouts.indexOfFirst { it.id == workout.id }
+                                                    val info = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == workout.id }
+                                                    draggingItemInitialOffset = info?.offset ?: 0
+                                                    dragOffset = 0f
+                                                },
+                                                onDrag = { change, dragAmount ->
+                                                    change.consume()
+                                                    dragOffset += dragAmount.y
+                                                    val currentDraggingIndex = draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                                                    if (currentDraggingIndex !in state.workouts.indices) return@detectDragGesturesAfterLongPress
+
+                                                    val itemsInfo = listState.layoutInfo.visibleItemsInfo
+                                                    val currentItemInfo = itemsInfo.firstOrNull { it.key == draggingItem?.id } ?: return@detectDragGesturesAfterLongPress
+                                                    val currentItemCenter = draggingItemInitialOffset + (currentItemInfo.size / 2) + dragOffset
+
+                                                    val targetItem = itemsInfo.find { item ->
+                                                        val itemTop = item.offset
+                                                        val itemBottom = item.offset + item.size
+                                                        currentItemCenter > itemTop && currentItemCenter < itemBottom
+                                                    }
+
+                                                    if (targetItem != null && targetItem.key != draggingItem?.id) {
+                                                        val targetIndex = state.workouts.indexOfFirst { it.id == targetItem.key }
+                                                        if (targetIndex != -1 && targetIndex != currentDraggingIndex) {
+                                                            reducer.postAction(UpdatePosition(workout, targetIndex))
+                                                            draggingItemIndex = targetIndex
+                                                        }
+                                                    }
+                                                },
+                                                onDragEnd = {
+                                                    if (draggingItem != null) {
+                                                        val finalOrder = state.workouts.map { it.id }
+                                                        reducer.postAction(WorkoutListAction.ReorderCommit(finalOrder))
+                                                    }
+                                                    draggingItem = null
+                                                    draggingItemIndex = null
+                                                    dragOffset = 0f
+                                                },
+                                                onDragCancel = {
+                                                    draggingItem = null
+                                                    draggingItemIndex = null
+                                                    dragOffset = 0f
+                                                }
+                                            )
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CustomBottomBar(
+    onPlayAll: () -> Unit,
+    onSettings: () -> Unit,
+    onTimer: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .height(80.dp),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        // White Bar Background
+        Surface(
+            modifier = Modifier.fillMaxWidth().height(60.dp),
+            shape = RoundedCornerShape(30.dp),
+            color = Color.White,
+            shadowElevation = 8.dp
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 30.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Timer Item
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onTimer() }) {
+                    Icon(Icons.Default.Timer, contentDescription = "Timer", tint = Color(0xFF6A5ACD))
+                    Text("Timer", style = MaterialTheme.typography.labelSmall, color = Color(0xFF6A5ACD))
+                }
+
+                // Gap for the Play Button
+                Spacer(Modifier.width(48.dp))
+
+                // Settings Item
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onSettings() }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.Gray)
+                    Text("Settings", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                }
+            }
+        }
+
+        Surface(
+            modifier = Modifier
+                .offset(y = (-20).dp)
+                .size(70.dp)
+                .clickable { onPlayAll() },
+            shape = CircleShape,
+            color = Color(0xFF6A5ACD),
+            shadowElevation = 10.dp
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = "Play All",
+                    tint = Color.White,
+                    modifier = Modifier.size(36.dp)
                 )
             }
         }
@@ -216,80 +369,29 @@ fun WorkoutListScreen(
 }
 
 @Composable
-private fun EmptyWorkouts(
-    onAdd: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier, contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(24.dp)
-        ) {
-            Text("No workouts yet", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Tap the + in the top right or use the button below to add your first workout.",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Button(onClick = onAdd) { Text("Add workout") }
-        }
-    }
-}
-
-@Composable
-fun DurationChip(workout: Workout) {
-    val txt = "%02d:%02d:%02d".format(
-        workout.hours.coerceAtLeast(0),
-        workout.minutes.coerceAtLeast(0),
-        workout.seconds.coerceAtLeast(0)
-    )
-    Surface(
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.92f),
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        shape = MaterialTheme.shapes.small,
-        tonalElevation = 2.dp
+fun EmptyStateHint() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = txt,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
+        Text("Your list is empty.", color = Color.Gray)
+        Text("Tap the + above to start.", color = Color.Gray)
     }
 }
 
+
 @Preview
 @Composable
-fun WorkoutListScreenEmpty_Preview() {
-    val reducer = WorkoutListReducer(
-        InMemoryWorkoutRepository()
-    )
-    WorkoutListScreen(
-        state = WorkoutListState(displayMode = ViewDisplayMode.Content),
-        reducer = reducer
-    )
-}
-@Preview
-@Composable
-fun WorkoutListScreen_Preview() {
+fun WorkoutListScreenPreview() {
     val sample = listOf(
-        Workout(
-            id = "1",
-            createdAt = 0,
-            name = "Push Ups",
-            imageUri = "",
-            hours = 0,
-            minutes = 5,
-            seconds = 0,
-            position = 0,
-            orderId = 0
-        ),
-        Workout(id="2", createdAt=0, name="Plank",   imageUri="", hours=0, minutes=2, seconds=0, position=1, orderId=0),
+        Workout("1", 0, "Warm Up", "", 0, 2, 0, 0, 0),
+        Workout("2", 0, "Push Ups", "", 0, 0, 33, 1, 0),
+        Workout("3", 0, "High Knees", "", 0, 1, 0, 2, 0),
+        Workout("4", 0, "Cool Down", "", 0, 5, 0, 3, 0),
     )
-    val reducer = WorkoutListReducer(
-        InMemoryWorkoutRepository(sample)
-    )
+    val reducer = WorkoutListReducer(InMemoryWorkoutRepository(sample))
     WorkoutListScreen(
-        state = WorkoutListState(workouts = sample, displayMode = ViewDisplayMode.Content),
+        state = WorkoutListState(workouts = sample, displayMode = ViewDisplayMode.Content, activeWorkoutId = "2", activeWorkoutTimer = "00:00:24"),
         reducer = reducer
     )
 }

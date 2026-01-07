@@ -1,9 +1,8 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,15 +11,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.rounded.DragIndicator
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.data.models.Workout
@@ -42,87 +40,114 @@ fun WorkoutRow(
     isExpanded: Boolean,
     onPlayClicked: (Workout) -> Unit,
     onClick: (Workout) -> Unit,
-    onLongPress: (Workout) -> Unit,
     activeProgress: String? = null,
     modifier: Modifier = Modifier
 ) {
     val ctx = LocalContext.current
 
+    // Design Tokens
+    val purplePrimary = Color(0xFF6A5ACD)
+    val inactiveBackgroundColor = Color.White
+    val durationPillColor = Color(0xFFF0F0F5) // Light grey for pill background
+    val purplePillBackground = Color(0xFFEBE9F8) // Very light purple for expanded timer pill
+
+    val borderColor by animateColorAsState(if (isExpanded) purplePrimary else Color.Transparent, label = "border")
+    val borderWidth by animateDpAsState(if (isExpanded) 2.dp else 0.dp, label = "width")
+    val cardHeight by animateDpAsState(if (isExpanded) 380.dp else 100.dp, label = "height")
+
     Card(
-        elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = inactiveBackgroundColor),
         modifier = modifier
             .fillMaxWidth()
+            .height(cardHeight)
+            .border(borderWidth, borderColor, RoundedCornerShape(28.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onClick(workout) }
     ) {
-        Column(
-            modifier = Modifier.animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (!isExpanded) {
-                    WorkoutThumb(uri = workout.imageUri)
-                    Spacer(Modifier.width(12.dp))
+        if (isExpanded) {
+            // --- EXPANDED LAYOUT ---
+            Column(modifier = Modifier.fillMaxSize()) {
+
+                // Header Row (Title, Timer, Stop Button)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Title & Subtitle
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = workout.name,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = purplePrimary
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Current Interval",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+
+                    // Timer Pill
+                    Surface(
+                        color = purplePillBackground,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = activeProgress ?: "00:00",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = purplePrimary
+                                )
+                            )
+                            Text(
+                                text = " / ${formatHmsShort(workout.hours, workout.minutes, workout.seconds)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+
+                    // Stop Button (Square-ish circle)
+                    IconButton(
+                        onClick = { onPlayClicked(workout) }, // Acts as stop/pause in expanded mode
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(durationPillColor)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Stop,
+                            contentDescription = "Stop",
+                            tint = purplePrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
 
-                // Name (start) — ellipsized
-                Text(
-                    text = workout.name.ifBlank { "Untitled workout" },
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(0.75f, fill = true)
-                )
-
-                // Center: time — force true visual center with a Box that spans remaining width
+                // Hero Image
                 Box(
                     modifier = Modifier
-                        .weight(1f, fill = true),
+                        .fillMaxWidth()
+                        .weight(1f) // Fill remaining space
+                        .background(Color.Black)
                 ) {
-                    Text(
-                        text = activeProgress ?: formatHms(workout.hours, workout.minutes, workout.seconds),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                // Right: circular play button
-                IconButton(
-                    onClick = { onPlayClicked(workout) },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isExpanded) MaterialTheme.colorScheme.errorContainer
-                            else MaterialTheme.colorScheme.primaryContainer
-                        )
-                ) {
-                    Icon(
-                        imageVector = if (isExpanded) Icons.Default.Stop else Icons.Default.PlayArrow,
-                        contentDescription = if (isExpanded) "Stop" else "Play",
-                        tint = if (isExpanded) MaterialTheme.colorScheme.onErrorContainer
-                        else MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-
-            if (isExpanded) {
-                Column(modifier = Modifier.fillMaxWidth()) {
                     if (!workout.imageUri.isNullOrBlank()) {
                         AsyncImage(
                             model = ImageRequest.Builder(ctx)
@@ -136,24 +161,124 @@ fun WorkoutRow(
                                 }
                                 .crossfade(true)
                                 .build(),
-                            contentDescription = null,
+                            contentDescription = "Workout visual",
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp)
-                                .background(Color.Black)
+                            modifier = Modifier.fillMaxSize()
                         )
                     } else {
+                        // Placeholder for expanded state
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp)
-                                .background(MaterialTheme.colorScheme.surface),
+                            Modifier.fillMaxSize().background(Color(0xFFE8E8EE)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No Image", style = MaterialTheme.typography.bodySmall)
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(64.dp)
+                            )
                         }
                     }
+
+                    // "Active" Badge overlay
+                    Surface(
+                        color = Color(0xFF222222).copy(alpha = 0.8f),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.TopStart)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF00E676)) // Bright Green dot
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "ACTIVE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                ),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            // --- COLLAPSED LAYOUT ---
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Drag Handle
+                Icon(
+                    imageVector = Icons.Rounded.DragIndicator,
+                    contentDescription = "Drag",
+                    tint = Color.LightGray.copy(alpha = 0.5f),
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Spacer(Modifier.width(16.dp))
+
+                // Small Thumbnail
+                WorkoutThumb(uri = workout.imageUri, size = 64)
+
+                Spacer(Modifier.width(16.dp))
+
+                // Info Column
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = workout.name.ifBlank { "Untitled" },
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color.Black
+                    )
+
+                    Spacer(Modifier.height(6.dp))
+
+                    // Duration Pill
+                    Surface(
+                        color = durationPillColor,
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text(
+                            text = formatHmsShort(workout.hours, workout.minutes, workout.seconds),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                // Play Button
+                IconButton(
+                    onClick = { onPlayClicked(workout) },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(purplePillBackground) // Light purple background
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "Play",
+                        tint = purplePrimary // Purple Icon
+                    )
                 }
             }
         }
@@ -161,29 +286,28 @@ fun WorkoutRow(
 }
 
 @Composable
-private fun WorkoutThumb(uri: String?, size: Int = 56) {
+private fun WorkoutThumb(uri: String?, size: Int = 64) {
     val ctx = LocalContext.current
     val dim = size.dp
-    val shape = RoundedCornerShape(12.dp)
+    val shape = CircleShape
 
     if (uri.isNullOrBlank()) {
         Box(
             modifier = Modifier
                 .size(dim)
                 .clip(shape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(Color(0xFFF0F0F5)),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 "GIF",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.LightGray
             )
         }
     } else {
         AsyncImage(
-            model = ImageRequest
-                .Builder(ctx)
+            model = ImageRequest.Builder(ctx)
                 .data(uri)
                 .decoderFactory { result, options, _ ->
                     if (android.os.Build.VERSION.SDK_INT >= 28) {
@@ -199,53 +323,32 @@ private fun WorkoutThumb(uri: String?, size: Int = 56) {
             modifier = Modifier
                 .size(dim)
                 .clip(shape)
-                .background(Color.Black.copy(alpha = 0.08f))
         )
     }
 }
 
-private fun formatHms(h: Int, m: Int, s: Int): String =
-    "%02dh:%02dm:%02ds".format(h.coerceAtLeast(0), m.coerceAtLeast(0), s.coerceAtLeast(0))
-
-// ---------- Preview ----------
-@Preview(showBackground = true)
-@Composable
-private fun WorkoutRowPreview() {
-    val w = Workout(
-        id = "1",
-        createdAt = System.currentTimeMillis(),
-        name = "Push-ups",
-        imageUri = "", // placeholder
-        hours = 0, minutes = 5, seconds = 0,
-        position = 0,
-        orderId = 0
-    )
-    WorkoutRow(
-        workout = w,
-        onPlayClicked = {},
-        onClick = {},
-        onLongPress = {},
-        isExpanded = false
-    )
+private fun formatHmsShort(h: Int, m: Int, s: Int): String {
+    return if (h > 0) {
+        "%02d:%02d:%02d".format(h, m, s)
+    } else {
+        "%02d:%02d".format(m, s)
+    }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
-private fun WorkoutRowExpandedPreview() {
-    val w = Workout(
-        id = "1",
-        createdAt = System.currentTimeMillis(),
-        name = "Push-ups",
-        imageUri = "", // placeholder
-        hours = 0, minutes = 5, seconds = 0,
-        position = 0,
-        orderId = 0
-    )
-    WorkoutRow(
-        workout = w,
-        onPlayClicked = {},
-        onClick = {},
-        onLongPress = {},
-        isExpanded = true
-    )
+private fun WorkoutRowPreview() {
+    val w = Workout(id = "1", createdAt = 0, name = "Warm Up", imageUri = "", hours = 0, minutes = 2, seconds = 0, position = 0, orderId = 0)
+    Box(Modifier.padding(16.dp)) {
+        WorkoutRow(workout = w, onPlayClicked = {}, onClick = {}, isExpanded = false)
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun WorkoutRowActivePreview() {
+    val w = Workout(id = "1", createdAt = 0, name = "Push Ups", imageUri = "", hours = 0, minutes = 0, seconds = 33, position = 0, orderId = 0)
+    Box(Modifier.padding(16.dp)) {
+        WorkoutRow(workout = w, onPlayClicked = {}, onClick = {}, isExpanded = true, activeProgress = "00:24")
+    }
 }
