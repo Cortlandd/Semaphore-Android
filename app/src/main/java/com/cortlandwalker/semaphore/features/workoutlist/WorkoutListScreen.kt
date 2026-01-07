@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -86,14 +88,19 @@ fun WorkoutListScreen(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(state.workouts, key = { it.id }) { w ->
+                        val isExpanded = state.activeWorkoutId == w.id
+                        val progressStr = if (isExpanded) state.activeWorkoutTimer else null
+
                         WorkoutRow(
                             workout = w,
                             onPlayClicked = {
-                                reducer.postAction(
-                                    SinglePlayTapped(
-                                        w.id
-                                    )
-                                )
+                                if (isExpanded) {
+                                    // 🔴 STOP Logic: Collapse and dispatch Stop
+                                    reducer.postAction(WorkoutListAction.StopTapped)
+                                } else {
+                                    // 🟢 PLAY Logic: Expand and dispatch Play
+                                    reducer.postAction(SinglePlayTapped(w.id))
+                                }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -101,7 +108,9 @@ fun WorkoutListScreen(
                             onClick = {
                                 reducer.postAction(TappedWorkout(w))
                             },
-                            onLongPress = {}
+                            onLongPress = {},
+                            isExpanded = isExpanded,
+                            activeProgress = progressStr
                         )
                     }
                 }
@@ -140,7 +149,7 @@ private fun EmptyWorkouts(
 }
 
 @Composable
-private fun DurationChip(workout: Workout) {
+fun DurationChip(workout: Workout) {
     val txt = "%02d:%02d:%02d".format(
         workout.hours.coerceAtLeast(0),
         workout.minutes.coerceAtLeast(0),

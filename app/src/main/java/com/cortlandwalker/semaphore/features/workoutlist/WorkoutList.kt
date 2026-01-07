@@ -7,11 +7,15 @@ data class WorkoutListState(
     val workouts: List<Workout> = emptyList(),
     var changingText: String = "testing",
     val error: String? = null,
+    val isPlayingAll: Boolean = false,
+    val activeWorkoutId: String? = null,
+    val activeWorkoutTimer: String? = null,
     val displayMode: ViewDisplayMode = ViewDisplayMode.Loading
 )
 
 sealed interface WorkoutListAction {
     data object OnLoad : WorkoutListAction
+    data object StopTapped : WorkoutListAction
     data class UpdatePosition(val workout: Workout, val position: Int) : WorkoutListAction
     data object TappedSettings : WorkoutListAction
     data object TappedAddWorkout : WorkoutListAction
