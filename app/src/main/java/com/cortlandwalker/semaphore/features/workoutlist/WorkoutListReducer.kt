@@ -20,32 +20,59 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
     override suspend fun process(action: WorkoutListAction) {
         when (action) {
             WorkoutListAction.OnLoad -> {
-                state { it.copy(displayMode = ViewDisplayMode.Loading, error = null) }
+                state {
+                    if (it.workouts.isEmpty()) it.copy(displayMode = ViewDisplayMode.Loading, error = null)
+                    else it
+                }
                 collectLocalOnce(
                     key = "workouts",
                     flow = repo.observeAllOrderedByPosition(),
                     onEach = { items ->
-                        state { it.copy(workouts = items, displayMode = ViewDisplayMode.Content, error = null) }
+                        state { currentState ->
+                            val currentIds = currentState.workouts.map { it.id }
+                            val newIds = items.map { it.id }
+
+                            val currentSet = currentIds.toSet()
+                            val newSet = newIds.toSet()
+
+                            if (currentSet == newSet && currentIds != newIds) {
+                                currentState
+                            } else if (currentState.workouts == items) {
+                                currentState
+                            } else {
+                                currentState.copy(workouts = items, displayMode = ViewDisplayMode.Content, error = null)
+                            }
+                        }
                     },
                     onError = { t ->
                         state { it.copy(displayMode = ViewDisplayMode.Error, error = t.message ?: "Failed to load workouts") }
                     }
                 )
             }
-
             WorkoutListAction.TappedSettings -> { emit(WorkoutListEffect.NavSettings) }
             WorkoutListAction.TappedAddWorkout -> {
                 emit(WorkoutListEffect.NavAddWorkout)
             }
             is WorkoutListAction.DeleteTapped -> { repo.deleteById(action.id) }
             is WorkoutListAction.ReorderCommit -> {
-                repo.updatePositions(action.orderedIds)
+                val finalOrderedIds = currentState.workouts.map { it.id }
+
+                scope.launch {
+                    repo.updatePositions(finalOrderedIds)
+                }
             }
             is WorkoutListAction.UpdatePosition -> {
                 state { currentState ->
+                    val fromIndex = currentState.workouts.indexOfFirst { it.id == action.workout.id }
+                    val toIndex = action.position
+
+                    if (fromIndex == -1 || toIndex !in currentState.workouts.indices) {
+                        return@state currentState
+                    }
+
+                    // This is a more robust way to move items that Compose understands better
                     val newList = currentState.workouts.toMutableList().apply {
-                        //val item = removeAt(action.fromIndex)
-                        //add(action.toIndex, item)
+                        add(toIndex, removeAt(fromIndex))
                     }
                     currentState.copy(workouts = newList)
                 }
@@ -54,12 +81,15 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                 emit(NavEditWorkout(action.workout.id))
             }
             WorkoutListAction.PlayAllTapped -> {
-                // Logic: Start the first workout in the list
                 val firstWorkoutId = currentState.workouts.firstOrNull()?.id
                 state { it.copy(activeWorkoutId = firstWorkoutId) }
-                // If you have a Playback Service, you'd trigger it here
             }
             is WorkoutListAction.SinglePlayTapped -> {
+                if (currentState.activeWorkoutId == action.id) {
+                    stopWorkout()
+                    return
+                }
+
                 // Cancel existing timer
                 timerJob?.cancel()
 
@@ -84,6 +114,14 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
 
                     // 4. Auto-collapse when finished
                     stopWorkout()
+
+//                    val currentIndex = currentState.workouts.indexOfFirst { it.id == action.id }
+//                    val nextWorkout = currentState.workouts.getOrNull(currentIndex + 1)
+//                    if (nextWorkout != null) {
+//                        process(SinglePlayTapped(nextWorkout.id))
+//                    } else {
+//                        stopWorkout()
+//                    }
                 }
             }
             WorkoutListAction.StopTapped -> {

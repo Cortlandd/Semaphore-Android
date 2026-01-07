@@ -1,6 +1,7 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -29,11 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
@@ -46,6 +50,19 @@ fun WorkoutListScreen(
     reducer: WorkoutListReducer,
     modifier: Modifier = Modifier
 ) {
+
+    val listState = rememberLazyListState()
+    var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
+    var draggingItem by remember { mutableStateOf<Workout?>(null) }
+    var draggingItemInitialOffset by remember { mutableIntStateOf(0) } // 1. New state
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(state.workouts) {
+        if (draggingItem != null && state.workouts.none { it.id == draggingItem?.id }) {
+            draggingItem = null
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -82,35 +99,106 @@ fun WorkoutListScreen(
             }
             ViewDisplayMode.Content -> {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(inner),
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
-                    items(state.workouts, key = { it.id }) { w ->
-                        val isExpanded = state.activeWorkoutId == w.id
-                        val progressStr = if (isExpanded) state.activeWorkoutTimer else null
+                    items(state.workouts, key = { it.id }) { workout ->
+                        val isExpanded = state.activeWorkoutId == workout.id
+                        val isDragging = draggingItem?.id == workout.id
 
                         WorkoutRow(
-                            workout = w,
-                            onPlayClicked = {
-                                if (isExpanded) {
-                                    // 🔴 STOP Logic: Collapse and dispatch Stop
-                                    reducer.postAction(WorkoutListAction.StopTapped)
-                                } else {
-                                    // 🟢 PLAY Logic: Expand and dispatch Play
-                                    reducer.postAction(SinglePlayTapped(w.id))
-                                }
-                            },
+                            workout = workout,
+                            isExpanded = isExpanded,
+                            onPlayClicked = { reducer.postAction(SinglePlayTapped(workout.id)) },
+                            onClick = { reducer.postAction(WorkoutListAction.TappedWorkout(workout)) },
+                            onLongPress = {},
+                            activeProgress = if (isExpanded) state.activeWorkoutTimer else null,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                            onClick = {
-                                reducer.postAction(TappedWorkout(w))
-                            },
-                            onLongPress = {},
-                            isExpanded = isExpanded,
-                            activeProgress = progressStr
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .animateItem()
+                                .zIndex(if (isDragging) 1f else 0f)
+                                .graphicsLayer {
+                                    if (isDragging) {
+                                        val currentInfo = listState.layoutInfo.visibleItemsInfo
+                                            .firstOrNull { it.key == workout.id }
+                                        val currentOffset = currentInfo?.offset ?: draggingItemInitialOffset
+
+                                        translationY = dragOffset + (draggingItemInitialOffset - currentOffset).toFloat()
+                                        scaleX = 1.05f
+                                        scaleY = 1.05f
+                                        shadowElevation = 8f
+                                    } else {
+                                        translationY = 0f
+                                        scaleX = 1f
+                                        scaleY = 1f
+                                        shadowElevation = 0f
+                                    }
+                                }
+                                .pointerInput(Unit) {
+                                    detectDragGesturesAfterLongPress(
+                                        onDragStart = {
+                                            draggingItem = workout
+                                            draggingItemIndex = state.workouts.indexOfFirst { it.id == workout.id }
+                                            val info = listState.layoutInfo.visibleItemsInfo
+                                                .firstOrNull { it.key == workout.id }
+                                            draggingItemInitialOffset = info?.offset ?: 0
+                                            dragOffset = 0f
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            dragOffset += dragAmount.y
+
+                                            val currentDraggingIndex = draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                                            if (currentDraggingIndex !in state.workouts.indices) return@detectDragGesturesAfterLongPress
+
+                                            val itemsInfo = listState.layoutInfo.visibleItemsInfo
+                                            val currentItemInfo = itemsInfo.firstOrNull { it.key == draggingItem?.id }
+                                                ?: return@detectDragGesturesAfterLongPress
+
+                                            val currentItemCenter = draggingItemInitialOffset + (currentItemInfo.size / 2) + dragOffset
+
+                                            val targetItem = itemsInfo.find { item ->
+                                                val itemTop = item.offset
+                                                val itemBottom = item.offset + item.size
+                                                currentItemCenter > itemTop && currentItemCenter < itemBottom
+                                            }
+
+                                            if (targetItem != null && targetItem.key != draggingItem?.id) {
+                                                val targetIndex = state.workouts.indexOfFirst { it.id == targetItem.key }
+
+                                                if (targetIndex != -1 && targetIndex != currentDraggingIndex) {
+                                                    reducer.postAction(UpdatePosition(workout, targetIndex))
+                                                    draggingItemIndex = targetIndex
+                                                }
+                                            }
+
+                                            // Simple implementation
+                                            val viewportHeight = listState.layoutInfo.viewportSize.height
+                                            if (currentItemCenter > viewportHeight - 100) {
+                                                // trigger scroll down (requires coroutine scope)
+                                                // scope.launch { listState.scrollBy(10f) }
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            if (draggingItem != null) {
+                                                val finalOrder = state.workouts.map { it.id }
+                                                reducer.postAction(WorkoutListAction.ReorderCommit(finalOrder))
+                                            }
+                                            draggingItem = null
+                                            draggingItemIndex = null
+                                            dragOffset = 0f
+                                        },
+                                        onDragCancel = {
+                                            draggingItem = null
+                                            draggingItemIndex = null
+                                            dragOffset = 0f
+                                        }
+                                    )
+                                }
                         )
                     }
                 }

@@ -79,4 +79,15 @@ class InMemoryWorkoutRepository(
             }
             .sortedBy { it.position }
     }
+
+    override suspend fun updatePositions(orderedIds: List<String>) {
+        val currentWorkouts = state.value.associateBy { it.id }
+
+        // Create a new list where the 'position' matches the index in orderedIds
+        val reordered = orderedIds.mapIndexedNotNull { index, id ->
+            currentWorkouts[id]?.copy(position = index)
+        }
+
+        state.value = reordered.sortedBy { it.position }
+    }
 }
