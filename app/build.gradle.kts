@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.cortlandwalker.semaphore"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -124,6 +124,9 @@ dependencies {
     // AppCompat
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.appcompat.resources)
+
+    // Picker
+    api("com.seo4d696b75.compose:material3-picker:0.2.0")
 }
 
 ksp {
