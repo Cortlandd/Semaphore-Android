@@ -3,9 +3,17 @@ package com.cortlandwalker.semaphore.features.upsert
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -13,12 +21,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
@@ -29,12 +45,12 @@ import com.klipy.sdk.model.MediaItem
 import com.seo4d696b75.compose.material3.picker.NumberPicker
 import kotlinx.collections.immutable.toPersistentList
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpsertWorkoutScreen(
     state: UpsertWorkoutState,
     reducer: UpsertWorkoutReducer
 ) {
+    // Local state variables...
     var hours by remember { mutableIntStateOf(state.hours) }
     var minutes by remember { mutableIntStateOf(state.minutes) }
     var seconds by remember { mutableIntStateOf(state.seconds) }
@@ -47,236 +63,461 @@ fun UpsertWorkoutScreen(
         }
     }
 
-    val title = if (state.isEdit) "Edit Workout" else "Add Workout"
+    val backgroundColor = Color(0xFFF8F8FA)
+    val scrollState = rememberScrollState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    IconButton(onClick = { reducer.postAction(UpsertWorkoutAction.Cancel) }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+        containerColor = backgroundColor,
+        bottomBar = {
+            if (state.viewDisplayMode == ViewDisplayMode.Content || state.viewDisplayMode == ViewDisplayMode.Empty) {
+                SaveButtonFooter(
+                    isSaving = state.isSaving,
+                    isEnabled = state.name.isNotBlank() && (hours + minutes + seconds) > 0,
+                    onSave = {
+                        reducer.postAction(UpsertWorkoutAction.TimeSet(hours, minutes, seconds))
+                        reducer.postAction(UpsertWorkoutAction.SaveClicked)
                     }
-                }
-            )
-        }
-    ) { inner ->
-
-        when (state.viewDisplayMode) {
-            ViewDisplayMode.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(inner),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .padding(4.dp),
-                        trackColor = Color(0x6200EE).copy(alpha = 0.25f),
-                    )
-                }
-            }
-            ViewDisplayMode.Error -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(inner),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Error: ${state.error ?: "Unknown error"}")
-                }
-            }
-            // Use Empty for Add, Content for Edit -> Both show the form
-            ViewDisplayMode.Empty,
-            ViewDisplayMode.Content -> {
-                UpsertContent(
-                    state = state,
-                    reducer = reducer,
-                    previewH = hours,
-                    previewM = minutes,
-                    previewS = seconds,
-                    onPreviewUpdate = { h, m, s ->
-                        hours = h; minutes = m; seconds = s
-                    },
-                    modifier = Modifier.padding(inner)
                 )
             }
         }
-    }
-}
+    ) { innerPadding ->
+        // We use a Box to allow the TopBar to float over the scrollable content if desired,
+        // or just Column. Here we keep your structure but move MediaSelectionArea to be the "Hero".
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun UpsertContent(
-    state: UpsertWorkoutState,
-    reducer: UpsertWorkoutReducer,
-    previewH: Int,
-    previewM: Int,
-    previewS: Int,
-    onPreviewUpdate: (Int, Int, Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val controlsEnabled = !state.isSaving && state.viewDisplayMode != ViewDisplayMode.Loading
-    val primaryText = if (state.isEdit) "Update" else "Save"
-
-    Box(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-
-            // Tap to choose GIF (Fragment handles effect)
-            MediaHeader(
-                mediaItem = state.selectedMediaItem,
-                imageUri = state.imageUri,
-                onTap = { if (controlsEnabled) reducer.postAction(UpsertWorkoutAction.GifTapped) }
-            )
-
-            OutlinedTextField(
-                value = state.name,
-                onValueChange = { reducer.postAction(UpsertWorkoutAction.NameChanged(it)) },
-                label = { Text("Name") },
-                singleLine = true,
-                enabled = controlsEnabled,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                NumberPicker(
-                    value = previewH,
-                    range = (0..23).toPersistentList(),
-                    onValueChange = { onPreviewUpdate(it, previewM, previewS) }                )
-                Text("Hr", fontWeight = FontWeight.Bold)
-                NumberPicker(
-                    value = previewM,
-                    range = (0..59).toPersistentList(),
-                    onValueChange = { onPreviewUpdate(previewH, it, previewS) }                )
-                Text("Min", fontWeight = FontWeight.Bold)
-                NumberPicker(
-                    value = previewS,
-                    range = (0..59).toPersistentList(),
-                    onValueChange = { onPreviewUpdate(previewH, previewM, it) }                )
-                Text("Sec", fontWeight = FontWeight.Bold)
-            }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(350.dp)
+                ) {
+                    MediaSelectionArea(
+                        mediaItem = state.selectedMediaItem,
+                        imageUri = state.imageUri,
+                        onTap = { reducer.postAction(UpsertWorkoutAction.GifTapped) }
+                    )
 
-            Spacer(Modifier.height(8.dp))
+                    Box(modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(horizontal = 24.dp, vertical = 24.dp)
+                    ) {
+                        UpsertTopBar(
+                            title = if (state.isEdit) "Edit Workout" else "New Workout",
+                            onBack = { reducer.postAction(UpsertWorkoutAction.Cancel) }
+                        )
+                    }
+                }
 
-            Button(
-                onClick = {
-                    reducer.postAction(UpsertWorkoutAction.TimeSet(previewH, previewM, previewS))
-                    reducer.postAction(UpsertWorkoutAction.SaveClicked)
-                },
-                enabled = controlsEnabled &&
-                        state.error == null &&
-                        state.name.isNotBlank() &&
-                        (previewH + previewM + previewS) > 0,
-                modifier = Modifier.fillMaxWidth()
-            ) { Text(primaryText) }
+                Column(
+                    modifier = Modifier
+                        .offset(y = (-32).dp)
+                        .padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-            TextButton(
-                onClick = { reducer.postAction(UpsertWorkoutAction.Cancel) },
-                enabled = !state.isSaving,
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Cancel") }
-        }
-    }
-}
-
-@Composable
-private fun MediaHeader(
-    mediaItem: MediaItem?,
-    imageUri: String?,
-    onTap: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val ctx = LocalContext.current
-    val shape = MaterialTheme.shapes.large
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(190.dp)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable(onClick = onTap),
-        contentAlignment = Alignment.Center
-    ) {
-        when {
-            mediaItem != null -> {
-                MediaItemPreview(
-                    item = mediaItem,
-                )
-            }
-            !imageUri.isNullOrBlank() -> {
-                AsyncImage(
-                    model = ImageRequest.Builder(ctx)
-                        .data(imageUri)
-                        .decoderFactory { result, options, _ ->
-                            if (android.os.Build.VERSION.SDK_INT >= 28) {
-                                coil.decode.ImageDecoderDecoder(result.source, options)
-                            } else {
-                                coil.decode.GifDecoder(result.source, options)
+                    when (state.viewDisplayMode) {
+                        ViewDisplayMode.Loading -> {
+                            Box(Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = Color(0xFF6A5ACD))
                             }
                         }
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            else -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.AccountBox,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        "Tap to choose a GIF",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                        ViewDisplayMode.Error -> {
+                            Text("Error: ${state.error}", color = Color.Red)
+                        }
+                        ViewDisplayMode.Content, ViewDisplayMode.Empty -> {
+
+                            WorkoutNameInput(
+                                name = state.name,
+                                onNameChange = { reducer.postAction(UpsertWorkoutAction.NameChanged(it)) }
+                            )
+
+                            Spacer(Modifier.height(32.dp))
+
+                            DurationHeader()
+                            Spacer(Modifier.height(16.dp))
+                            TimePickerCard(
+                                hours = hours,
+                                minutes = minutes,
+                                seconds = seconds,
+                                onTimeChange = { h, m, s -> hours = h; minutes = m; seconds = s }
+                            )
+
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-@Preview
+// --- Components ---
+
 @Composable
-fun AddWorkoutPreview_Loading() {
-    val reducer = UpsertWorkoutReducer(InMemoryWorkoutRepository(), imageStore = WorkoutImageStore(LocalContext.current))
-    UpsertWorkoutScreen(UpsertWorkoutState(workoutId = "123", viewDisplayMode = ViewDisplayMode.Loading), reducer)
+private fun UpsertTopBar(title: String, onBack: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Back Button
+        Surface(
+            shape = CircleShape,
+            color = Color.White,
+            shadowElevation = 4.dp,
+            modifier = Modifier
+                .size(48.dp)
+                .clickable { onBack() }
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+            }
+        }
+
+        // Title Pill
+        Surface(
+            shape = RoundedCornerShape(percent = 50),
+            color = Color.White, // Or very light grey
+            modifier = Modifier.height(40.dp),
+            shadowElevation = 0.dp // Flat look in design
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.Black
+                )
+            }
+        }
+
+        Spacer(Modifier.width(24.dp))
+    }
 }
 
-@Preview
 @Composable
-fun AddWorkoutPreview() {
-    val reducer = UpsertWorkoutReducer(InMemoryWorkoutRepository(), imageStore = WorkoutImageStore(LocalContext.current))
-    UpsertWorkoutScreen(UpsertWorkoutState(viewDisplayMode = ViewDisplayMode.Empty), reducer)
+private fun MediaSelectionArea(
+    mediaItem: MediaItem?,
+    imageUri: String?,
+    onTap: () -> Unit
+) {
+    val purplePrimary = Color(0xFF6A5ACD)
+    val gridColor = Color.Gray.copy(alpha = 0.15f) // Subtle grid line color
+    val backgroundColor = Color(0xFFF2F2F7) // Matches 'bg-accent-light' in HTML
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+            .drawGrid(color = gridColor, step = 40.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Gradient Fade at bottom (to blend into the white content area)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color(0xFFF8F8FA) // Match screen background
+                        )
+                    )
+                )
+        )
+
+        // The Center Button Content
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(32.dp))
+            // The Icon Container
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = if (imageUri.isNullOrBlank()) purplePrimary else Color.Transparent,
+                // Add the 'glow' shadow effect
+                shadowElevation = if (imageUri.isNullOrBlank()) 10.dp else 0.dp,
+                modifier = Modifier
+                    .size(150.dp)
+                    .clickable { onTap() },
+            ) {
+                if (mediaItem != null) {
+                    Box(Modifier.fillMaxSize()) { MediaItemPreview(item = mediaItem) }
+                } else if (!imageUri.isNullOrBlank()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUri)
+                            .decoderFactory { result, options, _ ->
+                                if (android.os.Build.VERSION.SDK_INT >= 28) {
+                                    coil.decode.ImageDecoderDecoder(result.source, options)
+                                } else {
+                                    coil.decode.GifDecoder(result.source, options)
+                                }
+                            }
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            imageVector = Icons.Default.AddPhotoAlternate,
+                            contentDescription = "Add Media",
+                            tint = Color.White,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            if (imageUri.isNullOrBlank()) {
+                Text(
+                    text = "Add Cover Media",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color(0xFF2D3142)
+                )
+                Text(
+                    text = "GIF",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            } else {
+                Text(
+                    text = "Tap to Change",
+                    fontStyle = FontStyle.Italic,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.LightGray
+                )
+            }
+        }
+    }
 }
+
+@Composable
+private fun WorkoutNameInput(name: String, onNameChange: (String) -> Unit) {
+    TextField(
+        value = name,
+        onValueChange = onNameChange,
+        placeholder = { Text("Workout Name", color = Color.Gray.copy(alpha = 0.7f)) },
+        singleLine = true,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        ),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+        shape = RoundedCornerShape(24.dp), // Fully rounded ends
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+    )
+}
+
+@Composable
+private fun DurationHeader() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "DURATION",
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            color = Color.Gray
+        )
+
+        Surface(
+            color = Color(0xFFEBE9F8), // Light purple
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(
+                text = "Target",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF6A5ACD),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun TimePickerCard(
+    hours: Int,
+    minutes: Int,
+    seconds: Int,
+    onTimeChange: (Int, Int, Int) -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Labels
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text("HR", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("MIN", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("SEC", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+            }
+
+            // Pickers
+            // Note: Using the NumberPicker library from existing code.
+            // We wrap in a row to space them out.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Hours
+                NumberPicker(
+                    value = hours,
+                    range = (0..23).toPersistentList(),
+                    onValueChange = { onTimeChange(it, minutes, seconds) },
+                    labelStyle = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
+                    //dividersColor = Color.Transparent
+                )
+
+                // Divider dots
+                Text(":", style = MaterialTheme.typography.headlineMedium, color = Color.LightGray)
+
+                // Minutes
+                NumberPicker(
+                    value = minutes,
+                    range = (0..59).toPersistentList(),
+                    onValueChange = { onTimeChange(hours, it, seconds) },
+                    labelStyle = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
+                    //dividersColor = Color.Transparent
+                )
+
+                // Divider dots
+                Text(":", style = MaterialTheme.typography.headlineMedium, color = Color.LightGray)
+
+                // Seconds
+                NumberPicker(
+                    value = seconds,
+                    range = (0..59).toPersistentList(),
+                    onValueChange = { onTimeChange(hours, minutes, it) },
+                    labelStyle = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
+                    //dividersColor = Color.Transparent
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SaveButtonFooter(isSaving: Boolean, isEnabled: Boolean, onSave: () -> Unit) {
+    val purplePrimary = Color(0xFF6A5ACD)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Button(
+            onClick = onSave,
+            enabled = isEnabled && !isSaving,
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = purplePrimary,
+                disabledContainerColor = purplePrimary.copy(alpha = 0.5f)
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .shadow(
+                    8.dp,
+                    RoundedCornerShape(24.dp),
+                    spotColor = purplePrimary.copy(alpha = 0.5f)
+                )
+        ) {
+            if (isSaving) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text(
+                    text = "Save Workout",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+                Spacer(Modifier.width(8.dp))
+                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White)
+            }
+        }
+    }
+}
+
+// --- Custom Grid Modifier ---
+fun Modifier.drawGrid(
+    color: Color,
+    step: Dp,
+    strokeWidth: Float = 1f // Thin lines
+): Modifier = this.drawBehind {
+    val stepPx = step.toPx()
+    val width = size.width
+    val height = size.height
+
+    // Draw Vertical Lines
+    var x = stepPx
+    while (x < width) {
+        drawLine(
+            color = color,
+            start = Offset(x, 0f),
+            end = Offset(x, height),
+            strokeWidth = strokeWidth
+        )
+        x += stepPx
+    }
+
+    // Draw Horizontal Lines
+    var y = stepPx
+    while (y < height) {
+        drawLine(
+            color = color,
+            start = Offset(0f, y),
+            end = Offset(width, y),
+            strokeWidth = strokeWidth
+        )
+        y += stepPx
+    }
+}
+
+
+// --- Previews ---
 
 @Preview(showBackground = true)
 @Composable
-private fun UpsertWorkoutEditPreview() {
+private fun UpsertDesignPreview() {
     val dummyState = UpsertWorkoutState(
         viewDisplayMode = ViewDisplayMode.Content,
-        workoutId = "dummy-id",
-        name = "Morning Cardio",
+        workoutId = null,
+        name = "",
         hours = 0,
-        minutes = 45,
-        seconds = 30,
-        imageUri = "file:///android_asset/dummy_image.gif",
+        minutes = 29,
+        seconds = 45,
+        imageUri = null,
         error = null
     )
 
