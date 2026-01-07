@@ -63,6 +63,9 @@ dependencies {
     implementation("com.github.Cortlandd:Ghettoxide:1.0.7")
     implementation("com.github.Cortlandd:klipy-android-sdk:0.1.4")
 
+    // Markdown
+    implementation("com.github.jeziellago:compose-markdown:0.5.8")
+
     // Material icons extended
     implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
 

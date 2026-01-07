@@ -27,7 +27,9 @@ class WorkoutListFragment : ReducerFragment<WorkoutListState, WorkoutListAction,
 
     override fun onEffect(effect: WorkoutListEffect) {
         when (effect) {
-            WorkoutListEffect.NavSettings -> TODO()
+            WorkoutListEffect.NavSettings -> {
+                findNavController().navigate(WorkoutListFragmentDirections.actionWorkoutListFragmentToSettingsFragment())
+            }
             WorkoutListEffect.NavAddWorkout -> {
                 findNavController().navigate(WorkoutListFragmentDirections.actionWorkoutListFragmentToUpsertWorkoutFragment(null))
             }

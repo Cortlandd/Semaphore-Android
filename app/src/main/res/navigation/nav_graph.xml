@@ -15,6 +15,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_workoutListFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/upsertWorkoutFragment"
@@ -24,6 +31,29 @@
             android:name="workoutId"
             app:argType="string"
             app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.cortlandwalker.semaphore.features.settings.SettingsFragment"
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settings_to_markdown"
+            app:destination="@id/markdownViewerFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/markdownViewerFragment"
+        android:name="com.cortlandwalker.semaphore.features.markdown.MarkdownViewerFragment"
+        android:label="MarkdownViewerFragment">
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="filename"
+            app:argType="string" />
     </fragment>
 
 </navigation>
