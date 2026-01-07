@@ -3,7 +3,6 @@ package com.cortlandwalker.semaphore.features.upsert
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
@@ -18,9 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -38,18 +35,15 @@ fun UpsertWorkoutScreen(
     state: UpsertWorkoutState,
     reducer: UpsertWorkoutReducer
 ) {
-    // local sheet + live preview
-    var previewH by remember { mutableIntStateOf(state.hours) }
-    var previewM by remember { mutableIntStateOf(state.minutes) }
-    var previewS by remember { mutableIntStateOf(state.seconds) }
+    var hours by remember { mutableIntStateOf(state.hours) }
+    var minutes by remember { mutableIntStateOf(state.minutes) }
+    var seconds by remember { mutableIntStateOf(state.seconds) }
 
-    // When loading finishes (or new state arrives) and the sheet isn't open,
-    // keep the preview synced with state so header shows the loaded values.
     LaunchedEffect(state.hours, state.minutes, state.seconds, state.viewDisplayMode) {
         if (state.viewDisplayMode != ViewDisplayMode.Loading) {
-            previewH = state.hours
-            previewM = state.minutes
-            previewS = state.seconds
+            hours = state.hours
+            minutes = state.minutes
+            seconds = state.seconds
         }
     }
 
@@ -98,11 +92,11 @@ fun UpsertWorkoutScreen(
                 UpsertContent(
                     state = state,
                     reducer = reducer,
-                    previewH = previewH,
-                    previewM = previewM,
-                    previewS = previewS,
+                    previewH = hours,
+                    previewM = minutes,
+                    previewS = seconds,
                     onPreviewUpdate = { h, m, s ->
-                        previewH = h; previewM = m; previewS = s
+                        hours = h; minutes = m; seconds = s
                     },
                     modifier = Modifier.padding(inner)
                 )
