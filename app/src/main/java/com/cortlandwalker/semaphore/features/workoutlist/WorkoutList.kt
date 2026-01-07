@@ -10,7 +10,7 @@ data class WorkoutListState(
     val isPlayingAll: Boolean = false,
     val activeWorkoutId: String? = null,
     val activeWorkoutTimer: String? = null,
-    val displayMode: ViewDisplayMode = ViewDisplayMode.Loading
+    val displayMode: ViewDisplayMode = ViewDisplayMode.Empty
 )
 
 sealed interface WorkoutListAction {

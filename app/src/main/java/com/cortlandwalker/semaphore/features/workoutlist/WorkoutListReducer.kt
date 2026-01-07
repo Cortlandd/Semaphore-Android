@@ -20,10 +20,6 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
     override suspend fun process(action: WorkoutListAction) {
         when (action) {
             WorkoutListAction.OnLoad -> {
-                state {
-                    if (it.workouts.isEmpty()) it.copy(displayMode = ViewDisplayMode.Loading, error = null)
-                    else it
-                }
                 collectLocalOnce(
                     key = "workouts",
                     flow = repo.observeAllOrderedByPosition(),
