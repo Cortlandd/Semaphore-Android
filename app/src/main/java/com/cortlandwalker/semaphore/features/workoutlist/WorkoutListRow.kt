@@ -125,7 +125,18 @@ private fun WorkoutThumb(uri: String?, size: Int = 56) {
         }
     } else {
         AsyncImage(
-            model = ImageRequest.Builder(ctx).data(uri).crossfade(true).build(),
+            model = ImageRequest
+                .Builder(ctx)
+                .data(uri)
+                .decoderFactory { result, options, _ ->
+                    if (android.os.Build.VERSION.SDK_INT >= 28) {
+                        coil.decode.ImageDecoderDecoder(result.source, options)
+                    } else {
+                        coil.decode.GifDecoder(result.source, options)
+                    }
+                }
+                .crossfade(true)
+                .build(),
             contentDescription = "Workout image",
             contentScale = ContentScale.Crop,
             modifier = Modifier

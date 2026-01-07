@@ -1,10 +1,11 @@
 package com.cortlandwalker.semaphore.features.upsert
 
+import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.klipy.sdk.model.MediaItem
 
 data class UpsertWorkoutState(
     val workoutId: String? = null,
-    val isLoading: Boolean = false,
+    val viewDisplayMode: ViewDisplayMode = ViewDisplayMode.Empty,
     val name: String = "",
     val imageUri: String? = null,
     val hours: Int = 0,

@@ -1,11 +1,14 @@
 package com.cortlandwalker.semaphore.features.upsert
 
 import com.cortlandwalker.ghettoxide.Reducer
+import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutImageStore
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.text.lowercase
+import kotlin.text.startsWith
 
 class UpsertWorkoutReducer @Inject constructor(
     private val repo: WorkoutRepository,
@@ -17,23 +20,28 @@ class UpsertWorkoutReducer @Inject constructor(
     override suspend fun process(action: UpsertWorkoutAction) {
         when (action) {
             is UpsertWorkoutAction.Init -> {
-                // Seed the workoutId into state (so screens see mode immediately)
+                // Seed the workoutId into state
                 state { it.copy(workoutId = action.workoutId) }
 
                 if (action.workoutId.isNullOrBlank()) {
-                    // Add mode: nothing to load
-                    state { it.copy(isLoading = false, error = null) }
+                    // Add mode: Empty
+                    state { it.copy(viewDisplayMode = ViewDisplayMode.Empty, error = null) }
                 } else {
-                    // Edit mode: one-shot fetch
-                    state { it.copy(isLoading = true, error = null) }
+                    // Edit mode: Loading -> Content (or Error)
+                    state { it.copy(viewDisplayMode = ViewDisplayMode.Loading, error = null) }
                     val w = runCatching { repo.getById(action.workoutId) }.getOrNull()
                     if (w == null) {
-                        state { it.copy(isLoading = false, error = "Workout not found") }
+                        state {
+                            it.copy(
+                                viewDisplayMode = ViewDisplayMode.Error,
+                                error = "Workout not found"
+                            )
+                        }
                     } else {
                         original = w
                         state {
                             it.copy(
-                                isLoading = false,
+                                viewDisplayMode = ViewDisplayMode.Content,
                                 name = w.name,
                                 imageUri = w.imageUri?.ifBlank { null },
                                 hours = w.hours, minutes = w.minutes, seconds = w.seconds
@@ -64,7 +72,8 @@ class UpsertWorkoutReducer @Inject constructor(
                     emit(UpsertWorkoutEffect.ShowError("Enter a name and a non-zero time"))
                     return
                 }
-                state { it.copy(isSaving = true, isLoading = true) }
+
+                state { it.copy(isSaving = true) }
 
                 val finalImageUri = resolveImageUriForSave(s)
 
@@ -82,14 +91,14 @@ class UpsertWorkoutReducer @Inject constructor(
                     )
                     runCatching { repo.insert(new) }
                         .onFailure { e ->
-                            state { it.copy(isSaving = false, isLoading = false) }
+                            state { it.copy(isSaving = false) }
                             emit(UpsertWorkoutEffect.ShowError(e.message ?: "Failed to save")); return
                         }
                     emit(UpsertWorkoutEffect.Back)
                 } else {
                     // Update
                     val base = original ?: run {
-                        state { it.copy(isSaving = false, isLoading = false) }
+                        state { it.copy(isSaving = false) }
                         emit(UpsertWorkoutEffect.ShowError("Internal error")); return
                     }
                     val updated = base.copy(
@@ -116,20 +125,14 @@ class UpsertWorkoutReducer @Inject constructor(
         return null
     }
 
-    /**
-     * If the current state's imageUri is a remote URL, cache it locally and return the local URI.
-     * If it's already local (or null), just return it as-is.
-     */
     private suspend fun resolveImageUriForSave(state: UpsertWorkoutState): String? {
         val uri = state.imageUri ?: return null
 
-        // Treat http/https as remote, anything else as local
         val lower = uri.lowercase()
         val isRemote = lower.startsWith("http://") || lower.startsWith("https://")
 
         if (!isRemote) return uri
 
-        // Try to cache; if it fails, fall back to the original URL so you don't lose the reference
         return runCatching { imageStore.cacheFromRemote(uri) }
             .getOrElse { uri }
     }

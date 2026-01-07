@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
+import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListAction.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,41 +79,40 @@ fun WorkoutListScreen(
                 Text(state.error ?: "Error")
             }
             ViewDisplayMode.Content -> {
-                if (hasItems) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(inner),
-                        contentPadding = PaddingValues(vertical = 8.dp)
-                    ) {
-                        items(state.workouts, key = { it.id }) { w ->
-                            WorkoutRow(
-                                workout = w,
-                                onPlayClicked = {
-                                    reducer.postAction(
-                                        WorkoutListAction.SinglePlayTapped(
-                                            w.id
-                                        )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(state.workouts, key = { it.id }) { w ->
+                        WorkoutRow(
+                            workout = w,
+                            onPlayClicked = {
+                                reducer.postAction(
+                                    SinglePlayTapped(
+                                        w.id
                                     )
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                                onClick = {
-                                    reducer.postAction(WorkoutListAction.TappedWorkout(w))
-                                },
-                                onLongPress = {}
-                            )
-                        }
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            onClick = {
+                                reducer.postAction(TappedWorkout(w))
+                            },
+                            onLongPress = {}
+                        )
                     }
-                } else {
-                    EmptyWorkouts(
-                        onAdd = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(inner)
-                    )
                 }
+            }
+            ViewDisplayMode.Empty -> {
+                EmptyWorkouts(
+                    onAdd = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner)
+                )
             }
         }
     }
