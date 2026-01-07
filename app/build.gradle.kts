@@ -61,7 +61,10 @@ android {
 dependencies {
 
     implementation("com.github.Cortlandd:Ghettoxide:1.0.7")
-    implementation("com.github.Cortlandd:klipy-android-sdk:0.1.2")
+    implementation("com.github.Cortlandd:klipy-android-sdk:0.1.4")
+
+    // Material icons extended
+    implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -121,9 +124,6 @@ dependencies {
     // AppCompat
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.appcompat.resources)
-
-    // Giphy
-    implementation(libs.giphy.ui)
 }
 
 ksp {

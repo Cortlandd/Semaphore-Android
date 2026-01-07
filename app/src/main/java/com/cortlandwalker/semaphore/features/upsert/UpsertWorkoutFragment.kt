@@ -11,16 +11,18 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.ghettoxide.ReducerFragment
+import com.klipy.klipy_ui.KlipyUi
 import com.klipy.klipy_ui.picker.KlipyPickerConfig
 import com.klipy.klipy_ui.picker.KlipyPickerDialogFragment
 import com.klipy.klipy_ui.picker.KlipyPickerListener
+import com.klipy.sdk.KlipySdk
 import com.klipy.sdk.model.MediaItem
 import com.klipy.sdk.model.MediaType
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutAction, UpsertWorkoutEffect, UpsertWorkoutReducer>() {
+class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutAction, UpsertWorkoutEffect, UpsertWorkoutReducer>(), KlipyPickerListener {
 
     @Inject override lateinit var reducer: UpsertWorkoutReducer
 
@@ -61,26 +63,26 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
             showTrending = true,
             initialMediaType = MediaType.GIF
         )
-        val dialog = KlipyPickerDialogFragment.newInstance(config)
-
-        dialog.listener = object : KlipyPickerListener {
-            override fun onMediaSelected(
-                item: MediaItem,
-                searchTerm: String?
-            ) {
-                reducer.postAction(UpsertWorkoutAction.ImageChanged(mediaItem = item))
-            }
-
-            override fun onDismissed(lastContentType: MediaType?) {
-
-            }
-
-            override fun didSearchTerm(term: String) {
-
-            }
-
-        }
+        val dialog = KlipyPickerDialogFragment.newInstance(
+            config = config,
+            secretKey = "fNkmHZ257SEs5hOBeRF6XKSynwsVGodDUzMKzVBObkGgu2cb9vN0YDsHKh7ZyXQl"
+        ).apply { listener = this@UpsertWorkoutFragment }
 
         dialog.show(childFragmentManager, "klipy_picker")
+    }
+
+    override fun onMediaSelected(
+        item: MediaItem,
+        searchTerm: String?
+    ) {
+        reducer.postAction(UpsertWorkoutAction.ImageChanged(mediaItem = item))
+    }
+
+    override fun onDismissed(lastContentType: MediaType?) {
+
+    }
+
+    override fun didSearchTerm(term: String) {
+
     }
 }

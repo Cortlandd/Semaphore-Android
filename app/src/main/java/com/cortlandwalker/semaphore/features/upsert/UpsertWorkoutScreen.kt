@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -57,7 +58,7 @@ fun UpsertWorkoutScreen(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = { reducer.postAction(UpsertWorkoutAction.Cancel) }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -335,7 +336,7 @@ private fun KeypadBottomRow(
             onClick = onBackspace,
             modifier = Modifier.size(64.dp),
             shape = CircleShape,
-            content = { Icon(Icons.Default.ArrowBack, contentDescription = "Delete") }
+            content = { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
         )
         KeypadButton(label = "0", onClick = onZero)
         KeypadButton(label = "CLR", onClick = onClear)
