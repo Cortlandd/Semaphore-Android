@@ -1,9 +1,11 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
 import android.util.Log
+import androidx.compose.animation.core.copy
 import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
+import com.cortlandwalker.semaphore.data.models.Workout
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListEffect.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -96,12 +98,17 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
 
                 // Start the countdown coroutine
                 timerJob = scope.launch {
+                    val durationSeconds = (workout.hours * 3600) + (workout.minutes * 60) + workout.seconds
                     var remainingSeconds = (workout.hours * 3600) + (workout.minutes * 60) + workout.seconds
 
                     while (remainingSeconds >= 0) {
                         // Update the display string in state
                         state { it.copy(activeWorkoutTimer = formatSecondsToHms(remainingSeconds)) }
-                        if (remainingSeconds == 0) break
+                        if (remainingSeconds == 0) {
+                            // --- TIMER FINISHED ---
+                            updateWorkoutAnalytics(workout, durationSeconds)
+                            break
+                        }
                         delay(1000L)
                         remainingSeconds--
                     }
@@ -122,6 +129,17 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                 stopWorkout()
             }
         }
+    }
+
+    private suspend fun updateWorkoutAnalytics(workout: Workout, durationSeconds: Int) {
+        // Calculate new stats
+        val updatedWorkout = workout.copy(
+            completedCount = workout.completedCount + 1,
+            totalTimeSpentSeconds = workout.totalTimeSpentSeconds + durationSeconds,
+            lastPerformedAt = System.currentTimeMillis()
+        )
+        // Persist to DB
+        repo.insert(updatedWorkout)
     }
 
     private fun stopWorkout() {
