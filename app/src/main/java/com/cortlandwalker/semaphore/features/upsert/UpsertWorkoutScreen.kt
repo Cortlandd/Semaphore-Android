@@ -368,7 +368,7 @@ private fun TimePickerCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 24.dp),
+            modifier = Modifier.padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Labels
@@ -384,8 +384,6 @@ private fun TimePickerCard(
             }
 
             // Pickers
-            // Note: Using the NumberPicker library from existing code.
-            // We wrap in a row to space them out.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
