@@ -106,8 +106,6 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                         remainingSeconds--
                     }
 
-                    Log.d("WorkoutListReducer", "Timer finished")
-
                     // 4. Auto-collapse when finished
                     stopWorkout()
 
