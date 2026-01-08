@@ -39,7 +39,11 @@ fun MarkdownScreen(
                 .bufferedReader()
                 .use { it.readText() }
         } catch (e: Exception) {
-            markdownContent = "# Error\nCould not load $filename"
+            markdownContent = if (filename == "PREVIEW_MODE") {
+                "# Preview Content\nThis is how the markdown will look."
+            } else {
+                "# Error\nCould not load $filename"
+            }
         }
     }
 
@@ -47,46 +51,51 @@ fun MarkdownScreen(
 
     Scaffold(
         containerColor = backgroundColor,
+        topBar = {
+            // Updated TopBar logic:
+            // 1. statusBarsPadding() pushes it down below the system status bar.
+            // 2. padding(top = 8.dp) adds a little extra visual breathing room to match Settings.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    shadowElevation = 4.dp,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clickable { onBack() }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
+                    }
+                }
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                // Only respect bottom padding (nav bar), ignore top so header sits behind button
+                .padding(bottom = innerPadding.calculateBottomPadding())
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. Grid Header Area
-            Box(modifier = Modifier
-                .height(180.dp)
-                .fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .height(250.dp)
+                    .fillMaxWidth()
+            ) {
                 GridBackground(
                     modifier = Modifier.fillMaxSize(),
-                    backgroundColor = Color(0xFFF2F2F7) // Accent background color
+                    backgroundColor = Color(0xFFF2F2F7)
                 ) {
-                    // Back Button (Aligned TopStart)
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(24.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.White,
-                            shadowElevation = 4.dp,
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clickable { onBack() }
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back",
-                                    tint = Color.Black
-                                )
-                            }
-                        }
-                    }
-
-                    // Title Centered in Header
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -102,10 +111,9 @@ fun MarkdownScreen(
                 }
             }
 
-            // 2. Content
             Column(
                 modifier = Modifier
-                    .offset(y = (-24).dp) // Slight overlap
+                    .offset(y = (-24).dp)
                     .padding(horizontal = 24.dp)
             ) {
                 Card(
@@ -125,20 +133,18 @@ fun MarkdownScreen(
                         )
                     }
                 }
-
                 Spacer(Modifier.height(48.dp))
             }
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 private fun MarkdownScreenPreview() {
     MarkdownScreen(
         title = "Licenses",
-        filename = "PREVIEW_MODE", // Triggers dummy text in LaunchedEffect logic above
+        filename = "PREVIEW_MODE",
         onBack = {}
     )
 }
