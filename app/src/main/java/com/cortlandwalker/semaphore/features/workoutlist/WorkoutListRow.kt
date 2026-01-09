@@ -487,3 +487,17 @@ private fun WorkoutRowActiveCollapsedPreview() {
         )
     }
 }
+
+@Preview(name = "Workout Row with Image", showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun WorkoutRowWithImagePreview() {
+    val w = Workout(id = "1", createdAt = 0, name = "Push Ups", imageUri = "https://example.com/image.gif", hours = 0, minutes = 0, seconds = 33, position = 0, orderId = 0)
+    Box(Modifier.padding(16.dp)) {
+        WorkoutRow(
+            workout = w,
+            onPlayClicked = {},
+            onClick = {},
+            isExpanded = false
+        )
+    }
+}

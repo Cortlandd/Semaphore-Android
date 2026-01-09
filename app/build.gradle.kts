@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.paparazzi)
 
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
 
@@ -53,6 +54,12 @@ android {
         viewBinding = true
     }
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     configurations.all {
         exclude(group = "xpp3", module = "xpp3")
     }
@@ -93,6 +100,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.paparazzi)
+    testImplementation("com.google.guava:guava:33.2.1-android")
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
@@ -136,4 +145,8 @@ ksp {
     arg("room.schemaLocation", "${projectDir}/schemas")
     arg("room.incremental", "true")
     arg("room.generateKotlin", "true")
+}
+
+configurations.all { 
+    resolutionStrategy.force("com.google.guava:guava:33.2.1-android") 
 }
