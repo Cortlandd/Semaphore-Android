@@ -68,7 +68,6 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                         return@state currentState
                     }
 
-                    // This is a more robust way to move items that Compose understands better
                     val newList = currentState.workouts.toMutableList().apply {
                         add(toIndex, removeAt(fromIndex))
                     }
@@ -113,7 +112,7 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                         remainingSeconds--
                     }
 
-                    // 4. Auto-collapse when finished
+                    // Auto-collapse when finished
                     stopWorkout()
 
 //                    val currentIndex = currentState.workouts.indexOfFirst { it.id == action.id }

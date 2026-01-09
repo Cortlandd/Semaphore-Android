@@ -15,7 +15,7 @@ class SettingsReducer @Inject constructor() :
             SettingsAction.TapFeedback -> {
                 // Pre-fill email intent
                 emit(SettingsEffect.SendEmail(
-                    address = "your-email@example.com", // Replace with actual dev email
+                    address = "your-email@example.com",
                     subject = "Semaphore Feedback"
                 ))
             }

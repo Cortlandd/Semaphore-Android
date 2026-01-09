@@ -22,8 +22,8 @@ sealed interface SettingsEffect {
 
     // External Intents
     data class SendEmail(val address: String, val subject: String) : SettingsEffect
-    data class OpenUrl(val url: String) : SettingsEffect // For FAQ if web-based
+    data class OpenUrl(val url: String) : SettingsEffect
     data object OpenAppStore : SettingsEffect
-    data object NavLicenses : SettingsEffect // Internal navigation to Markdown viewer
-    data object NavFAQ : SettingsEffect // Internal navigation to Markdown viewer
+    data object NavLicenses : SettingsEffect
+    data object NavFAQ : SettingsEffect
 }

@@ -20,14 +20,11 @@ class UpsertWorkoutReducer @Inject constructor(
     override suspend fun process(action: UpsertWorkoutAction) {
         when (action) {
             is UpsertWorkoutAction.Init -> {
-                // Seed the workoutId into state
                 state { it.copy(workoutId = action.workoutId) }
 
                 if (action.workoutId.isNullOrBlank()) {
-                    // Add mode: Empty
                     state { it.copy(viewDisplayMode = ViewDisplayMode.Empty, error = null) }
                 } else {
-                    // Edit mode: Loading -> Content (or Error)
                     state { it.copy(viewDisplayMode = ViewDisplayMode.Loading, error = null) }
                     val w = runCatching { repo.getById(action.workoutId) }.getOrNull()
                     if (w == null) {

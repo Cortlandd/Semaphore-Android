@@ -27,7 +27,7 @@ class RoomWorkoutRepository @Inject constructor(
 ) : WorkoutRepository {
 
     override fun observeAllOrderedByPosition(): Flow<List<Workout>> =
-        dao.observeAllOrderedByPosition()   // Room handles scheduler
+        dao.observeAllOrderedByPosition()
 
     override suspend fun getById(id: String): Workout? = dao.getById(id)
 
@@ -83,7 +83,6 @@ class InMemoryWorkoutRepository(
     override suspend fun updatePositions(orderedIds: List<String>) {
         val currentWorkouts = state.value.associateBy { it.id }
 
-        // Create a new list where the 'position' matches the index in orderedIds
         val reordered = orderedIds.mapIndexedNotNull { index, id ->
             currentWorkouts[id]?.copy(position = index)
         }

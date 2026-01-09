@@ -33,7 +33,6 @@ fun SettingsScreen(
     state: SettingsState,
     reducer: SettingsReducer
 ) {
-    // Design Tokens (Light Theme to match Upsert/List)
     val backgroundColor = Color(0xFFF8F8FA) // Light grey/white bg
     val cardColor = Color.White
     val textPrimary = Color.Black
@@ -43,10 +42,6 @@ fun SettingsScreen(
     Scaffold(
         containerColor = backgroundColor,
     ) { innerPadding ->
-        // Use a Box to layer the header background behind content if needed,
-        // or simply stack them in a Column.
-        // Here we recreate the "Hero" feel of the Upsert screen.
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -54,13 +49,12 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            // 1. Grid Header Area
+            // Grid Header Area
             Box(modifier = Modifier.height(250.dp).fillMaxWidth()) {
                 GridBackground(
                     modifier = Modifier.fillMaxSize(),
-                    backgroundColor = Color(0xFFF2F2F7) // Accent background color
+                    backgroundColor = Color(0xFFF2F2F7)
                 ) {
-                    // Back Button (Aligned TopStart to match UpsertScreen)
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -83,15 +77,12 @@ fun SettingsScreen(
                             }
                         }
                     }
-
-                    // Content inside the grid area (Centered Title)
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(24.dp),
                         verticalArrangement = Arrangement.Center
                     ) {
-                        // Title is now independent of the back button position
                         Text(
                             text = "Settings",
                             style = MaterialTheme.typography.displaySmall.copy(
@@ -103,7 +94,6 @@ fun SettingsScreen(
                 }
             }
 
-            // 2. Scrollable Content overlapping slightly
             Column(
                 modifier = Modifier
                     .offset(y = (-24).dp)
@@ -171,7 +161,7 @@ fun SettingsScreen(
 
                         SettingsItem(
                             icon = Icons.Default.Star,
-                            iconTint = Color(0xFFFFD700), // Gold for star
+                            iconTint = Color(0xFFFFD700),
                             title = "Rate App",
                             subtitle = "Review on App Store",
                             onClick = { reducer.postAction(TapRateApp) },

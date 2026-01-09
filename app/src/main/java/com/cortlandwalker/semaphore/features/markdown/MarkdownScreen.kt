@@ -52,9 +52,6 @@ fun MarkdownScreen(
     Scaffold(
         containerColor = backgroundColor,
         topBar = {
-            // Updated TopBar logic:
-            // 1. statusBarsPadding() pushes it down below the system status bar.
-            // 2. padding(top = 8.dp) adds a little extra visual breathing room to match Settings.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

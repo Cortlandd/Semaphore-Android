@@ -36,8 +36,6 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
             SettingsEffect.NavBack -> findNavController().popBackStack()
 
             SettingsEffect.NavWorkouts -> {
-                // Assuming WorkoutList is the start destination, popping back to it is safest
-                // or navigating explicitly depending on your graph
                 findNavController().popBackStack(com.cortlandwalker.semaphore.R.id.workoutListFragment, false)
             }
 

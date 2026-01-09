@@ -73,7 +73,7 @@ fun WorkoutListScreen(
         modifier = modifier.fillMaxSize()
     ) {
         Scaffold(
-            containerColor = Color.Transparent, // Transparent so grid shows through
+            containerColor = Color.Transparent,
             bottomBar = {
                 CustomBottomBar(
                     isListEmpty = isListEmpty,
@@ -138,13 +138,10 @@ fun WorkoutListScreen(
                     // --- EMPTY STATE DESIGN ---
                     EmptyStateContent(
                         modifier = Modifier
-                            .weight(1f) // Fill remaining vertical space to center content
+                            .weight(1f)
                             .fillMaxWidth()
                     )
                 } else {
-                    // --- NORMAL DASHBOARD CONTENT ---
-
-                    // 2. Dashboard Stats
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)

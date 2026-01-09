@@ -81,8 +81,6 @@ fun UpsertWorkoutScreen(
             }
         }
     ) { innerPadding ->
-        // We use a Box to allow the TopBar to float over the scrollable content if desired,
-        // or just Column. Here we keep your structure but move MediaSelectionArea to be the "Hero".
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)) {
@@ -181,7 +179,6 @@ private fun UpsertTopBar(title: String, onBack: () -> Unit) {
             }
         }
 
-        // Title Pill
         Surface(
             shape = RoundedCornerShape(percent = 50),
             color = Color.White, // Or very light grey
@@ -208,8 +205,8 @@ private fun MediaSelectionArea(
     onTap: () -> Unit
 ) {
     val purplePrimary = Color(0xFF6A5ACD)
-    val gridColor = Color.Gray.copy(alpha = 0.15f) // Subtle grid line color
-    val backgroundColor = Color(0xFFF2F2F7) // Matches 'bg-accent-light' in HTML
+    val gridColor = Color.Gray.copy(alpha = 0.15f)
+    val backgroundColor = Color(0xFFF2F2F7)
 
     Box(
         modifier = Modifier
@@ -218,7 +215,6 @@ private fun MediaSelectionArea(
             .drawGrid(color = gridColor, step = 40.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Gradient Fade at bottom (to blend into the white content area)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -227,18 +223,16 @@ private fun MediaSelectionArea(
                         colors = listOf(
                             Color.Transparent,
                             Color.Transparent,
-                            Color(0xFFF8F8FA) // Match screen background
+                            Color(0xFFF8F8FA)
                         )
                     )
                 )
         )
 
-        // The Center Button Content
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(32.dp))
-            // The Icon Container
             Surface(
                 shape = RoundedCornerShape(28.dp),
                 color = if (imageUri.isNullOrBlank()) purplePrimary else Color.Transparent,
@@ -395,7 +389,6 @@ private fun TimePickerCard(
                     range = (0..23).toPersistentList(),
                     onValueChange = { onTimeChange(it, minutes, seconds) },
                     labelStyle = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
-                    //dividersColor = Color.Transparent
                 )
 
                 // Divider dots
@@ -407,7 +400,6 @@ private fun TimePickerCard(
                     range = (0..59).toPersistentList(),
                     onValueChange = { onTimeChange(hours, it, seconds) },
                     labelStyle = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
-                    //dividersColor = Color.Transparent
                 )
 
                 // Divider dots
@@ -419,7 +411,6 @@ private fun TimePickerCard(
                     range = (0..59).toPersistentList(),
                     onValueChange = { onTimeChange(hours, minutes, it) },
                     labelStyle = MaterialTheme.typography.headlineMedium.copy(color = Color.Black),
-                    //dividersColor = Color.Transparent
                 )
             }
         }

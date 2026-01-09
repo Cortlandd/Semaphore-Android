@@ -13,7 +13,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MarkdownViewerFragment : Fragment() {
 
-    // Using safe args
     private val args: MarkdownViewerFragmentArgs by navArgs()
 
     override fun onCreateView(
