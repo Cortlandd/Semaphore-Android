@@ -67,7 +67,7 @@ android {
 
 dependencies {
 
-    implementation("com.github.Cortlandd:Ghettoxide:1.0.7")
+    implementation("com.github.Cortlandd:Ghettoxide:1.0.8")
     implementation("com.github.Cortlandd:klipy-android-sdk:0.1.4")
 
     // Markdown
@@ -102,6 +102,9 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.paparazzi)
     testImplementation("com.google.guava:guava:33.2.1-android")
+    testImplementation("com.google.truth:truth:1.4.2")
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
