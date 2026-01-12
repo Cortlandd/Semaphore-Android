@@ -209,6 +209,13 @@ private fun ExpandedWorkoutContent(
             AsyncImage(
                 model = ImageRequest.Builder(ctx)
                     .data(workout.imageUri)
+                    .decoderFactory { result, options, _ ->
+                        if (android.os.Build.VERSION.SDK_INT >= 28) {
+                            coil.decode.ImageDecoderDecoder(result.source, options)
+                        } else {
+                            coil.decode.GifDecoder(result.source, options)
+                        }
+                    }
                     .crossfade(true)
                     .build(),
                 contentDescription = "Workout visual",
@@ -444,6 +451,13 @@ private fun WorkoutThumb(uri: String?, size: Int = 64) {
         AsyncImage(
             model = ImageRequest.Builder(ctx)
                 .data(uri)
+                .decoderFactory { result, options, _ ->
+                    if (android.os.Build.VERSION.SDK_INT >= 28) {
+                        coil.decode.ImageDecoderDecoder(result.source, options)
+                    } else {
+                        coil.decode.GifDecoder(result.source, options)
+                    }
+                }
                 .crossfade(true)
                 .build(),
             contentDescription = "Workout image",
