@@ -5,8 +5,10 @@ data class SettingsState(
 )
 
 sealed interface SettingsAction {
+    data object TapAnalytics : SettingsAction
     data object TapBack : SettingsAction
-    data object TapFeedback : SettingsAction    data object TapLicenses : SettingsAction
+    data object TapFeedback : SettingsAction
+    data object TapLicenses : SettingsAction
     data object TapFAQ : SettingsAction
     data object TapRateApp : SettingsAction
 
@@ -16,6 +18,7 @@ sealed interface SettingsAction {
 }
 
 sealed interface SettingsEffect {
+    data object NavAnalytics : SettingsEffect
     data object NavBack : SettingsEffect
     data object NavWorkouts : SettingsEffect
     data object NavTimer : SettingsEffect

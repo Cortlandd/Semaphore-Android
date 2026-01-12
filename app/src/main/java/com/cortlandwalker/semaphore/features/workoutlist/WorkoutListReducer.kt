@@ -1,7 +1,6 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
 import android.util.Log
-import androidx.compose.animation.core.copy
 import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
@@ -9,7 +8,9 @@ import com.cortlandwalker.semaphore.data.models.Workout
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListEffect.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository) :
@@ -22,30 +23,41 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
     override suspend fun process(action: WorkoutListAction) {
         when (action) {
             WorkoutListAction.OnLoad -> {
-                collectLocalOnce(
-                    key = "workouts",
-                    flow = repo.observeAllOrderedByPosition(),
-                    onEach = { items ->
-                        state { currentState ->
-                            val currentIds = currentState.workouts.map { it.id }
-                            val newIds = items.map { it.id }
-
-                            val currentSet = currentIds.toSet()
-                            val newSet = newIds.toSet()
-
-                            if (currentSet == newSet && currentIds != newIds) {
-                                currentState
-                            } else if (currentState.workouts == items) {
-                                currentState
-                            } else {
-                                currentState.copy(workouts = items, displayMode = ViewDisplayMode.Content, error = null)
+                scope.launch {
+                    repo.observeAllOrderedByPosition()
+                        .catch { throwable ->
+                            // Handle any errors from the database flow
+                            state {
+                                it.copy(
+                                    displayMode = ViewDisplayMode.Error,
+                                    error = throwable.message ?: "Failed to load workouts"
+                                )
                             }
                         }
-                    },
-                    onError = { t ->
-                        state { it.copy(displayMode = ViewDisplayMode.Error, error = t.message ?: "Failed to load workouts") }
-                    }
-                )
+                        .collect { itemsFromDb ->
+                            state { currentState ->
+                                val currentIds = currentState.workouts.map { it.id }
+                                val newIds = itemsFromDb.map { it.id }
+
+                                val currentSet = currentIds.toSet()
+                                val newSet = newIds.toSet()
+
+                                if (currentSet == newSet && currentIds != newIds) {
+                                    return@state currentState
+                                }
+
+                                if (currentState.workouts == itemsFromDb) {
+                                    return@state currentState
+                                }
+
+                                currentState.copy(
+                                    workouts = itemsFromDb,
+                                    displayMode = ViewDisplayMode.Content,
+                                    error = null
+                                )
+                            }
+                        }
+                }
             }
             WorkoutListAction.TappedSettings -> { emit(WorkoutListEffect.NavSettings) }
             WorkoutListAction.TappedAddWorkout -> {
@@ -132,14 +144,39 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
 
     private suspend fun updateWorkoutAnalytics(workout: Workout, durationSeconds: Int) {
         // Calculate new stats
+        val newStreak = if (wasPerformedYesterday(workout.lastPerformedAt)) workout.currentStreak + 1 else 1
         val updatedWorkout = workout.copy(
             completedCount = workout.completedCount + 1,
             totalTimeSpentSeconds = workout.totalTimeSpentSeconds + durationSeconds,
-            lastPerformedAt = System.currentTimeMillis()
+            lastPerformedAt = System.currentTimeMillis(),
+            currentStreak = newStreak
         )
         // Persist to DB
         repo.insert(updatedWorkout)
     }
+
+    private fun wasPerformedYesterday(lastPerformedAt: Long?): Boolean {
+        if (lastPerformedAt == null) return false
+
+        val lastDate = Calendar.getInstance().apply { timeInMillis = lastPerformedAt }
+        val today = Calendar.getInstance()
+
+        // Reset time part for accurate date comparison
+        lastDate.set(Calendar.HOUR_OF_DAY, 0)
+        lastDate.set(Calendar.MINUTE, 0)
+        lastDate.set(Calendar.SECOND, 0)
+        lastDate.set(Calendar.MILLISECOND, 0)
+
+        today.set(Calendar.HOUR_OF_DAY, 0)
+        today.set(Calendar.MINUTE, 0)
+        today.set(Calendar.SECOND, 0)
+        today.set(Calendar.MILLISECOND, 0)
+
+        today.add(Calendar.DAY_OF_YEAR, -1)
+
+        return lastDate.timeInMillis == today.timeInMillis
+    }
+
 
     private fun stopWorkout() {
         timerJob?.cancel()

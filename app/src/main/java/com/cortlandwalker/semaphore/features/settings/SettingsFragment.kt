@@ -33,6 +33,10 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
 
     override fun onEffect(effect: SettingsEffect) {
         when (effect) {
+            SettingsEffect.NavAnalytics -> {
+                val action = SettingsFragmentDirections.actionSettingsToAnalytics()
+                findNavController().navigate(action)
+            }
             SettingsEffect.NavBack -> findNavController().popBackStack()
 
             SettingsEffect.NavWorkouts -> {

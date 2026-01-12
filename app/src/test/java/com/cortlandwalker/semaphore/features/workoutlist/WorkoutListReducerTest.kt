@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -26,11 +25,8 @@ class WorkoutListReducerTest {
     private lateinit var reducer: WorkoutListReducer
     private lateinit var effects: MutableList<WorkoutListEffect>
 
-    private val testDispatcher = StandardTestDispatcher()
-
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
         mockRepo = mockk(relaxed = true)
         effects = mutableListOf<WorkoutListEffect>()
         reducer = WorkoutListReducer(mockRepo)
@@ -40,21 +36,27 @@ class WorkoutListReducerTest {
         )
     }
 
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
+    // Working on it
     @Test
     fun `OnLoad should collect workouts and update state`() = runTest {
-
         // Given
-        val workouts = listOf(Workout("1", 0, "Test Workout", "", 0, 1, 0, 0, 0))
+        val workouts = listOf(
+            Workout("1", 0, "Test Workout", "", 0, 1, 0, 0, 0)
+        )
+        val postedActions = mutableListOf<WorkoutListAction>(WorkoutListAction.OnLoad)
         coEvery { mockRepo.observeAllOrderedByPosition() } returns flowOf(workouts)
 
         // When
-        reducer.accept(WorkoutListAction.OnLoad)
-        advanceUntilIdle()
+        reducer.testBind(
+            initialState = WorkoutListState(),
+            effects = effects,
+            postedActions = postedActions,
+            scope = this
+        )
+
+        reducer.onLoadAction()?.let { action ->
+            reducer.accept(action)
+        }
 
         // Then
         val state = reducer.currentState

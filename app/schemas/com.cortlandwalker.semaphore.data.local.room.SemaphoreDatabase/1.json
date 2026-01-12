@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "4e308b33f91f62ee4cd7a782c1e7649a",
+    "identityHash": "35921dda9ae54bcf9622dc5ed7fd4ca3",
     "entities": [
       {
         "tableName": "workouts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `name` TEXT NOT NULL, `imageUri` TEXT, `hours` INTEGER NOT NULL, `minutes` INTEGER NOT NULL, `seconds` INTEGER NOT NULL, `position` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `completedCount` INTEGER NOT NULL, `totalTimeSpentSeconds` INTEGER NOT NULL, `lastPerformedAt` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `name` TEXT NOT NULL, `imageUri` TEXT, `hours` INTEGER NOT NULL, `minutes` INTEGER NOT NULL, `seconds` INTEGER NOT NULL, `position` INTEGER NOT NULL, `orderId` INTEGER NOT NULL, `completedCount` INTEGER NOT NULL, `totalTimeSpentSeconds` INTEGER NOT NULL, `lastPerformedAt` INTEGER, `currentStreak` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -79,6 +79,12 @@
             "columnName": "lastPerformedAt",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "currentStreak",
+            "columnName": "currentStreak",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -94,7 +100,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4e308b33f91f62ee4cd7a782c1e7649a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '35921dda9ae54bcf9622dc5ed7fd4ca3')"
     ]
   }
 }

@@ -33,8 +33,7 @@ data class Workout(
     val lastPerformedAt: Long? = null,
 
     /**
-     * Streak count? (Optional, maybe overkill for now, but good for future)
-     * e.g. Number of consecutive days performed.
+     * Number of consecutive days this workout has been performed.
      */
-    // val currentStreak: Int = 0
+    val currentStreak: Int = 0
 )

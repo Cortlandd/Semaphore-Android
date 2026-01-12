@@ -10,6 +10,7 @@ class SettingsReducer @Inject constructor() :
 
     override suspend fun process(action: SettingsAction) {
         when (action) {
+            SettingsAction.TapAnalytics -> emit(SettingsEffect.NavAnalytics)
             SettingsAction.TapBack -> emit(SettingsEffect.NavBack)
 
             SettingsAction.TapFeedback -> {

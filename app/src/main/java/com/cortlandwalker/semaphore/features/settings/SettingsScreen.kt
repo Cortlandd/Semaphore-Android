@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Star
@@ -109,6 +110,18 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(vertical = 8.dp)) {
+                        SettingsItem(
+                            icon = Icons.Default.Analytics,
+                            iconTint = purplePrimary,
+                            title = "Analytics",
+                            subtitle = "View your workout stats",
+                            onClick = { reducer.postAction(SettingsAction.TapAnalytics) }
+                        )
+                        HorizontalDivider(
+                            color = backgroundColor,
+                            thickness = 2.dp,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
                         SettingsItem(
                             icon = Icons.Default.Email,
                             iconTint = purplePrimary,
