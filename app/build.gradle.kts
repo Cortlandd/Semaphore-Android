@@ -14,6 +14,11 @@ plugins {
 
 }
 
+val admobAppId = providers.gradleProperty("ADMOB_APP_ID")
+    .orElse("ca-app-pub-3940256099942544~3347511713")
+val admobBannerAdUnitId = providers.gradleProperty("ADMOB_BANNER_AD_UNIT_ID")
+    .orElse("ca-app-pub-3940256099942544/9214589741")
+
 android {
     namespace = "com.cortlandwalker.semaphore"
     compileSdk = 36
@@ -26,6 +31,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["admobAppId"] = admobAppId.get()
+        buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"${admobBannerAdUnitId.get()}\"")
+        buildConfigField("String", "REMOVE_ADS_PRODUCT_ID", "\"remove_ads\"")
     }
 
     buildTypes {
@@ -51,6 +59,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
         viewBinding = true
     }
 
@@ -80,6 +89,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.google.play.services.ads)
+    implementation(libs.google.play.billing)
 
     implementation(libs.androidx.activity.compose)
 

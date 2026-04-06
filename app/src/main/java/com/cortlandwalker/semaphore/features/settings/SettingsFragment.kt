@@ -6,11 +6,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
+import com.cortlandwalker.semaphore.BuildConfig
 import com.cortlandwalker.ghettoxide.ReducerFragment
+import com.cortlandwalker.semaphore.monetization.MonetizationManager
+import com.cortlandwalker.semaphore.monetization.PurchaseLaunchResult
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -18,15 +22,27 @@ import javax.inject.Inject
 class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, SettingsEffect, SettingsReducer>() {
 
     @Inject override lateinit var reducer: SettingsReducer
-    override val initialState = SettingsState()
+    @Inject lateinit var monetizationManager: MonetizationManager
+    override val initialState = SettingsState(version = BuildConfig.VERSION_NAME)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        monetizationManager.start()
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = vm.state.collectAsState().value
-                SettingsScreen(state, reducer)
+                val monetizationState = monetizationManager.uiState.collectAsState().value
+                SettingsScreen(
+                    state = state,
+                    reducer = reducer,
+                    monetizationState = monetizationState,
+                    onRemoveAds = { handleRemoveAdsTapped() },
+                    onRestorePurchases = {
+                        monetizationManager.restorePurchases()
+                        toast("Checking Google Play for previous purchases.")
+                    }
+                )
             }
         }
     }
@@ -86,5 +102,21 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
                 findNavController().navigate(action)
             }
         }
+    }
+
+    private fun handleRemoveAdsTapped() {
+        when (val result = monetizationManager.launchRemoveAdsPurchase(requireActivity())) {
+            PurchaseLaunchResult.Launched -> Unit
+            PurchaseLaunchResult.AlreadyOwned -> toast("Ads have already been removed on this account.")
+            PurchaseLaunchResult.BillingUnavailable -> toast("Google Play billing is unavailable right now.")
+            PurchaseLaunchResult.ProductUnavailable -> toast("The remove ads option is still loading. Try again in a moment.")
+            is PurchaseLaunchResult.Failed -> {
+                toast(result.debugMessage.ifBlank { "Unable to start the purchase flow." })
+            }
+        }
+    }
+
+    private fun toast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

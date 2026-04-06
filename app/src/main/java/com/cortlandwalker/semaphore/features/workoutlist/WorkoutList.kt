@@ -5,7 +5,7 @@ import com.cortlandwalker.semaphore.data.models.Workout
 
 data class WorkoutListState(
     val workouts: List<Workout> = emptyList(),
-    var changingText: String = "testing",
+    var changingText: String = "",
     val error: String? = null,
     val isPlayingAll: Boolean = false,
     val playbackQueue: List<String> = emptyList(),

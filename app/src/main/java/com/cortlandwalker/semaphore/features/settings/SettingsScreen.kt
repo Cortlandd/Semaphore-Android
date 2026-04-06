@@ -27,12 +27,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cortlandwalker.semaphore.features.settings.SettingsAction.*
+import com.cortlandwalker.semaphore.monetization.MonetizationUiState
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 
 @Composable
 fun SettingsScreen(
     state: SettingsState,
-    reducer: SettingsReducer
+    reducer: SettingsReducer,
+    monetizationState: MonetizationUiState = MonetizationUiState(),
+    onRemoveAds: () -> Unit = {},
+    onRestorePurchases: () -> Unit = {}
 ) {
     val backgroundColor = Color(0xFFF8F8FA) // Light grey/white bg
     val cardColor = Color.White
@@ -134,6 +138,16 @@ fun SettingsScreen(
 
                 Spacer(Modifier.height(24.dp))
 
+                SectionHeader("SUPPORT")
+
+                RemoveAdsCard(
+                    state = monetizationState,
+                    onRemoveAds = onRemoveAds,
+                    onRestorePurchases = onRestorePurchases
+                )
+
+                Spacer(Modifier.height(24.dp))
+
                 // Section: ABOUT
                 SectionHeader("ABOUT")
 
@@ -176,7 +190,7 @@ fun SettingsScreen(
                             icon = Icons.Default.Star,
                             iconTint = Color(0xFFFFD700),
                             title = "Rate App",
-                            subtitle = "Review on App Store",
+                            subtitle = "Review on Google Play",
                             onClick = { reducer.postAction(TapRateApp) },
                             showExternalIcon = true
                         )
@@ -195,6 +209,71 @@ fun SettingsScreen(
                 }
 
                 Spacer(Modifier.height(50.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RemoveAdsCard(
+    state: MonetizationUiState,
+    onRemoveAds: () -> Unit,
+    onRestorePurchases: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = if (state.adsRemoved) "Ads removed" else "Remove banner ads",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF2D3142)
+            )
+            Text(
+                text = when {
+                    state.adsRemoved -> "Thanks for supporting Semaphore. Ads stay off on this Google Play account."
+                    state.isPurchasePending -> "Your purchase is pending. Ads will be removed automatically when Google Play confirms payment."
+                    state.isLoadingPricing -> "Connecting to Google Play to load pricing..."
+                    else -> "Unlock an ad-free workout screen with a one-time purchase."
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+
+            if (!state.adsRemoved) {
+                Button(
+                    onClick = onRemoveAds,
+                    enabled = state.canPurchaseRemoveAds,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("Remove ads ${state.removeAdsPrice}")
+                }
+            } else {
+                Surface(
+                    color = Color(0xFFEBE9F8),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text(
+                        text = "Purchase active",
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF6A5ACD)
+                    )
+                }
+            }
+
+            TextButton(
+                onClick = onRestorePurchases,
+                enabled = state.isBillingAvailable || state.adsRemoved
+            ) {
+                Text("Restore purchase")
             }
         }
     }

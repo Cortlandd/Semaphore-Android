@@ -9,18 +9,22 @@ import javax.inject.Inject
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.fragment.findNavController
 import com.cortlandwalker.ghettoxide.ReducerFragment
+import com.cortlandwalker.semaphore.monetization.MonetizationManager
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class WorkoutListFragment : ReducerFragment<WorkoutListState, WorkoutListAction, WorkoutListEffect, WorkoutListReducer>() {
     @Inject override lateinit var reducer: WorkoutListReducer
+    @Inject lateinit var monetizationManager: MonetizationManager
     override val initialState = WorkoutListState()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        monetizationManager.start()
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = vm.state.collectAsState().value
-                WorkoutListScreen(state, reducer)
+                val monetizationState = monetizationManager.uiState.collectAsState().value
+                WorkoutListScreen(state, reducer, monetizationState)
             }
         }
     }

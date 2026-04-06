@@ -41,7 +41,9 @@ import androidx.compose.ui.zIndex
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
+import com.cortlandwalker.semaphore.monetization.MonetizationUiState
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListAction.*
+import com.cortlandwalker.semaphore.ui.components.BannerAd
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +51,7 @@ import com.cortlandwalker.semaphore.ui.components.GridBackground
 fun WorkoutListScreen(
     state: WorkoutListState,
     reducer: WorkoutListReducer,
+    monetizationState: MonetizationUiState = MonetizationUiState(),
     modifier: Modifier = Modifier
 ) {
     val purplePrimary = Color(0xFF6A5ACD)
@@ -75,18 +78,30 @@ fun WorkoutListScreen(
         Scaffold(
             containerColor = Color.Transparent,
             bottomBar = {
-                CustomBottomBar(
-                    isListEmpty = isListEmpty,
-                    onMainAction = {
-                        if (isListEmpty) {
-                            reducer.postAction(WorkoutListAction.TappedAddWorkout)
-                        } else {
-                            reducer.postAction(WorkoutListAction.PlayAllTapped)
+                Column {
+                    if (monetizationState.canShowBannerAds) {
+                        Surface(color = Color.White) {
+                            BannerAd(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            )
                         }
-                    },
-                    onSettings = { reducer.postAction(WorkoutListAction.TappedSettings) },
-                    onTimer = {}
-                )
+                    }
+
+                    CustomBottomBar(
+                        isListEmpty = isListEmpty,
+                        onMainAction = {
+                            if (isListEmpty) {
+                                reducer.postAction(WorkoutListAction.TappedAddWorkout)
+                            } else {
+                                reducer.postAction(WorkoutListAction.PlayAllTapped)
+                            }
+                        },
+                        onSettings = { reducer.postAction(WorkoutListAction.TappedSettings) },
+                        onTimer = {}
+                    )
+                }
             }
         ) { innerPadding ->
             Column(
