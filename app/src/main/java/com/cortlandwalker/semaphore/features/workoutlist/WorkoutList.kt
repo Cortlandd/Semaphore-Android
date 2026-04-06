@@ -8,6 +8,7 @@ data class WorkoutListState(
     var changingText: String = "testing",
     val error: String? = null,
     val isPlayingAll: Boolean = false,
+    val playbackQueue: List<String> = emptyList(),
     val activeWorkoutId: String? = null,
     val activeWorkoutTimer: String? = null,
     val displayMode: ViewDisplayMode = ViewDisplayMode.Empty

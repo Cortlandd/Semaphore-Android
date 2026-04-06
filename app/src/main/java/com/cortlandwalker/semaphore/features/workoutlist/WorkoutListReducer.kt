@@ -1,6 +1,5 @@
 package com.cortlandwalker.semaphore.features.workoutlist
 
-import android.util.Log
 import com.cortlandwalker.ghettoxide.Reducer
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
@@ -13,8 +12,14 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository) :
+class WorkoutListReducer(
+    private val repo: WorkoutRepository,
+    private val tickDelayMillis: Long
+) :
     Reducer<WorkoutListState, WorkoutListAction, WorkoutListEffect>() {
+
+    @Inject
+    constructor(repo: WorkoutRepository) : this(repo, 1_000L)
 
     private var timerJob: Job? = null
 
@@ -90,8 +95,15 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                 emit(NavEditWorkout(action.workout.id))
             }
             WorkoutListAction.PlayAllTapped -> {
-                val firstWorkoutId = currentState.workouts.firstOrNull()?.id
-                state { it.copy(activeWorkoutId = firstWorkoutId) }
+                if (currentState.isPlayingAll) {
+                    stopWorkout()
+                    return
+                }
+
+                startPlayback(
+                    workoutIds = currentState.workouts.map { it.id },
+                    playAll = true
+                )
             }
             is WorkoutListAction.SinglePlayTapped -> {
                 if (currentState.activeWorkoutId == action.id) {
@@ -99,46 +111,51 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
                     return
                 }
 
-                // Cancel existing timer
-                timerJob?.cancel()
-
-                val workout = currentState.workouts.find { it.id == action.id } ?: return
-
-                // Expand row
-                state { it.copy(activeWorkoutId = action.id) }
-
-                // Start the countdown coroutine
-                timerJob = scope.launch {
-                    val durationSeconds = (workout.hours * 3600) + (workout.minutes * 60) + workout.seconds
-                    var remainingSeconds = (workout.hours * 3600) + (workout.minutes * 60) + workout.seconds
-
-                    while (remainingSeconds >= 0) {
-                        // Update the display string in state
-                        state { it.copy(activeWorkoutTimer = formatSecondsToHms(remainingSeconds)) }
-                        if (remainingSeconds == 0) {
-                            // --- TIMER FINISHED ---
-                            updateWorkoutAnalytics(workout, durationSeconds)
-                            break
-                        }
-                        delay(1000L)
-                        remainingSeconds--
-                    }
-
-                    // Auto-collapse when finished
-                    stopWorkout()
-
-//                    val currentIndex = currentState.workouts.indexOfFirst { it.id == action.id }
-//                    val nextWorkout = currentState.workouts.getOrNull(currentIndex + 1)
-//                    if (nextWorkout != null) {
-//                        process(SinglePlayTapped(nextWorkout.id))
-//                    } else {
-//                        stopWorkout()
-//                    }
-                }
+                startPlayback(
+                    workoutIds = listOf(action.id),
+                    playAll = false
+                )
             }
             WorkoutListAction.StopTapped -> {
                 stopWorkout()
             }
+        }
+    }
+
+    private fun startPlayback(workoutIds: List<String>, playAll: Boolean) {
+        if (workoutIds.isEmpty()) {
+            stopWorkout()
+            return
+        }
+
+        timerJob?.cancel()
+        timerJob = scope.launch {
+            for ((index, workoutId) in workoutIds.withIndex()) {
+                val workout = currentState.workouts.find { it.id == workoutId } ?: continue
+                val durationSeconds = workout.durationSeconds()
+                var remainingSeconds = durationSeconds
+
+                state {
+                    it.copy(
+                        isPlayingAll = playAll,
+                        playbackQueue = if (playAll) workoutIds.drop(index + 1) else emptyList(),
+                        activeWorkoutId = workoutId,
+                        activeWorkoutTimer = formatSecondsToHms(remainingSeconds)
+                    )
+                }
+
+                while (remainingSeconds >= 0) {
+                    state { it.copy(activeWorkoutTimer = formatSecondsToHms(remainingSeconds)) }
+                    if (remainingSeconds == 0) {
+                        updateWorkoutAnalytics(workout, durationSeconds)
+                        break
+                    }
+                    delay(tickDelayMillis)
+                    remainingSeconds--
+                }
+            }
+
+            clearPlaybackState(cancelTimer = false)
         }
     }
 
@@ -152,7 +169,7 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
             currentStreak = newStreak
         )
         // Persist to DB
-        repo.insert(updatedWorkout)
+        repo.update(updatedWorkout)
     }
 
     private fun wasPerformedYesterday(lastPerformedAt: Long?): Boolean {
@@ -179,9 +196,23 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
 
 
     private fun stopWorkout() {
-        timerJob?.cancel()
+        clearPlaybackState(cancelTimer = true)
+    }
+
+    private fun clearPlaybackState(cancelTimer: Boolean) {
+        if (cancelTimer) {
+            timerJob?.cancel()
+        }
+
         timerJob = null
-        state { it.copy(activeWorkoutId = null, activeWorkoutTimer = null) }
+        state {
+            it.copy(
+                isPlayingAll = false,
+                playbackQueue = emptyList(),
+                activeWorkoutId = null,
+                activeWorkoutTimer = null
+            )
+        }
     }
 
     private fun formatSecondsToHms(totalSeconds: Int): String {
@@ -195,4 +226,7 @@ class WorkoutListReducer @Inject constructor(private val repo: WorkoutRepository
         }
     }
 
+    private fun Workout.durationSeconds(): Int {
+        return (hours * 3600) + (minutes * 60) + seconds
+    }
 }
