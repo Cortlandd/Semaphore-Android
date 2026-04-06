@@ -118,9 +118,7 @@ class UpsertWorkoutReducer @Inject constructor(
         }
     }
 
-    override fun onLoadAction(): UpsertWorkoutAction? {
-        return null
-    }
+    override fun onLoadAction(): UpsertWorkoutAction = UpsertWorkoutAction.Init(currentState.workoutId)
 
     private suspend fun resolveImageUriForSave(state: UpsertWorkoutState): String? {
         val uri = state.imageUri ?: return null

@@ -41,7 +41,6 @@ import androidx.compose.ui.zIndex
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
-import com.cortlandwalker.semaphore.monetization.MonetizationUiState
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListAction.*
 import com.cortlandwalker.semaphore.ui.components.BannerAd
 import com.cortlandwalker.semaphore.ui.components.GridBackground
@@ -51,7 +50,6 @@ import com.cortlandwalker.semaphore.ui.components.GridBackground
 fun WorkoutListScreen(
     state: WorkoutListState,
     reducer: WorkoutListReducer,
-    monetizationState: MonetizationUiState = MonetizationUiState(),
     modifier: Modifier = Modifier
 ) {
     val purplePrimary = Color(0xFF6A5ACD)
@@ -79,7 +77,7 @@ fun WorkoutListScreen(
             containerColor = Color.Transparent,
             bottomBar = {
                 Column {
-                    if (monetizationState.canShowBannerAds) {
+                    if (state.showBannerAd) {
                         Surface(color = Color.White) {
                             BannerAd(
                                 modifier = Modifier

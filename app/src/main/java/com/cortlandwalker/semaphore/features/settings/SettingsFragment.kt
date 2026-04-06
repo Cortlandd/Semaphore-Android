@@ -7,14 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.compose.setContent
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import com.cortlandwalker.semaphore.BuildConfig
+import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
 import com.cortlandwalker.semaphore.monetization.MonetizationManager
 import com.cortlandwalker.semaphore.monetization.PurchaseLaunchResult
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -31,18 +32,13 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
         monetizationManager.start()
         return ComposeView(requireContext()).apply {
             setContent {
-                val state = vm.state.collectAsState().value
-                val monetizationState = monetizationManager.uiState.collectAsState().value
-                SettingsScreen(
-                    state = state,
-                    reducer = reducer,
-                    monetizationState = monetizationState,
-                    onRemoveAds = { handleRemoveAdsTapped() },
-                    onRestorePurchases = {
-                        monetizationManager.restorePurchases()
-                        toast("Checking Google Play for previous purchases.")
-                    }
-                )
+                val monetizationState = monetizationManager.uiState.collectAsStateWithLifecycle().value
+                LaunchedEffect(monetizationState) {
+                    reducer.postAction(SettingsAction.MonetizationUpdated(monetizationState))
+                }
+                ReducerContent { state, reducer ->
+                    SettingsScreen(state, reducer)
+                }
             }
         }
     }
@@ -100,6 +96,11 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
                     filename = "faq.md"
                 )
                 findNavController().navigate(action)
+            }
+            SettingsEffect.LaunchRemoveAdsPurchase -> handleRemoveAdsTapped()
+            SettingsEffect.RestorePurchases -> {
+                monetizationManager.restorePurchases()
+                toast("Checking Google Play for previous purchases.")
             }
         }
     }

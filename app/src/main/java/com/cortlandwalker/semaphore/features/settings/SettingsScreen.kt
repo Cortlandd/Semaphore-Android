@@ -27,16 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cortlandwalker.semaphore.features.settings.SettingsAction.*
-import com.cortlandwalker.semaphore.monetization.MonetizationUiState
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 
 @Composable
 fun SettingsScreen(
     state: SettingsState,
-    reducer: SettingsReducer,
-    monetizationState: MonetizationUiState = MonetizationUiState(),
-    onRemoveAds: () -> Unit = {},
-    onRestorePurchases: () -> Unit = {}
+    reducer: SettingsReducer
 ) {
     val backgroundColor = Color(0xFFF8F8FA) // Light grey/white bg
     val cardColor = Color.White
@@ -141,9 +137,8 @@ fun SettingsScreen(
                 SectionHeader("SUPPORT")
 
                 RemoveAdsCard(
-                    state = monetizationState,
-                    onRemoveAds = onRemoveAds,
-                    onRestorePurchases = onRestorePurchases
+                    state = state,
+                    reducer = reducer
                 )
 
                 Spacer(Modifier.height(24.dp))
@@ -216,10 +211,11 @@ fun SettingsScreen(
 
 @Composable
 private fun RemoveAdsCard(
-    state: MonetizationUiState,
-    onRemoveAds: () -> Unit,
-    onRestorePurchases: () -> Unit
+    state: SettingsState,
+    reducer: SettingsReducer
 ) {
+    val monetization = state.monetization
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(24.dp),
@@ -231,29 +227,29 @@ private fun RemoveAdsCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = if (state.adsRemoved) "Ads removed" else "Remove banner ads",
+                text = if (monetization.adsRemoved) "Ads removed" else "Remove banner ads",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF2D3142)
             )
             Text(
                 text = when {
-                    state.adsRemoved -> "Thanks for supporting Semaphore. Ads stay off on this Google Play account."
-                    state.isPurchasePending -> "Your purchase is pending. Ads will be removed automatically when Google Play confirms payment."
-                    state.isLoadingPricing -> "Connecting to Google Play to load pricing..."
+                    monetization.adsRemoved -> "Thanks for supporting Semaphore. Ads stay off on this Google Play account."
+                    monetization.isPurchasePending -> "Your purchase is pending. Ads will be removed automatically when Google Play confirms payment."
+                    monetization.isLoadingPricing -> "Connecting to Google Play to load pricing..."
                     else -> "Unlock an ad-free workout screen with a one-time purchase."
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
 
-            if (!state.adsRemoved) {
+            if (!monetization.adsRemoved) {
                 Button(
-                    onClick = onRemoveAds,
-                    enabled = state.canPurchaseRemoveAds,
+                    onClick = { reducer.postAction(TapRemoveAds) },
+                    enabled = monetization.canPurchaseRemoveAds,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text("Remove ads ${state.removeAdsPrice}")
+                    Text("Remove ads ${monetization.removeAdsPrice}")
                 }
             } else {
                 Surface(
@@ -270,8 +266,8 @@ private fun RemoveAdsCard(
             }
 
             TextButton(
-                onClick = onRestorePurchases,
-                enabled = state.isBillingAvailable || state.adsRemoved
+                onClick = { reducer.postAction(TapRestorePurchases) },
+                enabled = monetization.isBillingAvailable || monetization.adsRemoved
             ) {
                 Text("Restore purchase")
             }

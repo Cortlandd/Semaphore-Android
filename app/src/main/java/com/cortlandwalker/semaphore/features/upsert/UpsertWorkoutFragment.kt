@@ -5,11 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.cortlandwalker.ghettoxide.Reducer
+import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
 import com.klipy.klipy_ui.KlipyUi
 import com.klipy.klipy_ui.picker.KlipyPickerConfig
@@ -32,19 +31,12 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
         UpsertWorkoutState(workoutId = args.workoutId)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        vm.postAction(UpsertWorkoutAction.Init(args.workoutId))
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, saved: Bundle?): View =
         ComposeView(requireContext()).apply {
             setContent {
-                val s = vm.state.collectAsState().value
-                UpsertWorkoutScreen(
-                    state = s,
-                    reducer = reducer
-                )
+                ReducerContent { state, reducer ->
+                    UpsertWorkoutScreen(state, reducer)
+                }
             }
         }
 

@@ -26,6 +26,11 @@ class SettingsReducer @Inject constructor() :
             SettingsAction.TapFAQ -> emit(SettingsEffect.NavFAQ)
 
             SettingsAction.TapRateApp -> emit(SettingsEffect.OpenAppStore)
+            SettingsAction.TapRemoveAds -> emit(SettingsEffect.LaunchRemoveAdsPurchase)
+            SettingsAction.TapRestorePurchases -> emit(SettingsEffect.RestorePurchases)
+            is SettingsAction.MonetizationUpdated -> {
+                state { it.copy(monetization = action.monetization) }
+            }
 
             SettingsAction.TapWorkouts -> emit(SettingsEffect.NavWorkouts)
             SettingsAction.TapTimer -> emit(SettingsEffect.NavTimer)

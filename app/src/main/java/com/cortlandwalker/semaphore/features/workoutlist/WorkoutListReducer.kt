@@ -94,6 +94,9 @@ class WorkoutListReducer(
             is WorkoutListAction.TappedWorkout -> {
                 emit(NavEditWorkout(action.workout.id))
             }
+            is WorkoutListAction.BannerAdVisibilityChanged -> {
+                state { it.copy(showBannerAd = action.visible) }
+            }
             WorkoutListAction.PlayAllTapped -> {
                 if (currentState.isPlayingAll) {
                     stopWorkout()

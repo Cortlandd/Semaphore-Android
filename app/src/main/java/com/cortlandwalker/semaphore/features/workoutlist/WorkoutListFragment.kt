@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import javax.inject.Inject
-import androidx.compose.runtime.collectAsState
 import androidx.navigation.fragment.findNavController
+import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
 import com.cortlandwalker.semaphore.monetization.MonetizationManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,9 +24,15 @@ class WorkoutListFragment : ReducerFragment<WorkoutListState, WorkoutListAction,
         monetizationManager.start()
         return ComposeView(requireContext()).apply {
             setContent {
-                val state = vm.state.collectAsState().value
-                val monetizationState = monetizationManager.uiState.collectAsState().value
-                WorkoutListScreen(state, reducer, monetizationState)
+                val monetizationState = monetizationManager.uiState.collectAsStateWithLifecycle().value
+                LaunchedEffect(monetizationState.canShowBannerAds) {
+                    reducer.postAction(
+                        WorkoutListAction.BannerAdVisibilityChanged(monetizationState.canShowBannerAds)
+                    )
+                }
+                ReducerContent { state, reducer ->
+                    WorkoutListScreen(state, reducer)
+                }
             }
         }
     }

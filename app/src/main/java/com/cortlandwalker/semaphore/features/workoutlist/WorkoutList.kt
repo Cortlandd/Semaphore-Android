@@ -7,6 +7,7 @@ data class WorkoutListState(
     val workouts: List<Workout> = emptyList(),
     var changingText: String = "",
     val error: String? = null,
+    val showBannerAd: Boolean = false,
     val isPlayingAll: Boolean = false,
     val playbackQueue: List<String> = emptyList(),
     val activeWorkoutId: String? = null,
@@ -27,6 +28,7 @@ sealed interface WorkoutListAction {
     /** Finalize a drag-and-drop reorder: order is list of workout IDs top->bottom. */
     data class ReorderCommit(val orderedIds: List<String>) : WorkoutListAction
     data class SinglePlayTapped(val id: String) : WorkoutListAction
+    data class BannerAdVisibilityChanged(val visible: Boolean) : WorkoutListAction
     data object PlayAllTapped : WorkoutListAction
 }
 

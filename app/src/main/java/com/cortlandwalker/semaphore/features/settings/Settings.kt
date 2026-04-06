@@ -1,7 +1,10 @@
 package com.cortlandwalker.semaphore.features.settings
 
+import com.cortlandwalker.semaphore.monetization.MonetizationUiState
+
 data class SettingsState(
-    val version: String = "1.0.0"
+    val version: String = "1.0.0",
+    val monetization: MonetizationUiState = MonetizationUiState()
 )
 
 sealed interface SettingsAction {
@@ -11,6 +14,9 @@ sealed interface SettingsAction {
     data object TapLicenses : SettingsAction
     data object TapFAQ : SettingsAction
     data object TapRateApp : SettingsAction
+    data object TapRemoveAds : SettingsAction
+    data object TapRestorePurchases : SettingsAction
+    data class MonetizationUpdated(val monetization: MonetizationUiState) : SettingsAction
 
     // Bottom Nav Actions
     data object TapWorkouts : SettingsAction
@@ -29,4 +35,6 @@ sealed interface SettingsEffect {
     data object OpenAppStore : SettingsEffect
     data object NavLicenses : SettingsEffect
     data object NavFAQ : SettingsEffect
+    data object LaunchRemoveAdsPurchase : SettingsEffect
+    data object RestorePurchases : SettingsEffect
 }
