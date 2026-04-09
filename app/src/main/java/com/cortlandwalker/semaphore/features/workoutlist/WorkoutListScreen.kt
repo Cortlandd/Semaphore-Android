@@ -76,30 +76,18 @@ fun WorkoutListScreen(
         Scaffold(
             containerColor = Color.Transparent,
             bottomBar = {
-                Column {
-                    if (state.showBannerAd) {
-                        Surface(color = Color.White) {
-                            BannerAd(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
+                CustomBottomBar(
+                    isListEmpty = isListEmpty,
+                    onMainAction = {
+                        if (isListEmpty) {
+                            reducer.postAction(WorkoutListAction.TappedAddWorkout)
+                        } else {
+                            reducer.postAction(WorkoutListAction.PlayAllTapped)
                         }
-                    }
-
-                    CustomBottomBar(
-                        isListEmpty = isListEmpty,
-                        onMainAction = {
-                            if (isListEmpty) {
-                                reducer.postAction(WorkoutListAction.TappedAddWorkout)
-                            } else {
-                                reducer.postAction(WorkoutListAction.PlayAllTapped)
-                            }
-                        },
-                        onSettings = { reducer.postAction(WorkoutListAction.TappedSettings) },
-                        onTimer = {}
-                    )
-                }
+                    },
+                    onSettings = { reducer.postAction(WorkoutListAction.TappedSettings) },
+                    onTimer = {}
+                )
             }
         ) { innerPadding ->
             Column(
@@ -108,6 +96,21 @@ fun WorkoutListScreen(
                     .padding(innerPadding)
                     .padding(horizontal = 24.dp)
             ) {
+                if (state.showBannerAd) {
+                    Surface(
+                        color = Color.White,
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        BannerAd(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                }
+
                 Spacer(Modifier.height(24.dp))
 
                 // 1. Header (Always Visible)
