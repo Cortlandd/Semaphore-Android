@@ -5,11 +5,21 @@ import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
+import com.cortlandwalker.semaphore.playback.WorkoutPlaybackController
+import com.cortlandwalker.semaphore.playback.WorkoutPlaybackState
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -21,6 +31,7 @@ class WorkoutListReducerTest {
     private lateinit var mockRepo: WorkoutRepository
     private lateinit var reducer: WorkoutListReducer
     private lateinit var effects: MutableList<WorkoutListEffect>
+    private lateinit var playbackController: WorkoutPlaybackController
 
     // Working on it
     @Test
@@ -29,7 +40,8 @@ class WorkoutListReducerTest {
             Workout("1", 0, "Test Workout", "", 0, 1, 0, 0, 0)
         )
         val repo = InMemoryWorkoutRepository(workouts)
-        reducer = WorkoutListReducer(repo, 1_000L)
+        playbackController = FakeWorkoutPlaybackController(repo, backgroundScope)
+        reducer = WorkoutListReducer(repo, playbackController)
         effects = mutableListOf()
         reducer.testBind(
             initialState = WorkoutListState(),
@@ -97,8 +109,9 @@ class WorkoutListReducerTest {
     fun `SinglePlayTapped should count down and update workout analytics`() = runTest {
         val workout = Workout("1", 0, "Plank", "", 0, 0, 2, 0, 0)
         val repo = InMemoryWorkoutRepository(listOf(workout))
+        playbackController = FakeWorkoutPlaybackController(repo, backgroundScope)
 
-        reducer = WorkoutListReducer(repo, 1_000L)
+        reducer = WorkoutListReducer(repo, playbackController)
         effects = mutableListOf()
         reducer.testBind(
             initialState = WorkoutListState(
@@ -106,9 +119,11 @@ class WorkoutListReducerTest {
                 displayMode = ViewDisplayMode.Content
             ),
             effects = effects,
-            scope = this
+            scope = backgroundScope
         )
 
+        reducer.accept(WorkoutListAction.OnLoad)
+        runCurrent()
         reducer.accept(WorkoutListAction.SinglePlayTapped(workout.id))
         runCurrent()
 
@@ -137,8 +152,9 @@ class WorkoutListReducerTest {
             Workout("2", 0, "Push Ups", "", 0, 0, 1, 1, 0)
         )
         val repo = InMemoryWorkoutRepository(workouts)
+        playbackController = FakeWorkoutPlaybackController(repo, backgroundScope)
 
-        reducer = WorkoutListReducer(repo, 1_000L)
+        reducer = WorkoutListReducer(repo, playbackController)
         effects = mutableListOf()
         reducer.testBind(
             initialState = WorkoutListState(
@@ -146,9 +162,11 @@ class WorkoutListReducerTest {
                 displayMode = ViewDisplayMode.Content
             ),
             effects = effects,
-            scope = this
+            scope = backgroundScope
         )
 
+        reducer.accept(WorkoutListAction.OnLoad)
+        runCurrent()
         reducer.accept(WorkoutListAction.PlayAllTapped)
         runCurrent()
 
@@ -180,12 +198,91 @@ class WorkoutListReducerTest {
         scope: CoroutineScope? = null
     ) {
         mockRepo = mockk(relaxed = true)
+        playbackController = mockk(relaxed = true)
         effects = mutableListOf()
-        reducer = WorkoutListReducer(mockRepo, 1_000L)
+        reducer = WorkoutListReducer(mockRepo, playbackController)
         reducer.testBind(
             initialState = initialState,
             effects = effects,
             scope = scope
         )
+    }
+
+    private class FakeWorkoutPlaybackController(
+        private val repo: WorkoutRepository,
+        private val scope: CoroutineScope
+    ) : WorkoutPlaybackController {
+        private val mutableState = MutableStateFlow(WorkoutPlaybackState())
+        private var job: Job? = null
+
+        override val playbackState: StateFlow<WorkoutPlaybackState> = mutableState.asStateFlow()
+
+        override fun startSingle(workout: Workout) {
+            startSession(listOf(workout), false)
+        }
+
+        override fun startAll(workouts: List<Workout>) {
+            startSession(workouts, true)
+        }
+
+        override fun stop() {
+            job?.cancel()
+            job = null
+            mutableState.value = WorkoutPlaybackState()
+        }
+
+        private fun startSession(workouts: List<Workout>, isPlayingAll: Boolean) {
+            job?.cancel()
+            job = scope.launch {
+                workouts.forEachIndexed { index, workout ->
+                    var remaining = (workout.hours * 3600) + (workout.minutes * 60) + workout.seconds
+                    mutableState.value = WorkoutPlaybackState(
+                        isRunning = true,
+                        isPlayingAll = isPlayingAll,
+                        activeWorkoutId = workout.id,
+                        activeWorkoutName = workout.name,
+                        activeWorkoutImageUri = workout.imageUri,
+                        activeWorkoutTimer = format(remaining),
+                        remainingSeconds = remaining,
+                        durationSeconds = remaining,
+                        playbackQueue = if (isPlayingAll) workouts.drop(index + 1).map { it.id } else emptyList()
+                    )
+
+                    while (remaining >= 0) {
+                        mutableState.value = mutableState.value.copy(
+                            activeWorkoutTimer = format(remaining),
+                            remainingSeconds = remaining
+                        )
+
+                        if (remaining == 0) {
+                            val updated = workout.copy(
+                                completedCount = workout.completedCount + 1,
+                                totalTimeSpentSeconds = workout.totalTimeSpentSeconds + workout.seconds + (workout.minutes * 60L) + (workout.hours * 3600L),
+                                lastPerformedAt = System.currentTimeMillis(),
+                                currentStreak = 1
+                            )
+                            repo.update(updated)
+                            break
+                        }
+
+                        delay(1_000L)
+                        remaining--
+                    }
+                }
+
+                mutableState.value = WorkoutPlaybackState()
+            }
+        }
+
+        private fun format(totalSeconds: Int): String {
+            val hours = totalSeconds / 3600
+            val minutes = (totalSeconds % 3600) / 60
+            val seconds = totalSeconds % 60
+            return if (hours > 0) {
+                "%02d:%02d:%02d".format(hours, minutes, seconds)
+            } else {
+                "%02d:%02d".format(minutes, seconds)
+            }
+        }
     }
 }

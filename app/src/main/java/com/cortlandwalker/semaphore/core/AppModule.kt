@@ -2,6 +2,8 @@ package com.cortlandwalker.semaphore.core
 
 import android.content.Context
 import androidx.room.Room
+import com.cortlandwalker.semaphore.playback.ForegroundWorkoutPlaybackController
+import com.cortlandwalker.semaphore.playback.WorkoutPlaybackController
 import com.cortlandwalker.semaphore.data.local.room.RoomWorkoutRepository
 import com.cortlandwalker.semaphore.data.local.room.SemaphoreDatabase
 import com.cortlandwalker.semaphore.data.local.room.WorkoutDao
@@ -34,4 +36,9 @@ object AppModule {
 abstract class RepoBindsModule {
     @Binds @Singleton
     abstract fun bindWorkoutRepository(impl: RoomWorkoutRepository): WorkoutRepository
+
+    @Binds @Singleton
+    abstract fun bindWorkoutPlaybackController(
+        impl: ForegroundWorkoutPlaybackController
+    ): WorkoutPlaybackController
 }

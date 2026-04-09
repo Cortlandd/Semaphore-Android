@@ -42,8 +42,13 @@ import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListAction.*
+import com.cortlandwalker.semaphore.playback.WorkoutPlaybackController
+import com.cortlandwalker.semaphore.playback.WorkoutPlaybackState
 import com.cortlandwalker.semaphore.ui.components.BannerAd
 import com.cortlandwalker.semaphore.ui.components.GridBackground
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -446,7 +451,10 @@ fun CustomBottomBar(
 @Composable
 fun WorkoutListScreenEmptyPreview() {
     val sample = emptyList<Workout>()
-    val reducer = WorkoutListReducer(InMemoryWorkoutRepository(sample))
+    val reducer = WorkoutListReducer(
+        InMemoryWorkoutRepository(sample),
+        PreviewWorkoutPlaybackController()
+    )
     WorkoutListScreen(
         state = WorkoutListState(
             workouts = sample,
@@ -467,7 +475,10 @@ fun WorkoutListScreenPreview() {
         Workout("3", 0, "High Knees", "", 0, 1, 0, 2, 0),
         Workout("4", 0, "Cool Down", "", 0, 5, 0, 3, 0),
     )
-    val reducer = WorkoutListReducer(InMemoryWorkoutRepository(sample))
+    val reducer = WorkoutListReducer(
+        InMemoryWorkoutRepository(sample),
+        PreviewWorkoutPlaybackController()
+    )
     WorkoutListScreen(
         state = WorkoutListState(
             workouts = sample,
@@ -477,4 +488,15 @@ fun WorkoutListScreenPreview() {
         ),
         reducer = reducer
     )
+}
+
+private class PreviewWorkoutPlaybackController : WorkoutPlaybackController {
+    private val mutableState = MutableStateFlow(WorkoutPlaybackState())
+    override val playbackState: StateFlow<WorkoutPlaybackState> = mutableState.asStateFlow()
+
+    override fun startSingle(workout: Workout) = Unit
+
+    override fun startAll(workouts: List<Workout>) = Unit
+
+    override fun stop() = Unit
 }

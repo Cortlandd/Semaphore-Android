@@ -5,23 +5,17 @@ import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
 import com.cortlandwalker.semaphore.features.workoutlist.WorkoutListEffect.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.cortlandwalker.semaphore.playback.WorkoutPlaybackController
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
-class WorkoutListReducer(
+class WorkoutListReducer @Inject constructor(
     private val repo: WorkoutRepository,
-    private val tickDelayMillis: Long
+    private val playbackController: WorkoutPlaybackController
 ) :
     Reducer<WorkoutListState, WorkoutListAction, WorkoutListEffect>() {
-
-    @Inject
-    constructor(repo: WorkoutRepository) : this(repo, 1_000L)
-
-    private var timerJob: Job? = null
 
     override fun onLoadAction(): WorkoutListAction? = WorkoutListAction.OnLoad
 
@@ -63,6 +57,19 @@ class WorkoutListReducer(
                             }
                         }
                 }
+
+                scope.launch {
+                    playbackController.playbackState.collect { playbackState ->
+                        state {
+                            it.copy(
+                                isPlayingAll = playbackState.isPlayingAll,
+                                playbackQueue = playbackState.playbackQueue,
+                                activeWorkoutId = playbackState.activeWorkoutId,
+                                activeWorkoutTimer = playbackState.activeWorkoutTimer
+                            )
+                        }
+                    }
+                }
             }
             WorkoutListAction.TappedSettings -> { emit(WorkoutListEffect.NavSettings) }
             WorkoutListAction.TappedAddWorkout -> {
@@ -99,137 +106,24 @@ class WorkoutListReducer(
             }
             WorkoutListAction.PlayAllTapped -> {
                 if (currentState.isPlayingAll) {
-                    stopWorkout()
+                    playbackController.stop()
                     return
                 }
 
-                startPlayback(
-                    workoutIds = currentState.workouts.map { it.id },
-                    playAll = true
-                )
+                playbackController.startAll(currentState.workouts)
             }
             is WorkoutListAction.SinglePlayTapped -> {
                 if (currentState.activeWorkoutId == action.id) {
-                    stopWorkout()
+                    playbackController.stop()
                     return
                 }
 
-                startPlayback(
-                    workoutIds = listOf(action.id),
-                    playAll = false
-                )
+                val workout = currentState.workouts.find { it.id == action.id } ?: return
+                playbackController.startSingle(workout)
             }
             WorkoutListAction.StopTapped -> {
-                stopWorkout()
+                playbackController.stop()
             }
         }
-    }
-
-    private fun startPlayback(workoutIds: List<String>, playAll: Boolean) {
-        if (workoutIds.isEmpty()) {
-            stopWorkout()
-            return
-        }
-
-        timerJob?.cancel()
-        timerJob = scope.launch {
-            for ((index, workoutId) in workoutIds.withIndex()) {
-                val workout = currentState.workouts.find { it.id == workoutId } ?: continue
-                val durationSeconds = workout.durationSeconds()
-                var remainingSeconds = durationSeconds
-
-                state {
-                    it.copy(
-                        isPlayingAll = playAll,
-                        playbackQueue = if (playAll) workoutIds.drop(index + 1) else emptyList(),
-                        activeWorkoutId = workoutId,
-                        activeWorkoutTimer = formatSecondsToHms(remainingSeconds)
-                    )
-                }
-
-                while (remainingSeconds >= 0) {
-                    state { it.copy(activeWorkoutTimer = formatSecondsToHms(remainingSeconds)) }
-                    if (remainingSeconds == 0) {
-                        updateWorkoutAnalytics(workout, durationSeconds)
-                        break
-                    }
-                    delay(tickDelayMillis)
-                    remainingSeconds--
-                }
-            }
-
-            clearPlaybackState(cancelTimer = false)
-        }
-    }
-
-    private suspend fun updateWorkoutAnalytics(workout: Workout, durationSeconds: Int) {
-        // Calculate new stats
-        val newStreak = if (wasPerformedYesterday(workout.lastPerformedAt)) workout.currentStreak + 1 else 1
-        val updatedWorkout = workout.copy(
-            completedCount = workout.completedCount + 1,
-            totalTimeSpentSeconds = workout.totalTimeSpentSeconds + durationSeconds,
-            lastPerformedAt = System.currentTimeMillis(),
-            currentStreak = newStreak
-        )
-        // Persist to DB
-        repo.update(updatedWorkout)
-    }
-
-    private fun wasPerformedYesterday(lastPerformedAt: Long?): Boolean {
-        if (lastPerformedAt == null) return false
-
-        val lastDate = Calendar.getInstance().apply { timeInMillis = lastPerformedAt }
-        val today = Calendar.getInstance()
-
-        // Reset time part for accurate date comparison
-        lastDate.set(Calendar.HOUR_OF_DAY, 0)
-        lastDate.set(Calendar.MINUTE, 0)
-        lastDate.set(Calendar.SECOND, 0)
-        lastDate.set(Calendar.MILLISECOND, 0)
-
-        today.set(Calendar.HOUR_OF_DAY, 0)
-        today.set(Calendar.MINUTE, 0)
-        today.set(Calendar.SECOND, 0)
-        today.set(Calendar.MILLISECOND, 0)
-
-        today.add(Calendar.DAY_OF_YEAR, -1)
-
-        return lastDate.timeInMillis == today.timeInMillis
-    }
-
-
-    private fun stopWorkout() {
-        clearPlaybackState(cancelTimer = true)
-    }
-
-    private fun clearPlaybackState(cancelTimer: Boolean) {
-        if (cancelTimer) {
-            timerJob?.cancel()
-        }
-
-        timerJob = null
-        state {
-            it.copy(
-                isPlayingAll = false,
-                playbackQueue = emptyList(),
-                activeWorkoutId = null,
-                activeWorkoutTimer = null
-            )
-        }
-    }
-
-    private fun formatSecondsToHms(totalSeconds: Int): String {
-        val h = totalSeconds / 3600
-        val m = (totalSeconds % 3600) / 60
-        val s = totalSeconds % 60
-        return if (h > 0) {
-            "%02d:%02d:%02d".format(h, m, s)
-        } else {
-            "%02d:%02d".format(m, s)
-        }
-    }
-
-    private fun Workout.durationSeconds(): Int {
-        return (hours * 3600) + (minutes * 60) + seconds
     }
 }
