@@ -93,3 +93,10 @@ Before shipping to production, set real values for:
 - `ADMOB_BANNER_AD_UNIT_ID`
 
 The project currently falls back to Google test IDs when those Gradle properties are not supplied.
+
+## Things to Know
+
+- Semaphore uses a foreground service for workout timer playback so timers can continue running while the app is backgrounded or closed.
+- The app declares the foreground service as `specialUse` in the Android manifest.
+- Before shipping to Google Play, you must also declare the matching foreground service use in Play Console under `Policy > App content`.
+- The Play Console declaration should explain that Semaphore uses a foreground service to keep workout timers active and visible to the user through an ongoing notification, including timer transitions.
