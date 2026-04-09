@@ -12,7 +12,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -153,20 +152,6 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(vertical = 8.dp)) {
-                        SettingsItem(
-                            icon = Icons.Default.Code,
-                            iconTint = purplePrimary,
-                            title = "Open Source Licenses",
-                            subtitle = "Libraries used",
-                            onClick = { reducer.postAction(TapLicenses) }
-                        )
-
-                        HorizontalDivider(
-                            color = backgroundColor,
-                            thickness = 2.dp,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        )
-
                         SettingsItem(
                             icon = Icons.AutoMirrored.Filled.Help,
                             iconTint = purplePrimary,

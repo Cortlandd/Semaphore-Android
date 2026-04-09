@@ -21,8 +21,6 @@ class SettingsReducer @Inject constructor() :
                 ))
             }
 
-            SettingsAction.TapLicenses -> emit(SettingsEffect.NavLicenses)
-
             SettingsAction.TapFAQ -> emit(SettingsEffect.NavFAQ)
 
             SettingsAction.TapRateApp -> emit(SettingsEffect.OpenAppStore)

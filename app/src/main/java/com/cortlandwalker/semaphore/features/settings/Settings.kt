@@ -11,7 +11,6 @@ sealed interface SettingsAction {
     data object TapAnalytics : SettingsAction
     data object TapBack : SettingsAction
     data object TapFeedback : SettingsAction
-    data object TapLicenses : SettingsAction
     data object TapFAQ : SettingsAction
     data object TapRateApp : SettingsAction
     data object TapRemoveAds : SettingsAction
@@ -33,7 +32,6 @@ sealed interface SettingsEffect {
     data class SendEmail(val address: String, val subject: String) : SettingsEffect
     data class OpenUrl(val url: String) : SettingsEffect
     data object OpenAppStore : SettingsEffect
-    data object NavLicenses : SettingsEffect
     data object NavFAQ : SettingsEffect
     data object LaunchRemoveAdsPurchase : SettingsEffect
     data object RestorePurchases : SettingsEffect

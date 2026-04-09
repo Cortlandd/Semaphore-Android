@@ -24,7 +24,9 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
 
     @Inject override lateinit var reducer: SettingsReducer
     @Inject lateinit var monetizationManager: MonetizationManager
-    override val initialState = SettingsState(version = BuildConfig.VERSION_NAME)
+    override val initialState = SettingsState(
+        version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -80,14 +82,6 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
                 } catch (e: android.content.ActivityNotFoundException) {
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")))
                 }
-            }
-
-            SettingsEffect.NavLicenses -> {
-                val action = SettingsFragmentDirections.actionSettingsToMarkdown(
-                    title = "Open Source Licenses",
-                    filename = "licenses.md"
-                )
-                findNavController().navigate(action)
             }
 
             SettingsEffect.NavFAQ -> {

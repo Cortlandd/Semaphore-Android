@@ -55,15 +55,6 @@ class SettingsReducerTest {
     }
 
     @Test
-    fun `TapLicenses should emit NavLicenses effect`() = runTest {
-        // When
-        reducer.accept(SettingsAction.TapLicenses)
-
-        // Then
-        assertThat(effects).contains(SettingsEffect.NavLicenses)
-    }
-
-    @Test
     fun `TapFAQ should emit NavFAQ effect`() = runTest {
         // When
         reducer.accept(SettingsAction.TapFAQ)
