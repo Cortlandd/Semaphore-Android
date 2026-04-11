@@ -19,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -193,6 +194,33 @@ class WorkoutListReducerTest {
         assertThat(repo.getById("2")?.completedCount).isEqualTo(1)
     }
 
+    @Test
+    fun `ReorderCommit should persist the provided order`() = runTest {
+        val workouts = listOf(
+            Workout("1", 0, "Warm Up", "", 0, 0, 30, 0, 0),
+            Workout("2", 0, "Push Ups", "", 0, 0, 45, 1, 0),
+            Workout("3", 0, "Cool Down", "", 0, 1, 0, 2, 0)
+        )
+        val repo = InMemoryWorkoutRepository(workouts)
+        playbackController = mockk(relaxed = true)
+
+        reducer = WorkoutListReducer(repo, playbackController)
+        effects = mutableListOf()
+        reducer.testBind(
+            initialState = WorkoutListState(
+                workouts = workouts,
+                displayMode = ViewDisplayMode.Content
+            ),
+            effects = effects,
+            scope = backgroundScope
+        )
+
+        reducer.accept(WorkoutListAction.ReorderCommit(listOf("3", "1", "2")))
+        runCurrent()
+
+        assertThat(repo.observeAllOrderedByPositionSnapshot()).containsExactly("3", "1", "2").inOrder()
+    }
+
     private fun setUpReducer(
         initialState: WorkoutListState = WorkoutListState(),
         scope: CoroutineScope? = null
@@ -285,4 +313,8 @@ class WorkoutListReducerTest {
             }
         }
     }
+}
+
+private suspend fun InMemoryWorkoutRepository.observeAllOrderedByPositionSnapshot(): List<String> {
+    return observeAllOrderedByPosition().first().map { it.id }
 }

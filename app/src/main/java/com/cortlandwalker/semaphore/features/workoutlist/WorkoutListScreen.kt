@@ -65,6 +65,7 @@ fun WorkoutListScreen(
     var draggingItem by remember { mutableStateOf<Workout?>(null) }
     var draggingItemInitialOffset by remember { mutableIntStateOf(0) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
+    val latestWorkouts by rememberUpdatedState(state.workouts)
 
     LaunchedEffect(state.workouts) {
         if (draggingItem != null && state.workouts.none { it.id == draggingItem?.id }) {
@@ -278,6 +279,7 @@ fun WorkoutListScreen(
                                     items(state.workouts, key = { it.id }) { workout ->
                                         val isExpanded = state.activeWorkoutId == workout.id
                                         val isDragging = draggingItem?.id == workout.id
+                                        val latestWorkout by rememberUpdatedState(workout)
 
                                         WorkoutRow(
                                             workout = workout,
@@ -305,11 +307,11 @@ fun WorkoutListScreen(
                                                 .pointerInput(Unit) {
                                                     detectDragGesturesAfterLongPress(
                                                         onDragStart = {
-                                                            draggingItem = workout
+                                                            draggingItem = latestWorkout
                                                             draggingItemIndex =
-                                                                state.workouts.indexOfFirst { it.id == workout.id }
+                                                                latestWorkouts.indexOfFirst { it.id == latestWorkout.id }
                                                             val info =
-                                                                listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == workout.id }
+                                                                listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == latestWorkout.id }
                                                             draggingItemInitialOffset = info?.offset ?: 0
                                                             dragOffset = 0f
                                                         },
@@ -337,11 +339,11 @@ fun WorkoutListScreen(
 
                                                             if (targetItem != null && targetItem.key != draggingItem?.id) {
                                                                 val targetIndex =
-                                                                    state.workouts.indexOfFirst { it.id == targetItem.key }
+                                                                    latestWorkouts.indexOfFirst { it.id == targetItem.key }
                                                                 if (targetIndex != -1 && targetIndex != currentDraggingIndex) {
                                                                     reducer.postAction(
                                                                         UpdatePosition(
-                                                                            workout,
+                                                                            latestWorkout,
                                                                             targetIndex
                                                                         )
                                                                     )
@@ -352,7 +354,7 @@ fun WorkoutListScreen(
                                                         onDragEnd = {
                                                             if (draggingItem != null) {
                                                                 val finalOrder =
-                                                                    state.workouts.map { it.id }
+                                                                    latestWorkouts.map { it.id }
                                                                 reducer.postAction(
                                                                     ReorderCommit(
                                                                         finalOrder
@@ -361,11 +363,13 @@ fun WorkoutListScreen(
                                                             }
                                                             draggingItem = null
                                                             draggingItemIndex = null
+                                                            draggingItemInitialOffset = 0
                                                             dragOffset = 0f
                                                         },
                                                         onDragCancel = {
                                                             draggingItem = null
                                                             draggingItemIndex = null
+                                                            draggingItemInitialOffset = 0
                                                             dragOffset = 0f
                                                         }
                                                     )

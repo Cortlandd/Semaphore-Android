@@ -77,10 +77,8 @@ class WorkoutListReducer @Inject constructor(
             }
             is WorkoutListAction.DeleteTapped -> { repo.deleteById(action.id) }
             is WorkoutListAction.ReorderCommit -> {
-                val finalOrderedIds = currentState.workouts.map { it.id }
-
                 scope.launch {
-                    repo.updatePositions(finalOrderedIds)
+                    repo.updatePositions(action.orderedIds)
                 }
             }
             is WorkoutListAction.UpdatePosition -> {
