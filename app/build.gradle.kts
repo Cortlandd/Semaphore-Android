@@ -14,10 +14,12 @@ plugins {
 
 }
 
-val admobAppId = providers.gradleProperty("ADMOB_APP_ID")
-    .orElse("ca-app-pub-3940256099942544~3347511713")
-val admobBannerAdUnitId = providers.gradleProperty("ADMOB_BANNER_AD_UNIT_ID")
-    .orElse("ca-app-pub-3940256099942544/9214589741")
+val googleTestAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
+val googleTestBannerAdUnitId = "ca-app-pub-3940256099942544/9214589741"
+val productionAdmobAppId = providers.gradleProperty("ADMOB_APP_ID")
+    .orElse(googleTestAdmobAppId)
+val productionAdmobBannerAdUnitId = providers.gradleProperty("ADMOB_BANNER_AD_UNIT_ID")
+    .orElse(googleTestBannerAdUnitId)
 
 android {
     namespace = "com.cortlandwalker.semaphore"
@@ -31,13 +33,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders["admobAppId"] = admobAppId.get()
-        buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"${admobBannerAdUnitId.get()}\"")
         buildConfigField("String", "REMOVE_ADS_PRODUCT_ID", "\"remove_ads\"")
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders["admobAppId"] = googleTestAdmobAppId
+            buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"$googleTestBannerAdUnitId\"")
+        }
         release {
+            manifestPlaceholders["admobAppId"] = productionAdmobAppId.get()
+            buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"${productionAdmobBannerAdUnitId.get()}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
