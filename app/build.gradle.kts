@@ -87,7 +87,7 @@ android {
 dependencies {
 
     implementation("com.github.Cortlandd:Ghettoxide:1.0.12")
-    implementation("com.github.Cortlandd:klipy-android-sdk:0.1.9")
+    implementation("com.github.Cortlandd.klipy-android-sdk:klipy-ui:0.1.11")
 
     // Markdown
     implementation("com.github.jeziellago:compose-markdown:0.5.8")
