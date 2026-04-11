@@ -38,22 +38,22 @@ fun SettingsScreen(
     val textSecondary = Color.Gray
     val purplePrimary = Color(0xFF6A5ACD)
 
-    Scaffold(
-        containerColor = backgroundColor,
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
+    GridBackground(
+        modifier = Modifier.fillMaxSize(),
+        backgroundColor = backgroundColor
+    ) {
+        Scaffold(
+            containerColor = Color.Transparent,
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+            ) {
 
-            // Grid Header Area
-            Box(modifier = Modifier.height(250.dp).fillMaxWidth()) {
-                GridBackground(
-                    modifier = Modifier.fillMaxSize(),
-                    backgroundColor = Color(0xFFF2F2F7)
-                ) {
+                // Grid Header Area
+                Box(modifier = Modifier.height(250.dp).fillMaxWidth()) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -91,91 +91,91 @@ fun SettingsScreen(
                         )
                     }
                 }
-            }
 
-            Column(
-                modifier = Modifier
-                    .offset(y = (-24).dp)
-                    .padding(horizontal = 24.dp)
-            ) {
-                // Section: GENERAL
-                SectionHeader("GENERAL")
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    shape = RoundedCornerShape(24.dp),
-                    elevation = CardDefaults.cardElevation(2.dp),
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier
+                        .offset(y = (-24).dp)
+                        .padding(horizontal = 24.dp)
                 ) {
-                    Column(Modifier.padding(vertical = 8.dp)) {
-                        SettingsItem(
-                            icon = Icons.Default.Analytics,
-                            iconTint = purplePrimary,
-                            title = "Analytics",
-                            subtitle = "View your workout stats",
-                            onClick = { reducer.postAction(SettingsAction.TapAnalytics) }
-                        )
+                    // Section: GENERAL
+                    SectionHeader("GENERAL")
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = cardColor),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(2.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.padding(vertical = 8.dp)) {
+                            SettingsItem(
+                                icon = Icons.Default.Analytics,
+                                iconTint = purplePrimary,
+                                title = "Analytics",
+                                subtitle = "View your workout stats",
+                                onClick = { reducer.postAction(SettingsAction.TapAnalytics) }
+                            )
+                        }
                     }
-                }
 
-                Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(24.dp))
 
-                SectionHeader("SUPPORT")
+                    SectionHeader("SUPPORT")
 
-                RemoveAdsCard(
-                    state = state,
-                    reducer = reducer
-                )
-
-                Spacer(Modifier.height(24.dp))
-
-                // Section: ABOUT
-                SectionHeader("ABOUT")
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    shape = RoundedCornerShape(24.dp),
-                    elevation = CardDefaults.cardElevation(2.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(Modifier.padding(vertical = 8.dp)) {
-                        SettingsItem(
-                            icon = Icons.AutoMirrored.Filled.Help,
-                            iconTint = purplePrimary,
-                            title = "FAQ",
-                            subtitle = "Questions & Answers",
-                            onClick = { reducer.postAction(TapFAQ) }
-                        )
-
-                        HorizontalDivider(
-                            color = backgroundColor,
-                            thickness = 1.dp,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        )
-
-                        SettingsItem(
-                            icon = Icons.Default.Star,
-                            iconTint = Color(0xFFFFD700),
-                            title = "Rate App",
-                            subtitle = "Review on Google Play",
-                            onClick = { reducer.postAction(TapRateApp) },
-                            showExternalIcon = true
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(48.dp))
-
-                // Footer Version
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Semaphore v${state.version}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textSecondary.copy(alpha = 0.5f)
+                    RemoveAdsCard(
+                        state = state,
+                        reducer = reducer
                     )
-                }
 
-                Spacer(Modifier.height(50.dp))
+                    Spacer(Modifier.height(24.dp))
+
+                    // Section: ABOUT
+                    SectionHeader("ABOUT")
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = cardColor),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(2.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.padding(vertical = 8.dp)) {
+                            SettingsItem(
+                                icon = Icons.AutoMirrored.Filled.Help,
+                                iconTint = purplePrimary,
+                                title = "FAQ",
+                                subtitle = "Questions & Answers",
+                                onClick = { reducer.postAction(TapFAQ) }
+                            )
+
+                            HorizontalDivider(
+                                color = backgroundColor,
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(horizontal = 20.dp)
+                            )
+
+                            SettingsItem(
+                                icon = Icons.Default.Star,
+                                iconTint = Color(0xFFFFD700),
+                                title = "Rate App",
+                                subtitle = "Review on Google Play",
+                                onClick = { reducer.postAction(TapRateApp) },
+                                showExternalIcon = true
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(48.dp))
+
+                    // Footer Version
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "Semaphore v${state.version}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = textSecondary.copy(alpha = 0.5f)
+                        )
+                    }
+
+                    Spacer(Modifier.height(50.dp))
+                }
             }
         }
     }

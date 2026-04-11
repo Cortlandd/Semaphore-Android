@@ -49,49 +49,48 @@ fun MarkdownScreen(
 
     val backgroundColor = Color(0xFFF8F8FA)
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 24.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = Color.White,
-                    shadowElevation = 4.dp,
+    GridBackground(
+        modifier = Modifier.fillMaxSize(),
+        backgroundColor = backgroundColor
+    ) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clickable { onBack() }
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 24.dp, vertical = 24.dp)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.Black
-                        )
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White,
+                        shadowElevation = 4.dp,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clickable { onBack() }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.Black
+                            )
+                        }
                     }
                 }
             }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                // Only respect bottom padding (nav bar), ignore top so header sits behind button
-                .padding(bottom = innerPadding.calculateBottomPadding())
-                .verticalScroll(rememberScrollState())
-        ) {
-            Box(
+        ) { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .height(250.dp)
-                    .fillMaxWidth()
+                    .fillMaxSize()
+                    .padding(bottom = innerPadding.calculateBottomPadding())
+                    .verticalScroll(rememberScrollState())
             ) {
-                GridBackground(
-                    modifier = Modifier.fillMaxSize(),
-                    backgroundColor = Color(0xFFF2F2F7)
+                Box(
+                    modifier = Modifier
+                        .height(250.dp)
+                        .fillMaxWidth()
                 ) {
                     Box(
                         modifier = Modifier
@@ -106,31 +105,31 @@ fun MarkdownScreen(
                         )
                     }
                 }
-            }
 
-            Column(
-                modifier = Modifier
-                    .offset(y = (-24).dp)
-                    .padding(horizontal = 24.dp)
-            ) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-                    elevation = CardDefaults.cardElevation(2.dp),
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier
+                        .offset(y = (-24).dp)
+                        .padding(horizontal = 24.dp)
                 ) {
-                    Box(modifier = Modifier.padding(24.dp)) {
-                        MarkdownText(
-                            markdown = markdownContent,
-                            style = TextStyle(
-                                color = Color(0xFF2D3142),
-                                fontSize = 16.sp,
-                                lineHeight = 24.sp
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(2.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(modifier = Modifier.padding(24.dp)) {
+                            MarkdownText(
+                                markdown = markdownContent,
+                                style = TextStyle(
+                                    color = Color(0xFF2D3142),
+                                    fontSize = 16.sp,
+                                    lineHeight = 24.sp
+                                )
                             )
-                        )
+                        }
                     }
+                    Spacer(Modifier.height(48.dp))
                 }
-                Spacer(Modifier.height(48.dp))
             }
         }
     }
