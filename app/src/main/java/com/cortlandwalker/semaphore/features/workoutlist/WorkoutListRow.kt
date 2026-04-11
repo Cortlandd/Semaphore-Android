@@ -58,6 +58,7 @@ fun WorkoutRow(
     activeProgress: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val cardShape = RoundedCornerShape(28.dp)
     val displayImageUri = workout.displayImageUri
     // Logic: Only fully expand visually if there is an image.
     val canExpandVisually = !displayImageUri.isNullOrBlank()
@@ -85,12 +86,13 @@ fun WorkoutRow(
 
     Card(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(28.dp),
+        shape = cardShape,
         colors = CardDefaults.cardColors(containerColor = InactiveBackgroundColor),
         modifier = modifier
             .fillMaxWidth()
             .height(cardHeight)
-            .border(borderWidth, borderColor, RoundedCornerShape(28.dp))
+            .clip(cardShape)
+            .border(borderWidth, borderColor, cardShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -283,7 +285,7 @@ private fun CollapsedWorkoutContent(
                 // Returning to Inactive: Fade In + Slide Down
                 (fadeIn(animationSpec = tween(300)) + slideInVertically { height -> -height / 2 }) with
                         (fadeOut(animationSpec = tween(300)) + slideOutVertically { height -> height / 2 })
-            }.using(SizeTransform(clip = false))
+            }.using(SizeTransform(clip = true))
         }
     ) { active ->
         if (active) {
