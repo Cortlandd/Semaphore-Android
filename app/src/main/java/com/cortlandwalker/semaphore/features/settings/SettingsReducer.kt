@@ -12,15 +12,6 @@ class SettingsReducer @Inject constructor() :
         when (action) {
             SettingsAction.TapAnalytics -> emit(SettingsEffect.NavAnalytics)
             SettingsAction.TapBack -> emit(SettingsEffect.NavBack)
-
-            SettingsAction.TapFeedback -> {
-                // Pre-fill email intent
-                emit(SettingsEffect.SendEmail(
-                    address = "your-email@example.com",
-                    subject = "Semaphore Feedback"
-                ))
-            }
-
             SettingsAction.TapFAQ -> emit(SettingsEffect.NavFAQ)
 
             SettingsAction.TapRateApp -> emit(SettingsEffect.OpenAppStore)

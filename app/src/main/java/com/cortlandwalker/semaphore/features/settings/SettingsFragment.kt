@@ -61,15 +61,6 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
                 // Navigate to timer if it exists, or handle accordingly
             }
 
-            is SettingsEffect.SendEmail -> {
-                val intent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("mailto:")
-                    putExtra(Intent.EXTRA_EMAIL, arrayOf(effect.address))
-                    putExtra(Intent.EXTRA_SUBJECT, effect.subject)
-                }
-                startActivity(Intent.createChooser(intent, "Send Feedback"))
-            }
-
             is SettingsEffect.OpenUrl -> {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(effect.url))
                 startActivity(intent)

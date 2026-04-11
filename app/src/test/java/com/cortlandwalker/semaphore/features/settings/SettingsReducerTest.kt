@@ -46,15 +46,6 @@ class SettingsReducerTest {
     }
 
     @Test
-    fun `TapFeedback should emit SendEmail effect`() = runTest {
-        // When
-        reducer.accept(SettingsAction.TapFeedback)
-
-        // Then
-        assertThat(effects.first()).isInstanceOf(SettingsEffect.SendEmail::class.java)
-    }
-
-    @Test
     fun `TapFAQ should emit NavFAQ effect`() = runTest {
         // When
         reducer.accept(SettingsAction.TapFAQ)
