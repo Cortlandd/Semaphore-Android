@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -30,13 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
+import com.cortlandwalker.semaphore.ui.components.GridBackground
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,29 +50,65 @@ fun AnalyticsScreen(
     val backgroundColor = Color(0xFFF8F8FA)
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            AnalyticsTopBar(onBack = { scope.launch { reducer.postAction(AnalyticsAction.TapBack) } })
-        },
-        modifier = modifier
+    GridBackground(
+        modifier = modifier.fillMaxSize(),
+        backgroundColor = backgroundColor
     ) {
-        if (state.workouts.isEmpty()) {
-            EmptyState()
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-            ) {
-                item {
-                    WeeklyProgressCard(state)
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 24.dp, vertical = 24.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White,
+                        shadowElevation = 4.dp,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clickable { scope.launch { reducer.postAction(AnalyticsAction.TapBack) } }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.Black
+                            )
+                        }
+                    }
                 }
-                item {
-                    SectionHeader("Individual Workouts", "See All")
-                }
-                items(state.workouts) { workout ->
-                    IndividualWorkoutCard(workout)
+            }
+        ) { innerPadding ->
+            if (state.workouts.isEmpty()) {
+                EmptyState(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = innerPadding.calculateBottomPadding())
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = innerPadding.calculateBottomPadding())
+                ) {
+                    item {
+                        AnalyticsHeader()
+                    }
+                    item {
+                        WeeklyProgressCard(state)
+                    }
+                    item {
+                        SectionHeader("Individual Workouts", "See All")
+                    }
+                    items(state.workouts) { workout ->
+                        IndividualWorkoutCard(workout)
+                    }
+                    item {
+                        Spacer(Modifier.height(48.dp))
+                    }
                 }
             }
         }
@@ -81,34 +116,41 @@ fun AnalyticsScreen(
 }
 
 @Composable
-private fun EmptyState() {
+private fun EmptyState(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        AnalyticsHeader()
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("No workouts yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("Add a workout to see your stats here", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsHeader() {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .height(250.dp)
+            .fillMaxWidth()
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("No workouts yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text("Add a workout to see your stats here", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Analytics",
+                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF2D3142)
+            )
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AnalyticsTopBar(onBack: () -> Unit) {
-    TopAppBar(
-        title = { Text("Analytics", fontWeight = FontWeight.Bold) },
-        navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-        },
-        actions = {
-            IconButton(onClick = { /* More options */ }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More options")
-            }
-        }
-    )
 }
 
 @Composable
