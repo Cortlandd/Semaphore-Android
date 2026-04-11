@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.cortlandwalker.semaphore.BuildConfig
 import com.cortlandwalker.semaphore.core.KlipyConfig
 import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
@@ -55,7 +54,7 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
         if (klipyApiKey.isBlank()) {
             Toast.makeText(
                 requireContext(),
-                "Set KLIPY_API_KEY or add a hardcoded fallback in KlipyConfig before opening the Klipy picker.",
+                "Klipy is not configured for this build. Set KLIPY_API_KEY before opening the picker.",
                 Toast.LENGTH_LONG
             ).show()
             return
@@ -66,11 +65,7 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
             showTrending = true,
             initialMediaType = MediaType.GIF
         )
-        val dialog = KlipyPickerDialogFragment.newInstance(
-            config = config,
-            secretKey = klipyApiKey,
-            enableLogging = BuildConfig.DEBUG
-        )
+        val dialog = KlipyPickerDialogFragment.newInstance(config)
             .apply { listener = this@UpsertWorkoutFragment }
 
         dialog.show(childFragmentManager, "klipy_picker")
