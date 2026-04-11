@@ -6,6 +6,7 @@ import com.cortlandwalker.semaphore.playback.ForegroundWorkoutPlaybackController
 import com.cortlandwalker.semaphore.playback.WorkoutPlaybackController
 import com.cortlandwalker.semaphore.data.local.room.RoomWorkoutRepository
 import com.cortlandwalker.semaphore.data.local.room.SemaphoreDatabase
+import com.cortlandwalker.semaphore.data.local.room.SemaphoreDatabaseMigrations
 import com.cortlandwalker.semaphore.data.local.room.WorkoutDao
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import dagger.Binds
@@ -24,7 +25,7 @@ object AppModule {
     @Provides @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): SemaphoreDatabase =
         Room.databaseBuilder(ctx, SemaphoreDatabase::class.java, "semaphore.db")
-            .fallbackToDestructiveMigration()
+            .addMigrations(SemaphoreDatabaseMigrations.MIGRATION_1_2)
             .build()
 
     @Provides @Singleton

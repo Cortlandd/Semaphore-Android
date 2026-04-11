@@ -205,10 +205,10 @@ private fun IndividualWorkoutCard(workout: Workout) {
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column {
-            if (!workout.imageUri.isNullOrBlank()) {
+            if (!workout.displayImageUri.isNullOrBlank()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(workout.imageUri)
+                        .data(workout.displayImageUri)
                         .decoderFactory {
                                 result, options, _ ->
                             if (android.os.Build.VERSION.SDK_INT >= 28) {

@@ -40,7 +40,8 @@ class UpsertWorkoutReducer @Inject constructor(
                             it.copy(
                                 viewDisplayMode = ViewDisplayMode.Content,
                                 name = w.name,
-                                imageUri = w.imageUri?.ifBlank { null },
+                                imageUri = w.displayImageUri,
+                                remoteImageUri = w.sourceImageUri,
                                 hours = w.hours, minutes = w.minutes, seconds = w.seconds
                             )
                         }
@@ -55,7 +56,8 @@ class UpsertWorkoutReducer @Inject constructor(
                 state {
                     it.copy(
                         selectedMediaItem = item,
-                        imageUri = url
+                        imageUri = url,
+                        remoteImageUri = url
                     )
                 }
             }
@@ -72,7 +74,7 @@ class UpsertWorkoutReducer @Inject constructor(
 
                 state { it.copy(isSaving = true) }
 
-                val finalImageUri = resolveImageUriForSave(s)
+                val resolvedImage = resolveImageForSave(s)
 
                 if (!s.isEdit) {
                     // Create
@@ -81,10 +83,11 @@ class UpsertWorkoutReducer @Inject constructor(
                         id = UUID.randomUUID().toString(),
                         createdAt = System.currentTimeMillis(),
                         name = s.name.trim(),
-                        imageUri = finalImageUri,
+                        imageUri = resolvedImage.localImageUri,
                         hours = s.hours, minutes = s.minutes, seconds = s.seconds,
                         position = position,
-                        orderId = 0
+                        orderId = 0,
+                        remoteImageUri = resolvedImage.remoteImageUri
                     )
                     runCatching { repo.insert(new) }
                         .onFailure { e ->
@@ -100,8 +103,9 @@ class UpsertWorkoutReducer @Inject constructor(
                     }
                     val updated = base.copy(
                         name = s.name.trim(),
-                        imageUri = finalImageUri,
-                        hours = s.hours, minutes = s.minutes, seconds = s.seconds
+                        imageUri = resolvedImage.localImageUri,
+                        hours = s.hours, minutes = s.minutes, seconds = s.seconds,
+                        remoteImageUri = resolvedImage.remoteImageUri
                         // keep position/orderId
                     )
                     runCatching { repo.update(updated) }
@@ -120,15 +124,38 @@ class UpsertWorkoutReducer @Inject constructor(
 
     override fun onLoadAction(): UpsertWorkoutAction = UpsertWorkoutAction.Init(currentState.workoutId)
 
-    private suspend fun resolveImageUriForSave(state: UpsertWorkoutState): String? {
-        val uri = state.imageUri ?: return null
+    private suspend fun resolveImageForSave(state: UpsertWorkoutState): ResolvedWorkoutImage {
+        val imageUri = state.imageUri?.ifBlank { null }
+        val remoteImageUri = state.remoteImageUri?.ifBlank { null }
 
-        val lower = uri.lowercase()
-        val isRemote = lower.startsWith("http://") || lower.startsWith("https://")
+        if (remoteImageUri != null) {
+            return ResolvedWorkoutImage(
+                localImageUri = runCatching { imageStore.cacheFromRemote(remoteImageUri) }
+                    .getOrElse { imageUri?.takeUnless(::isRemoteUri) },
+                remoteImageUri = remoteImageUri
+            )
+        }
 
-        if (!isRemote) return uri
+        if (imageUri == null) {
+            return ResolvedWorkoutImage(localImageUri = null, remoteImageUri = null)
+        }
 
-        return runCatching { imageStore.cacheFromRemote(uri) }
-            .getOrElse { uri }
+        if (isRemoteUri(imageUri)) {
+            return ResolvedWorkoutImage(
+                localImageUri = runCatching { imageStore.cacheFromRemote(imageUri) }.getOrNull(),
+                remoteImageUri = imageUri
+            )
+        }
+
+        return ResolvedWorkoutImage(localImageUri = imageUri, remoteImageUri = null)
     }
+
+    private fun isRemoteUri(uri: String): Boolean {
+        return uri.startsWith("http://", ignoreCase = true) || uri.startsWith("https://", ignoreCase = true)
+    }
+
+    private data class ResolvedWorkoutImage(
+        val localImageUri: String?,
+        val remoteImageUri: String?
+    )
 }

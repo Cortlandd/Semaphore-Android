@@ -35,5 +35,24 @@ data class Workout(
     /**
      * Number of consecutive days this workout has been performed.
      */
-    val currentStreak: Int = 0
-)
+    val currentStreak: Int = 0,
+
+    /**
+     * Original remote media URL selected for this workout, typically from Klipy.
+     * We keep this alongside [imageUri] so the app can use a cached local file when available
+     * without losing the original source reference.
+     */
+    val remoteImageUri: String? = null
+) {
+    val displayImageUri: String?
+        get() = imageUri.normalizedUri() ?: remoteImageUri.normalizedUri()
+
+    val sourceImageUri: String?
+        get() = remoteImageUri.normalizedUri() ?: imageUri.normalizedUri()?.takeIf(::isRemoteUri)
+}
+
+private fun String?.normalizedUri(): String? = this?.takeIf { it.isNotBlank() }
+
+private fun isRemoteUri(uri: String): Boolean {
+    return uri.startsWith("http://", ignoreCase = true) || uri.startsWith("https://", ignoreCase = true)
+}

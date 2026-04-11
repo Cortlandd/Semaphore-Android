@@ -8,6 +8,7 @@ data class UpsertWorkoutState(
     val viewDisplayMode: ViewDisplayMode = ViewDisplayMode.Empty,
     val name: String = "",
     val imageUri: String? = null,
+    val remoteImageUri: String? = null,
     val hours: Int = 0,
     val minutes: Int = 0,
     val seconds: Int = 0,
@@ -35,4 +36,3 @@ sealed interface UpsertWorkoutEffect {
     data class ShowError(val message: String) : UpsertWorkoutEffect
     data object OpenGifPicker : UpsertWorkoutEffect
 }
-

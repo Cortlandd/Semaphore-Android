@@ -58,8 +58,9 @@ fun WorkoutRow(
     activeProgress: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val displayImageUri = workout.displayImageUri
     // Logic: Only fully expand visually if there is an image.
-    val canExpandVisually = !workout.imageUri.isNullOrBlank()
+    val canExpandVisually = !displayImageUri.isNullOrBlank()
     val showExpandedLayout = isExpanded && canExpandVisually
 
     // Height logic:
@@ -106,12 +107,14 @@ fun WorkoutRow(
             if (expanded) {
                 ExpandedWorkoutContent(
                     workout = workout,
+                    imageUri = displayImageUri,
                     activeProgress = activeProgress,
                     onStopClicked = { onPlayClicked(workout) }
                 )
             } else {
                 CollapsedWorkoutContent(
                     workout = workout,
+                    imageUri = displayImageUri,
                     isActive = isExpanded, // Timer is running
                     activeProgress = activeProgress,
                     onPlayPauseClicked = { onPlayClicked(workout) }
@@ -124,6 +127,7 @@ fun WorkoutRow(
 @Composable
 private fun ExpandedWorkoutContent(
     workout: Workout,
+    imageUri: String?,
     activeProgress: String?,
     onStopClicked: () -> Unit
 ) {
@@ -208,7 +212,7 @@ private fun ExpandedWorkoutContent(
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(ctx)
-                    .data(workout.imageUri)
+                    .data(imageUri)
                     .decoderFactory { result, options, _ ->
                         if (android.os.Build.VERSION.SDK_INT >= 28) {
                             coil.decode.ImageDecoderDecoder(result.source, options)
@@ -260,6 +264,7 @@ private fun ExpandedWorkoutContent(
 @Composable
 private fun CollapsedWorkoutContent(
     workout: Workout,
+    imageUri: String?,
     isActive: Boolean,
     activeProgress: String?,
     onPlayPauseClicked: () -> Unit
@@ -372,7 +377,7 @@ private fun CollapsedWorkoutContent(
                 Spacer(Modifier.width(16.dp))
 
                 // 2. Thumbnail (Or GIF Placeholder)
-                WorkoutThumb(uri = workout.imageUri, size = 64)
+                WorkoutThumb(uri = imageUri, size = 64)
 
                 Spacer(Modifier.width(16.dp))
 

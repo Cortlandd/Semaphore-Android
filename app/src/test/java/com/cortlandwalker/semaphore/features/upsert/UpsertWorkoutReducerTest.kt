@@ -8,6 +8,7 @@ import com.cortlandwalker.semaphore.data.models.Workout
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.slot
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -128,5 +129,32 @@ class UpsertWorkoutReducerTest {
         // Then
         assertThat(effects).contains(UpsertWorkoutEffect.Back)
         coVerify { mockRepo.insert(any()) }
+    }
+
+    @Test
+    fun `SaveClicked with remote image should cache locally and preserve remote url`() = runTest {
+        val remoteUrl = "https://static.klipy.com/example/workout.gif"
+        val localUri = "file:///data/user/0/com.cortlandwalker.semaphore/files/workout_media/workout.gif"
+        val insertedWorkout = slot<Workout>()
+
+        coEvery { mockImageStore.cacheFromRemote(remoteUrl) } returns localUri
+        coEvery { mockRepo.insert(capture(insertedWorkout)) } returns Unit
+
+        reducer = UpsertWorkoutReducer(mockRepo, mockImageStore)
+        reducer.testBind(
+            initialState = UpsertWorkoutState(
+                name = "Plank",
+                imageUri = remoteUrl,
+                remoteImageUri = remoteUrl,
+                minutes = 1
+            ),
+            effects = effects
+        )
+
+        reducer.accept(UpsertWorkoutAction.SaveClicked)
+
+        assertThat(insertedWorkout.captured.imageUri).isEqualTo(localUri)
+        assertThat(insertedWorkout.captured.remoteImageUri).isEqualTo(remoteUrl)
+        assertThat(effects).contains(UpsertWorkoutEffect.Back)
     }
 }

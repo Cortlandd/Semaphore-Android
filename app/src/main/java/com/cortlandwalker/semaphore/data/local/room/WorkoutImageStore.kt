@@ -6,8 +6,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.security.MessageDigest
 import java.net.URL
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,8 +30,12 @@ class WorkoutImageStore @Inject constructor(
             raw.substringAfterLast('.', missingDelimiterValue = "bin")
         }.getOrDefault("bin")
 
-        val fileName = "${UUID.randomUUID()}.$ext"
+        val fileName = "${remoteUrl.sha256()}.$ext"
         val dest = File(gifsDir, fileName)
+
+        if (dest.exists() && dest.length() > 0L) {
+            return@withContext dest.toURI().toString()
+        }
 
         URL(remoteUrl).openStream().use { input ->
             dest.outputStream().use { output ->
@@ -41,4 +45,9 @@ class WorkoutImageStore @Inject constructor(
 
         dest.toURI().toString()
     }
+}
+
+private fun String.sha256(): String {
+    val bytes = MessageDigest.getInstance("SHA-256").digest(toByteArray())
+    return bytes.joinToString(separator = "") { byte -> "%02x".format(byte) }
 }

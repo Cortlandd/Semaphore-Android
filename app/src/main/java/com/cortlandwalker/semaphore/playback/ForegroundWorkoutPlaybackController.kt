@@ -88,7 +88,7 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             workouts.forEachIndexed { index, workout ->
                 val durationSeconds = workout.durationSeconds()
                 var remainingSeconds = durationSeconds
-                currentBitmap = loadNotificationBitmap(workout.imageUri)
+                currentBitmap = loadNotificationBitmap(workout.displayImageUri)
 
                 updatePlaybackState {
                     WorkoutPlaybackState(
@@ -96,7 +96,7 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
                         isPlayingAll = isPlayingAll,
                         activeWorkoutId = workout.id,
                         activeWorkoutName = workout.name,
-                        activeWorkoutImageUri = workout.imageUri,
+                        activeWorkoutImageUri = workout.displayImageUri,
                         activeWorkoutTimer = formatSecondsToHms(remainingSeconds),
                         remainingSeconds = remainingSeconds,
                         durationSeconds = durationSeconds,
