@@ -8,13 +8,13 @@ import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.cortlandwalker.semaphore.BuildConfig
+import com.cortlandwalker.semaphore.core.KlipyConfig
 import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
-import com.klipy.klipy_ui.KlipyUi
 import com.klipy.klipy_ui.picker.KlipyPickerConfig
 import com.klipy.klipy_ui.picker.KlipyPickerDialogFragment
 import com.klipy.klipy_ui.picker.KlipyPickerListener
-import com.klipy.sdk.KlipySdk
 import com.klipy.sdk.model.MediaItem
 import com.klipy.sdk.model.MediaType
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +50,17 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
     }
 
     private fun openKlipyPicker() {
+        val klipyApiKey = KlipyConfig.resolvedApiKey()
+
+        if (klipyApiKey.isBlank()) {
+            Toast.makeText(
+                requireContext(),
+                "Set KLIPY_API_KEY or add a hardcoded fallback in KlipyConfig before opening the Klipy picker.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
         val config = KlipyPickerConfig(
             mediaTypes = listOf(MediaType.GIF),
             showTrending = true,
@@ -57,8 +68,10 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
         )
         val dialog = KlipyPickerDialogFragment.newInstance(
             config = config,
-            secretKey = "fNkmHZ257SEs5hOBeRF6XKSynwsVGodDUzMKzVBObkGgu2cb9vN0YDsHKh7ZyXQl"
-        ).apply { listener = this@UpsertWorkoutFragment }
+            secretKey = klipyApiKey,
+            enableLogging = BuildConfig.DEBUG
+        )
+            .apply { listener = this@UpsertWorkoutFragment }
 
         dialog.show(childFragmentManager, "klipy_picker")
     }

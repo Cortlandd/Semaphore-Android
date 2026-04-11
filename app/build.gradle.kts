@@ -20,6 +20,9 @@ val productionAdmobAppId = providers.gradleProperty("ADMOB_APP_ID")
     .orElse(googleTestAdmobAppId)
 val productionAdmobBannerAdUnitId = providers.gradleProperty("ADMOB_BANNER_AD_UNIT_ID")
     .orElse(googleTestBannerAdUnitId)
+val klipyApiKey = providers.gradleProperty("KLIPY_API_KEY")
+    .orElse(providers.environmentVariable("KLIPY_API_KEY"))
+    .orElse("")
 
 android {
     namespace = "com.cortlandwalker.semaphore"
@@ -34,6 +37,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "REMOVE_ADS_PRODUCT_ID", "\"remove_ads\"")
+        buildConfigField("String", "KLIPY_API_KEY", "\"${klipyApiKey.get()}\"")
     }
 
     buildTypes {
@@ -83,7 +87,7 @@ android {
 dependencies {
 
     implementation("com.github.Cortlandd:Ghettoxide:1.0.12")
-    implementation("com.github.Cortlandd:klipy-android-sdk:0.1.8")
+    implementation("com.github.Cortlandd:klipy-android-sdk:0.1.9")
 
     // Markdown
     implementation("com.github.jeziellago:compose-markdown:0.5.8")
