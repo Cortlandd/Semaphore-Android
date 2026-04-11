@@ -87,12 +87,12 @@ Semaphore supports:
 - Banner ads
 - A one-time `remove_ads` purchase
 
-Before shipping to production, set real values for:
+Production AdMob values are configured in [`gradle.properties`](/Users/cortland/development/android/Semaphore-Android/gradle.properties):
 
 - `ADMOB_APP_ID`
 - `ADMOB_BANNER_AD_UNIT_ID`
 
-The project currently falls back to Google test IDs when those Gradle properties are not supplied.
+The build still falls back to Google test IDs if those Gradle properties are removed or overridden.
 
 ## Things to Know
 
