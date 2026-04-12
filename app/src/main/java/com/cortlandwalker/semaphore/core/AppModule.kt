@@ -19,6 +19,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
+/**
+ * Provides app-scoped Hilt dependencies that are created directly from the
+ * Android framework, such as the Room database and DAO layer.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -32,6 +36,10 @@ object AppModule {
     fun provideWorkoutDao(db: SemaphoreDatabase): WorkoutDao = db.workoutDao()
 }
 
+/**
+ * Binds long-lived interface implementations used across the app so features
+ * can depend on abstractions instead of concrete storage or playback classes.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepoBindsModule {
