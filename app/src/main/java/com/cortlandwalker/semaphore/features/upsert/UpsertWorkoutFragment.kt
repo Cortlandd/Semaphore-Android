@@ -1,16 +1,16 @@
 package com.cortlandwalker.semaphore.features.upsert
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.compose.ui.platform.ComposeView
+import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.core.KlipyConfig
 import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
@@ -47,11 +47,9 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
             UpsertWorkoutEffect.Back -> findNavController().popBackStack()
             UpsertWorkoutEffect.OpenHelp -> {
                 findNavController().navigate(
-                    R.id.markdownViewerFragment,
-                    bundleOf(
-                        "title" to "Workout Editor Help",
-                        "filename" to "upsert_help.md"
-                    ),
+                    NavDeepLinkRequest.Builder
+                        .fromUri(Uri.parse("semaphore://upsert/help"))
+                        .build(),
                     NavOptions.Builder()
                         .setEnterAnim(com.cortlandwalker.semaphore.R.anim.slide_in_right)
                         .setExitAnim(com.cortlandwalker.semaphore.R.anim.slide_out_left)

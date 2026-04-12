@@ -193,7 +193,7 @@ fun UpsertWorkoutScreen(
 // --- Components ---
 
 @Composable
-private fun UpsertTopBar(title: String, onBack: () -> Unit, onHelp: () -> Unit) {
+fun UpsertTopBar(title: String, onBack: () -> Unit, onHelp: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -248,7 +248,7 @@ private fun UpsertTopBar(title: String, onBack: () -> Unit, onHelp: () -> Unit) 
 }
 
 @Composable
-private fun MediaSelectionArea(
+fun MediaSelectionArea(
     mediaItem: MediaItem?,
     imageUri: String?,
     onTap: () -> Unit
@@ -348,17 +348,19 @@ private fun MediaSelectionArea(
 }
 
 @Composable
-private fun WorkoutNameInput(
+fun WorkoutNameInput(
     name: String,
     speakNameAloud: Boolean,
     onNameChange: (String) -> Unit,
-    onSpeechIconTap: () -> Unit
+    onSpeechIconTap: () -> Unit,
+    readOnly: Boolean = false
 ) {
     TextField(
         value = name,
         onValueChange = onNameChange,
         placeholder = { Text("Workout Name", color = Color.Gray.copy(alpha = 0.7f)) },
         singleLine = true,
+        readOnly = readOnly,
         trailingIcon = {
             IconButton(onClick = onSpeechIconTap) {
                 Icon(
@@ -385,7 +387,7 @@ private fun WorkoutNameInput(
 }
 
 @Composable
-private fun DurationHeader() {
+fun DurationHeader() {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -412,7 +414,7 @@ private fun DurationHeader() {
 }
 
 @Composable
-private fun TimePickerCard(
+fun TimePickerCard(
     hours: Int,
     minutes: Int,
     seconds: Int,
@@ -481,7 +483,7 @@ private fun TimePickerCard(
 }
 
 @Composable
-private fun SaveButtonFooter(isSaving: Boolean, isEnabled: Boolean, onSave: () -> Unit) {
+fun SaveButtonFooter(isSaving: Boolean, isEnabled: Boolean, onSave: () -> Unit) {
     val purplePrimary = Color(0xFF6A5ACD)
 
     Box(
