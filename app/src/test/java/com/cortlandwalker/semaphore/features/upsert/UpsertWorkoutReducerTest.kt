@@ -129,6 +129,13 @@ class UpsertWorkoutReducerTest {
     }
 
     @Test
+    fun `HelpTapped should open the help screen`() = runTest {
+        reducer.accept(UpsertWorkoutAction.HelpTapped)
+
+        assertThat(effects).contains(UpsertWorkoutEffect.OpenHelp)
+    }
+
+    @Test
     fun `SaveClicked with blank name should show error`() = runTest {
         // When
         reducer.accept(UpsertWorkoutAction.SaveClicked)

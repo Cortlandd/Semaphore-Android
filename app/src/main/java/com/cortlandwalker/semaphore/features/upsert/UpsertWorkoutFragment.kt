@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.core.KlipyConfig
 import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
@@ -42,6 +44,15 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
     override fun onEffect(effect: UpsertWorkoutEffect) {
         when (effect) {
             UpsertWorkoutEffect.Back -> findNavController().popBackStack()
+            UpsertWorkoutEffect.OpenHelp -> {
+                findNavController().navigate(
+                    R.id.markdownViewerFragment,
+                    bundleOf(
+                        "title" to "Workout Editor Help",
+                        "filename" to "upsert_help.md"
+                    )
+                )
+            }
             is UpsertWorkoutEffect.ShowError ->
                 Toast.makeText(requireContext(), effect.message, Toast.LENGTH_SHORT).show()
             UpsertWorkoutEffect.OpenGifPicker -> openKlipyPicker()

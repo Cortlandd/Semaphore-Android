@@ -29,12 +29,14 @@ sealed interface UpsertWorkoutAction {
     data class SpeakNameAloudChanged(val enabled: Boolean) : UpsertWorkoutAction
 
     data object GifTapped : UpsertWorkoutAction
+    data object HelpTapped : UpsertWorkoutAction
     data object SaveClicked : UpsertWorkoutAction
     data object Cancel : UpsertWorkoutAction
 }
 
 sealed interface UpsertWorkoutEffect {
     data object Back : UpsertWorkoutEffect
+    data object OpenHelp : UpsertWorkoutEffect
     data class ShowError(val message: String) : UpsertWorkoutEffect
     data object OpenGifPicker : UpsertWorkoutEffect
 }

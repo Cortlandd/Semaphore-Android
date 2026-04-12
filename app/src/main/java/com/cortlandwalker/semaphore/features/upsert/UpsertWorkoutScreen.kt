@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
@@ -112,7 +113,8 @@ fun UpsertWorkoutScreen(
                     ) {
                         UpsertTopBar(
                             title = if (state.isEdit) "Edit Workout" else "New Workout",
-                            onBack = { reducer.postAction(UpsertWorkoutAction.Cancel) }
+                            onBack = { reducer.postAction(UpsertWorkoutAction.Cancel) },
+                            onHelp = { reducer.postAction(UpsertWorkoutAction.HelpTapped) }
                         )
                     }
                 }
@@ -192,7 +194,7 @@ fun UpsertWorkoutScreen(
 // --- Components ---
 
 @Composable
-private fun UpsertTopBar(title: String, onBack: () -> Unit) {
+private fun UpsertTopBar(title: String, onBack: () -> Unit, onHelp: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -227,7 +229,22 @@ private fun UpsertTopBar(title: String, onBack: () -> Unit) {
             }
         }
 
-        Spacer(Modifier.width(24.dp))
+        Surface(
+            shape = CircleShape,
+            color = Color.White,
+            shadowElevation = 4.dp,
+            modifier = Modifier
+                .size(48.dp)
+                .clickable { onHelp() }
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    Icons.AutoMirrored.Filled.HelpOutline,
+                    contentDescription = "Help",
+                    tint = Color.Black
+                )
+            }
+        }
     }
 }
 

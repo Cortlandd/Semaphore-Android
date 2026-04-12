@@ -76,6 +76,7 @@ class UpsertWorkoutReducer @Inject constructor(
             }
 
             UpsertWorkoutAction.GifTapped -> emit(UpsertWorkoutEffect.OpenGifPicker)
+            UpsertWorkoutAction.HelpTapped -> emit(UpsertWorkoutEffect.OpenHelp)
 
             UpsertWorkoutAction.SaveClicked -> {
                 val s = currentState
