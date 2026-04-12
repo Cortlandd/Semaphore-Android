@@ -16,6 +16,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.cortlandwalker.semaphore.R
+import com.cortlandwalker.semaphore.core.AppVisibilityTracker
 import com.cortlandwalker.semaphore.core.MainActivity
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
@@ -219,6 +220,8 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
     }
 
     private fun notifyTransition(title: String, message: String) {
+        if (AppVisibilityTracker.isAppVisible()) return
+
         notificationManager.notify(
             TRANSITION_NOTIFICATION_ID,
             NotificationCompat.Builder(appContext, ALERTS_CHANNEL_ID)
