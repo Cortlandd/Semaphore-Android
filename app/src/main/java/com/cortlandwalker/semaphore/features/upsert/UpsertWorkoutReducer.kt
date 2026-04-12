@@ -42,7 +42,10 @@ class UpsertWorkoutReducer @Inject constructor(
                                 name = w.name,
                                 imageUri = w.displayImageUri,
                                 remoteImageUri = w.sourceImageUri,
-                                hours = w.hours, minutes = w.minutes, seconds = w.seconds
+                                hours = w.hours,
+                                minutes = w.minutes,
+                                seconds = w.seconds,
+                                speakNameAloud = w.speakNameAloud
                             )
                         }
                     }
@@ -62,6 +65,7 @@ class UpsertWorkoutReducer @Inject constructor(
                 }
             }
             is UpsertWorkoutAction.TimeSet -> state { it.copy(hours = action.h, minutes = action.m, seconds = action.s) }
+            is UpsertWorkoutAction.SpeakNameAloudChanged -> state { it.copy(speakNameAloud = action.enabled) }
 
             UpsertWorkoutAction.GifTapped -> emit(UpsertWorkoutEffect.OpenGifPicker)
 
@@ -87,7 +91,8 @@ class UpsertWorkoutReducer @Inject constructor(
                         hours = s.hours, minutes = s.minutes, seconds = s.seconds,
                         position = position,
                         orderId = 0,
-                        remoteImageUri = resolvedImage.remoteImageUri
+                        remoteImageUri = resolvedImage.remoteImageUri,
+                        speakNameAloud = s.speakNameAloud
                     )
                     runCatching { repo.insert(new) }
                         .onFailure { e ->
@@ -105,7 +110,8 @@ class UpsertWorkoutReducer @Inject constructor(
                         name = s.name.trim(),
                         imageUri = resolvedImage.localImageUri,
                         hours = s.hours, minutes = s.minutes, seconds = s.seconds,
-                        remoteImageUri = resolvedImage.remoteImageUri
+                        remoteImageUri = resolvedImage.remoteImageUri,
+                        speakNameAloud = s.speakNameAloud
                         // keep position/orderId
                     )
                     runCatching { repo.update(updated) }

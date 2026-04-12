@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 import com.cortlandwalker.semaphore.data.local.room.helpers.Converters
 import com.cortlandwalker.semaphore.data.models.Workout
 
-@Database(entities = [Workout::class], version = 2, exportSchema = true)
+@Database(entities = [Workout::class], version = 3, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class SemaphoreDatabase  : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao

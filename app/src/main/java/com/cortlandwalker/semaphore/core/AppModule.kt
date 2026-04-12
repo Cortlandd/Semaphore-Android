@@ -3,6 +3,8 @@ package com.cortlandwalker.semaphore.core
 import android.content.Context
 import androidx.room.Room
 import com.cortlandwalker.semaphore.playback.ForegroundWorkoutPlaybackController
+import com.cortlandwalker.semaphore.playback.AndroidWorkoutNameSpeaker
+import com.cortlandwalker.semaphore.playback.WorkoutNameSpeaker
 import com.cortlandwalker.semaphore.playback.WorkoutPlaybackController
 import com.cortlandwalker.semaphore.data.local.room.RoomWorkoutRepository
 import com.cortlandwalker.semaphore.data.local.room.SemaphoreDatabase
@@ -30,6 +32,7 @@ object AppModule {
     fun provideDatabase(@ApplicationContext ctx: Context): SemaphoreDatabase =
         Room.databaseBuilder(ctx, SemaphoreDatabase::class.java, "semaphore.db")
             .addMigrations(SemaphoreDatabaseMigrations.MIGRATION_1_2)
+            .addMigrations(SemaphoreDatabaseMigrations.MIGRATION_2_3)
             .build()
 
     @Provides @Singleton
@@ -50,4 +53,9 @@ abstract class RepoBindsModule {
     abstract fun bindWorkoutPlaybackController(
         impl: ForegroundWorkoutPlaybackController
     ): WorkoutPlaybackController
+
+    @Binds @Singleton
+    abstract fun bindWorkoutNameSpeaker(
+        impl: AndroidWorkoutNameSpeaker
+    ): WorkoutNameSpeaker
 }

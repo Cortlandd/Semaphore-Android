@@ -12,6 +12,7 @@ data class UpsertWorkoutState(
     val hours: Int = 0,
     val minutes: Int = 0,
     val seconds: Int = 0,
+    val speakNameAloud: Boolean = true,
     val isSaving: Boolean = false,
     val error: String? = null,
     val selectedMediaItem: MediaItem? = null
@@ -25,6 +26,7 @@ sealed interface UpsertWorkoutAction {
     data class NameChanged(val value: String) : UpsertWorkoutAction
     data class ImageChanged(val mediaItem: MediaItem) : UpsertWorkoutAction
     data class TimeSet(val h: Int, val m: Int, val s: Int) : UpsertWorkoutAction
+    data class SpeakNameAloudChanged(val enabled: Boolean) : UpsertWorkoutAction
 
     data object GifTapped : UpsertWorkoutAction
     data object SaveClicked : UpsertWorkoutAction

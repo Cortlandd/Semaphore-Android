@@ -42,7 +42,12 @@ data class Workout(
      * We keep this alongside [imageUri] so the app can use a cached local file when available
      * without losing the original source reference.
      */
-    val remoteImageUri: String? = null
+    val remoteImageUri: String? = null,
+
+    /**
+     * Whether Semaphore should speak this workout's name when the timer starts.
+     */
+    val speakNameAloud: Boolean = true
 ) {
     val displayImageUri: String?
         get() = imageUri.normalizedUri() ?: remoteImageUri.normalizedUri()

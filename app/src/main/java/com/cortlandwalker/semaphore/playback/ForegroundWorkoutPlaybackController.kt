@@ -39,7 +39,8 @@ import javax.inject.Singleton
 @Singleton
 class ForegroundWorkoutPlaybackController @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    private val repo: WorkoutRepository
+    private val repo: WorkoutRepository,
+    private val workoutNameSpeaker: WorkoutNameSpeaker
 ) : WorkoutPlaybackController {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -63,6 +64,7 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
         playbackJob?.cancel()
         playbackJob = null
         currentBitmap = null
+        workoutNameSpeaker.stop()
         _playbackState.value = WorkoutPlaybackState()
         stopForegroundService()
         notificationManager.cancel(ONGOING_NOTIFICATION_ID)
@@ -103,6 +105,10 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
                         durationSeconds = durationSeconds,
                         playbackQueue = if (isPlayingAll) workouts.drop(index + 1).map { it.id } else emptyList()
                     )
+                }
+
+                if (workout.speakNameAloud) {
+                    workoutNameSpeaker.speak(workout.name)
                 }
 
                 if (previousWorkoutName != null) {

@@ -76,6 +76,7 @@ class UpsertWorkoutReducerTest {
         assertThat(state.hours).isEqualTo(workout.hours)
         assertThat(state.minutes).isEqualTo(workout.minutes)
         assertThat(state.seconds).isEqualTo(workout.seconds)
+        assertThat(state.speakNameAloud).isTrue()
     }
 
     @Test
@@ -109,6 +110,13 @@ class UpsertWorkoutReducerTest {
     }
 
     @Test
+    fun `SpeakNameAloudChanged should update the state`() = runTest {
+        reducer.accept(UpsertWorkoutAction.SpeakNameAloudChanged(false))
+
+        assertThat(reducer.currentState.speakNameAloud).isFalse()
+    }
+
+    @Test
     fun `SaveClicked with blank name should show error`() = runTest {
         // When
         reducer.accept(UpsertWorkoutAction.SaveClicked)
@@ -129,6 +137,20 @@ class UpsertWorkoutReducerTest {
         // Then
         assertThat(effects).contains(UpsertWorkoutEffect.Back)
         coVerify { mockRepo.insert(any()) }
+    }
+
+    @Test
+    fun `SaveClicked should persist the speak name aloud preference`() = runTest {
+        val insertedWorkout = slot<Workout>()
+
+        coEvery { mockRepo.insert(capture(insertedWorkout)) } returns Unit
+
+        reducer.accept(UpsertWorkoutAction.NameChanged("New Workout"))
+        reducer.accept(UpsertWorkoutAction.TimeSet(0, 1, 0))
+        reducer.accept(UpsertWorkoutAction.SpeakNameAloudChanged(false))
+        reducer.accept(UpsertWorkoutAction.SaveClicked)
+
+        assertThat(insertedWorkout.captured.speakNameAloud).isFalse()
     }
 
     @Test

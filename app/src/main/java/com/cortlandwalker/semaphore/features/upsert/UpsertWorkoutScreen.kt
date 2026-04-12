@@ -148,6 +148,15 @@ fun UpsertWorkoutScreen(
                                 onTimeChange = { h, m, s -> hours = h; minutes = m; seconds = s }
                             )
 
+                            Spacer(Modifier.height(20.dp))
+
+                            SpeakNameCard(
+                                enabled = state.speakNameAloud,
+                                onCheckedChange = {
+                                    reducer.postAction(UpsertWorkoutAction.SpeakNameAloudChanged(it))
+                                }
+                            )
+
                         }
                     }
                 }
@@ -157,6 +166,47 @@ fun UpsertWorkoutScreen(
 }
 
 // --- Components ---
+
+@Composable
+private fun SpeakNameCard(
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Say workout name out loud",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color(0xFF2D3142)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Speaks this workout's name when its timer begins.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            Switch(
+                checked = enabled,
+                onCheckedChange = onCheckedChange
+            )
+        }
+    }
+}
 
 @Composable
 private fun UpsertTopBar(title: String, onBack: () -> Unit) {
