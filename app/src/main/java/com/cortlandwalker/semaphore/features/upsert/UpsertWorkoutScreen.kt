@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
@@ -239,7 +239,7 @@ private fun UpsertTopBar(title: String, onBack: () -> Unit, onHelp: () -> Unit) 
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    Icons.AutoMirrored.Filled.HelpOutline,
+                    Icons.AutoMirrored.Filled.Help,
                     contentDescription = "Help",
                     tint = Color.Black
                 )

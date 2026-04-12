@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.compose.ui.platform.ComposeView
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.cortlandwalker.semaphore.R
@@ -50,7 +51,13 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
                     bundleOf(
                         "title" to "Workout Editor Help",
                         "filename" to "upsert_help.md"
-                    )
+                    ),
+                    NavOptions.Builder()
+                        .setEnterAnim(com.cortlandwalker.semaphore.R.anim.slide_in_right)
+                        .setExitAnim(com.cortlandwalker.semaphore.R.anim.slide_out_left)
+                        .setPopEnterAnim(com.cortlandwalker.semaphore.R.anim.slide_in_left)
+                        .setPopExitAnim(com.cortlandwalker.semaphore.R.anim.slide_out_right)
+                        .build()
                 )
             }
             is UpsertWorkoutEffect.ShowError ->
