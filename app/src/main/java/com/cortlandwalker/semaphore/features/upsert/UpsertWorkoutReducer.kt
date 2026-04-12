@@ -5,6 +5,8 @@ import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutImageStore
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
+import com.cortlandwalker.semaphore.playback.NoOpWorkoutNameSpeaker
+import com.cortlandwalker.semaphore.playback.WorkoutNameSpeaker
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.text.lowercase
@@ -12,7 +14,8 @@ import kotlin.text.startsWith
 
 class UpsertWorkoutReducer @Inject constructor(
     private val repo: WorkoutRepository,
-    private val imageStore: WorkoutImageStore
+    private val imageStore: WorkoutImageStore,
+    private val workoutNameSpeaker: WorkoutNameSpeaker = NoOpWorkoutNameSpeaker
 ) : Reducer<UpsertWorkoutState, UpsertWorkoutAction, UpsertWorkoutEffect>() {
 
     private var original: Workout? = null  // only set in edit mode
@@ -65,7 +68,12 @@ class UpsertWorkoutReducer @Inject constructor(
                 }
             }
             is UpsertWorkoutAction.TimeSet -> state { it.copy(hours = action.h, minutes = action.m, seconds = action.s) }
-            is UpsertWorkoutAction.SpeakNameAloudChanged -> state { it.copy(speakNameAloud = action.enabled) }
+            is UpsertWorkoutAction.SpeakNameAloudChanged -> {
+                if (action.enabled) {
+                    workoutNameSpeaker.prepare()
+                }
+                state { it.copy(speakNameAloud = action.enabled) }
+            }
 
             UpsertWorkoutAction.GifTapped -> emit(UpsertWorkoutEffect.OpenGifPicker)
 

@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Check
@@ -65,6 +67,7 @@ fun UpsertWorkoutScreen(
 
     val backgroundColor = Color(0xFFF8F8FA)
     val scrollState = rememberScrollState()
+    var showSpeechDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = backgroundColor,
@@ -134,7 +137,9 @@ fun UpsertWorkoutScreen(
 
                             WorkoutNameInput(
                                 name = state.name,
-                                onNameChange = { reducer.postAction(UpsertWorkoutAction.NameChanged(it)) }
+                                speakNameAloud = state.speakNameAloud,
+                                onNameChange = { reducer.postAction(UpsertWorkoutAction.NameChanged(it)) },
+                                onSpeechIconTap = { showSpeechDialog = true }
                             )
 
                             Spacer(Modifier.height(32.dp))
@@ -147,66 +152,44 @@ fun UpsertWorkoutScreen(
                                 seconds = seconds,
                                 onTimeChange = { h, m, s -> hours = h; minutes = m; seconds = s }
                             )
-
-                            Spacer(Modifier.height(20.dp))
-
-                            SpeakNameCard(
-                                enabled = state.speakNameAloud,
-                                onCheckedChange = {
-                                    reducer.postAction(UpsertWorkoutAction.SpeakNameAloudChanged(it))
-                                }
-                            )
-
                         }
                     }
                 }
             }
         }
     }
+
+    if (showSpeechDialog) {
+        AlertDialog(
+            onDismissRequest = { showSpeechDialog = false },
+            title = {
+                Text(if (state.speakNameAloud) "Turn off workout speech?" else "Turn on workout speech?")
+            },
+            text = {
+                Text("When this is on, everytime a workout begins it will use text to speech to say that specific workout name you gave")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showSpeechDialog = false
+                        reducer.postAction(
+                            UpsertWorkoutAction.SpeakNameAloudChanged(!state.speakNameAloud)
+                        )
+                    }
+                ) {
+                    Text(if (state.speakNameAloud) "Turn Off" else "Turn On")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSpeechDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 // --- Components ---
-
-@Composable
-private fun SpeakNameCard(
-    enabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(2.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 18.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Say workout name out loud",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color(0xFF2D3142)
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "Speaks this workout's name when its timer begins.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
-            }
-
-            Spacer(Modifier.width(16.dp))
-
-            Switch(
-                checked = enabled,
-                onCheckedChange = onCheckedChange
-            )
-        }
-    }
-}
 
 @Composable
 private fun UpsertTopBar(title: String, onBack: () -> Unit) {
@@ -349,12 +332,26 @@ private fun MediaSelectionArea(
 }
 
 @Composable
-private fun WorkoutNameInput(name: String, onNameChange: (String) -> Unit) {
+private fun WorkoutNameInput(
+    name: String,
+    speakNameAloud: Boolean,
+    onNameChange: (String) -> Unit,
+    onSpeechIconTap: () -> Unit
+) {
     TextField(
         value = name,
         onValueChange = onNameChange,
         placeholder = { Text("Workout Name", color = Color.Gray.copy(alpha = 0.7f)) },
         singleLine = true,
+        trailingIcon = {
+            IconButton(onClick = onSpeechIconTap) {
+                Icon(
+                    imageVector = if (speakNameAloud) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
+                    contentDescription = if (speakNameAloud) "Disable workout speech" else "Enable workout speech",
+                    tint = if (speakNameAloud) Color(0xFF6A5ACD) else Color.Gray
+                )
+            }
+        },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White,

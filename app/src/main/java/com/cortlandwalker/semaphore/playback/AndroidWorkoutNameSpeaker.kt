@@ -18,25 +18,32 @@ class AndroidWorkoutNameSpeaker @Inject constructor(
     @Volatile
     private var isReady = false
 
-    @Volatile
-    private var pendingText: String? = null
+    private val pendingTexts = ArrayDeque<String>()
+
+    override fun prepare() {
+        ensureInitialized()
+    }
 
     override fun speak(name: String) {
         val trimmedName = name.trim()
         if (trimmedName.isBlank()) return
 
-        ensureInitialized()
+        prepare()
 
         val engine = tts ?: return
         if (isReady) {
-            speakNow(engine, trimmedName)
+            speakNow(engine, trimmedName, TextToSpeech.QUEUE_FLUSH)
         } else {
-            pendingText = trimmedName
+            synchronized(pendingTexts) {
+                pendingTexts.addLast(trimmedName)
+            }
         }
     }
 
     override fun stop() {
-        pendingText = null
+        synchronized(pendingTexts) {
+            pendingTexts.clear()
+        }
         tts?.stop()
     }
 
@@ -47,9 +54,12 @@ class AndroidWorkoutNameSpeaker @Inject constructor(
         engine.language = Locale.getDefault()
         isReady = true
 
-        pendingText?.let {
-            speakNow(engine, it)
-            pendingText = null
+        synchronized(pendingTexts) {
+            var queueMode = TextToSpeech.QUEUE_FLUSH
+            while (pendingTexts.isNotEmpty()) {
+                speakNow(engine, pendingTexts.removeFirst(), queueMode)
+                queueMode = TextToSpeech.QUEUE_ADD
+            }
         }
     }
 
@@ -59,7 +69,7 @@ class AndroidWorkoutNameSpeaker @Inject constructor(
         tts = TextToSpeech(appContext, this)
     }
 
-    private fun speakNow(engine: TextToSpeech, text: String) {
-        engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "workout_name")
+    private fun speakNow(engine: TextToSpeech, text: String, queueMode: Int) {
+        engine.speak(text, queueMode, null, "workout_name")
     }
 }

@@ -9,6 +9,7 @@ import javax.inject.Singleton
 
 interface WorkoutRepository {
     fun observeAllOrderedByPosition(): Flow<List<Workout>>
+    suspend fun hasAnySpokenWorkouts(): Boolean
     suspend fun getById(id: String): Workout?
     suspend fun maxPosition(): Int
     suspend fun insert(workout: Workout)
@@ -28,6 +29,8 @@ class RoomWorkoutRepository @Inject constructor(
 
     override fun observeAllOrderedByPosition(): Flow<List<Workout>> =
         dao.observeAllOrderedByPosition()
+
+    override suspend fun hasAnySpokenWorkouts(): Boolean = dao.hasAnySpokenWorkouts()
 
     override suspend fun getById(id: String): Workout? = dao.getById(id)
 
@@ -51,6 +54,7 @@ class InMemoryWorkoutRepository(
     private val state = MutableStateFlow(seed.sortedBy { it.position })
 
     override fun observeAllOrderedByPosition(): Flow<List<Workout>> = state.asStateFlow()
+    override suspend fun hasAnySpokenWorkouts(): Boolean = state.value.any { it.speakNameAloud }
     override suspend fun getById(id: String): Workout? {
         return state.value.firstOrNull { it.id == id }
     }

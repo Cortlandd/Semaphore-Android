@@ -5,11 +5,13 @@ import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.WorkoutImageStore
 import com.cortlandwalker.semaphore.data.local.room.WorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
+import com.cortlandwalker.semaphore.playback.WorkoutNameSpeaker
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.slot
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -25,6 +27,7 @@ class UpsertWorkoutReducerTest {
 
     private lateinit var mockRepo: WorkoutRepository
     private lateinit var mockImageStore: WorkoutImageStore
+    private lateinit var mockWorkoutNameSpeaker: WorkoutNameSpeaker
     private lateinit var reducer: UpsertWorkoutReducer
     private lateinit var effects: MutableList<UpsertWorkoutEffect>
 
@@ -35,8 +38,9 @@ class UpsertWorkoutReducerTest {
         Dispatchers.setMain(testDispatcher)
         mockRepo = mockk(relaxed = true)
         mockImageStore = mockk(relaxed = true)
+        mockWorkoutNameSpeaker = mockk(relaxed = true)
         effects = mutableListOf()
-        reducer = UpsertWorkoutReducer(mockRepo, mockImageStore)
+        reducer = UpsertWorkoutReducer(mockRepo, mockImageStore, mockWorkoutNameSpeaker)
         reducer.testBind(
             initialState = UpsertWorkoutState(),
             effects = effects
@@ -117,6 +121,14 @@ class UpsertWorkoutReducerTest {
     }
 
     @Test
+    fun `SpeakNameAloudChanged should prepare speech when enabled`() = runTest {
+        reducer.accept(UpsertWorkoutAction.SpeakNameAloudChanged(true))
+
+        verify { mockWorkoutNameSpeaker.prepare() }
+        assertThat(reducer.currentState.speakNameAloud).isTrue()
+    }
+
+    @Test
     fun `SaveClicked with blank name should show error`() = runTest {
         // When
         reducer.accept(UpsertWorkoutAction.SaveClicked)
@@ -162,7 +174,7 @@ class UpsertWorkoutReducerTest {
         coEvery { mockImageStore.cacheFromRemote(remoteUrl) } returns localUri
         coEvery { mockRepo.insert(capture(insertedWorkout)) } returns Unit
 
-        reducer = UpsertWorkoutReducer(mockRepo, mockImageStore)
+        reducer = UpsertWorkoutReducer(mockRepo, mockImageStore, mockWorkoutNameSpeaker)
         reducer.testBind(
             initialState = UpsertWorkoutState(
                 name = "Plank",

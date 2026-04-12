@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.Flow
 interface WorkoutDao {
     @Query("SELECT * FROM workouts ORDER BY position ASC, createdAt ASC")
     fun observeAllOrderedByPosition(): Flow<List<Workout>>
+    @Query("SELECT EXISTS(SELECT 1 FROM workouts WHERE speakNameAloud = 1 LIMIT 1)")
+    suspend fun hasAnySpokenWorkouts(): Boolean
     @Query("SELECT * FROM workouts WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): Workout?
     @Query("SELECT COALESCE(MAX(position), -1) FROM workouts")
