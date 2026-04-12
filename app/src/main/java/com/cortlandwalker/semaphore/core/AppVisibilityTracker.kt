@@ -4,6 +4,13 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 
+/**
+ * Tracks whether the Semaphore process is currently visible to the user.
+ *
+ * Playback and notification code uses this shared observer to decide when
+ * foreground-only UI should handle events directly versus when background
+ * alerts should be shown to bring the user back into the app.
+ */
 object AppVisibilityTracker : DefaultLifecycleObserver {
 
     @Volatile
