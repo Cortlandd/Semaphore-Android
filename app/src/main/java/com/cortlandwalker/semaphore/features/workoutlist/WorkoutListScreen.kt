@@ -328,27 +328,32 @@ fun WorkoutListScreen(
                                                             val currentItemInfo =
                                                                 itemsInfo.firstOrNull { it.key == draggingItem?.id }
                                                                     ?: return@detectDragGesturesAfterLongPress
-                                                            val currentItemCenter =
-                                                                draggingItemInitialOffset + (currentItemInfo.size / 2) + dragOffset
 
-                                                            val targetItem = itemsInfo.find { item ->
-                                                                val itemTop = item.offset
-                                                                val itemBottom = item.offset + item.size
-                                                                currentItemCenter > itemTop && currentItemCenter < itemBottom
-                                                            }
-
-                                                            if (targetItem != null && targetItem.key != draggingItem?.id) {
-                                                                val targetIndex =
-                                                                    latestWorkouts.indexOfFirst { it.id == targetItem.key }
-                                                                if (targetIndex != -1 && targetIndex != currentDraggingIndex) {
-                                                                    reducer.postAction(
-                                                                        UpdatePosition(
-                                                                            latestWorkout,
-                                                                            targetIndex
+                                                            val targetIndex = targetIndexForDragReorder(
+                                                                currentIndex = currentDraggingIndex,
+                                                                draggingItemInitialOffset = draggingItemInitialOffset,
+                                                                dragOffset = dragOffset,
+                                                                currentItemSize = currentItemInfo.size,
+                                                                orderedIds = latestWorkouts.map { it.id },
+                                                                visibleItems = itemsInfo.mapNotNull { item ->
+                                                                    (item.key as? String)?.let { id ->
+                                                                        VisibleWorkoutItem(
+                                                                            id = id,
+                                                                            offset = item.offset,
+                                                                            size = item.size
                                                                         )
-                                                                    )
-                                                                    draggingItemIndex = targetIndex
+                                                                    }
                                                                 }
+                                                            )
+
+                                                            if (targetIndex != null && targetIndex != currentDraggingIndex) {
+                                                                reducer.postAction(
+                                                                    UpdatePosition(
+                                                                        latestWorkout,
+                                                                        targetIndex
+                                                                    )
+                                                                )
+                                                                draggingItemIndex = targetIndex
                                                             }
                                                         },
                                                         onDragEnd = {
