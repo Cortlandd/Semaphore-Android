@@ -9,6 +9,7 @@ data class WorkoutListState(
     val error: String? = null,
     val showBannerAd: Boolean = false,
     val isPlayingAll: Boolean = false,
+    val isPlaybackPaused: Boolean = false,
     val playbackQueue: List<String> = emptyList(),
     val activeWorkoutId: String? = null,
     val activeWorkoutTimer: String? = null,
@@ -17,6 +18,8 @@ data class WorkoutListState(
 
 sealed interface WorkoutListAction {
     data object OnLoad : WorkoutListAction
+    data object PauseTapped : WorkoutListAction
+    data object ResumeTapped : WorkoutListAction
     data object StopTapped : WorkoutListAction
     data class UpdatePosition(val workout: Workout, val position: Int) : WorkoutListAction
     data object TappedSettings : WorkoutListAction

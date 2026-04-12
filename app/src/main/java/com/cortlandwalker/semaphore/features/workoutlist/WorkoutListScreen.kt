@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
@@ -97,9 +98,16 @@ fun WorkoutListScreen(
                 CustomBottomBar(
                     isListEmpty = isListEmpty,
                     isPlayingAll = state.isPlayingAll,
+                    isPlaybackPaused = state.isPlaybackPaused,
                     onMainAction = {
                         if (state.isPlayingAll) {
-                            reducer.postAction(WorkoutListAction.StopTapped)
+                            reducer.postAction(
+                                if (state.isPlaybackPaused) {
+                                    WorkoutListAction.ResumeTapped
+                                } else {
+                                    WorkoutListAction.PauseTapped
+                                }
+                            )
                         } else if (isListEmpty) {
                             reducer.postAction(WorkoutListAction.TappedAddWorkout)
                         } else {
@@ -107,7 +115,11 @@ fun WorkoutListScreen(
                         }
                     },
                     onSettings = { reducer.postAction(WorkoutListAction.TappedSettings) },
-                    onTimer = {}
+                    onTimer = {
+                        if (state.isPlayingAll) {
+                            reducer.postAction(WorkoutListAction.StopTapped)
+                        }
+                    }
                 )
             }
         ) { innerPadding ->
@@ -414,6 +426,7 @@ fun WorkoutListScreen(
 fun CustomBottomBar(
     isListEmpty: Boolean,
     isPlayingAll: Boolean,
+    isPlaybackPaused: Boolean,
     onMainAction: () -> Unit,
     onSettings: () -> Unit,
     onTimer: () -> Unit
@@ -439,8 +452,16 @@ fun CustomBottomBar(
             ) {
                 // Timer Item
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onTimer() }) {
-                    Icon(Icons.Default.Timer, contentDescription = "Timer", tint = Color(0xFF6A5ACD))
-                    Text("Timer", style = MaterialTheme.typography.labelSmall, color = Color(0xFF6A5ACD))
+                    Icon(
+                        if (isPlayingAll) Icons.Default.Stop else Icons.Default.Timer,
+                        contentDescription = if (isPlayingAll) "Stop routine" else "Timer",
+                        tint = Color(0xFF6A5ACD)
+                    )
+                    Text(
+                        if (isPlayingAll) "Stop" else "Timer",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF6A5ACD)
+                    )
                 }
 
                 // Gap for the Play/Add Button
@@ -466,12 +487,14 @@ fun CustomBottomBar(
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = when {
-                        isPlayingAll -> Icons.Default.Stop
+                        isPlayingAll && isPlaybackPaused -> Icons.Default.PlayArrow
+                        isPlayingAll -> Icons.Default.Pause
                         isListEmpty -> Icons.Default.Add
                         else -> Icons.Default.PlayArrow
                     },
                     contentDescription = when {
-                        isPlayingAll -> "Stop routine"
+                        isPlayingAll && isPlaybackPaused -> "Resume routine"
+                        isPlayingAll -> "Pause routine"
                         isListEmpty -> "Add Workout"
                         else -> "Play All"
                     },
@@ -533,6 +556,10 @@ private class PreviewWorkoutPlaybackController : WorkoutPlaybackController {
     override fun startSingle(workout: Workout) = Unit
 
     override fun startAll(workouts: List<Workout>) = Unit
+
+    override fun pause() = Unit
+
+    override fun resume() = Unit
 
     override fun stop() = Unit
 }

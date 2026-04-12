@@ -10,5 +10,9 @@ interface WorkoutPlaybackController {
 
     fun startAll(workouts: List<Workout>)
 
+    fun pause()
+
+    fun resume()
+
     fun stop()
 }

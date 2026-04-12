@@ -84,6 +84,10 @@ class WorkoutListScreenSnapshotTest {
 
         override fun startAll(workouts: List<Workout>) = Unit
 
+        override fun pause() = Unit
+
+        override fun resume() = Unit
+
         override fun stop() = Unit
     }
 }

@@ -63,6 +63,7 @@ class WorkoutListReducer @Inject constructor(
                         state {
                             it.copy(
                                 isPlayingAll = playbackState.isPlayingAll,
+                                isPlaybackPaused = playbackState.isPaused,
                                 playbackQueue = playbackState.playbackQueue,
                                 activeWorkoutId = playbackState.activeWorkoutId,
                                 activeWorkoutTimer = playbackState.activeWorkoutTimer
@@ -109,6 +110,12 @@ class WorkoutListReducer @Inject constructor(
                 }
 
                 playbackController.startAll(currentState.workouts)
+            }
+            WorkoutListAction.PauseTapped -> {
+                playbackController.pause()
+            }
+            WorkoutListAction.ResumeTapped -> {
+                playbackController.resume()
             }
             is WorkoutListAction.SinglePlayTapped -> {
                 if (currentState.activeWorkoutId == action.id) {

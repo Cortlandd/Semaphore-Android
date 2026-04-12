@@ -2,6 +2,7 @@ package com.cortlandwalker.semaphore.playback
 
 data class WorkoutPlaybackState(
     val isRunning: Boolean = false,
+    val isPaused: Boolean = false,
     val isPlayingAll: Boolean = false,
     val activeWorkoutId: String? = null,
     val activeWorkoutName: String? = null,

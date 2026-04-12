@@ -10,6 +10,7 @@ import com.cortlandwalker.semaphore.playback.WorkoutPlaybackState
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -195,6 +196,78 @@ class WorkoutListReducerTest {
     }
 
     @Test
+    fun `PauseTapped should pause an active play all session`() = runTest {
+        val workouts = listOf(
+            Workout("1", 0, "Warm Up", "", 0, 0, 2, 0, 0)
+        )
+        val repo = InMemoryWorkoutRepository(workouts)
+        playbackController = FakeWorkoutPlaybackController(repo, backgroundScope)
+
+        reducer = WorkoutListReducer(repo, playbackController)
+        effects = mutableListOf()
+        reducer.testBind(
+            initialState = WorkoutListState(
+                workouts = workouts,
+                displayMode = ViewDisplayMode.Content
+            ),
+            effects = effects,
+            scope = backgroundScope
+        )
+
+        reducer.accept(WorkoutListAction.OnLoad)
+        runCurrent()
+        reducer.accept(WorkoutListAction.PlayAllTapped)
+        runCurrent()
+        reducer.accept(WorkoutListAction.PauseTapped)
+        runCurrent()
+
+        assertThat(reducer.currentState.isPlaybackPaused).isTrue()
+        assertThat(reducer.currentState.activeWorkoutTimer).isEqualTo("00:02")
+
+        advanceTimeBy(2_000L)
+        runCurrent()
+
+        assertThat(reducer.currentState.activeWorkoutTimer).isEqualTo("00:02")
+    }
+
+    @Test
+    fun `ResumeTapped should resume a paused play all session`() = runTest {
+        val workouts = listOf(
+            Workout("1", 0, "Warm Up", "", 0, 0, 2, 0, 0)
+        )
+        val repo = InMemoryWorkoutRepository(workouts)
+        playbackController = FakeWorkoutPlaybackController(repo, backgroundScope)
+
+        reducer = WorkoutListReducer(repo, playbackController)
+        effects = mutableListOf()
+        reducer.testBind(
+            initialState = WorkoutListState(
+                workouts = workouts,
+                displayMode = ViewDisplayMode.Content
+            ),
+            effects = effects,
+            scope = backgroundScope
+        )
+
+        reducer.accept(WorkoutListAction.OnLoad)
+        runCurrent()
+        reducer.accept(WorkoutListAction.PlayAllTapped)
+        runCurrent()
+        reducer.accept(WorkoutListAction.PauseTapped)
+        runCurrent()
+        reducer.accept(WorkoutListAction.ResumeTapped)
+        runCurrent()
+
+        assertThat(reducer.currentState.isPlaybackPaused).isFalse()
+
+        advanceTimeBy(2_000L)
+        runCurrent()
+
+        assertThat(reducer.currentState.activeWorkoutId).isNull()
+        assertThat(repo.getById("1")?.completedCount).isEqualTo(1)
+    }
+
+    @Test
     fun `ReorderCommit should persist the provided order`() = runTest {
         val workouts = listOf(
             Workout("1", 0, "Warm Up", "", 0, 0, 30, 0, 0),
@@ -253,6 +326,18 @@ class WorkoutListReducerTest {
             startSession(workouts, true)
         }
 
+        override fun pause() {
+            val state = mutableState.value
+            if (!state.isRunning || state.isPaused) return
+            mutableState.value = state.copy(isPaused = true)
+        }
+
+        override fun resume() {
+            val state = mutableState.value
+            if (!state.isRunning || !state.isPaused) return
+            mutableState.value = state.copy(isPaused = false)
+        }
+
         override fun stop() {
             job?.cancel()
             job = null
@@ -266,6 +351,7 @@ class WorkoutListReducerTest {
                     var remaining = (workout.hours * 3600) + (workout.minutes * 60) + workout.seconds
                     mutableState.value = WorkoutPlaybackState(
                         isRunning = true,
+                        isPaused = false,
                         isPlayingAll = isPlayingAll,
                         activeWorkoutId = workout.id,
                         activeWorkoutName = workout.name,
@@ -293,7 +379,7 @@ class WorkoutListReducerTest {
                             break
                         }
 
-                        delay(1_000L)
+                        delayUntilNextSecond()
                         remaining--
                     }
                 }
@@ -310,6 +396,18 @@ class WorkoutListReducerTest {
                 "%02d:%02d:%02d".format(hours, minutes, seconds)
             } else {
                 "%02d:%02d".format(minutes, seconds)
+            }
+        }
+
+        private suspend fun delayUntilNextSecond() {
+            var remainingMs = 1_000L
+            while (remainingMs > 0L) {
+                while (mutableState.value.isPaused) {
+                    delay(100L)
+                }
+                val chunk = minOf(remainingMs, 100L)
+                delay(chunk)
+                remainingMs -= chunk
             }
         }
     }

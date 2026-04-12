@@ -60,6 +60,24 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
         startSession(workouts = workouts, isPlayingAll = true)
     }
 
+    override fun pause() {
+        val state = _playbackState.value
+        if (!state.isRunning || state.isPaused) return
+
+        updatePlaybackState {
+            state.copy(isPaused = true)
+        }
+    }
+
+    override fun resume() {
+        val state = _playbackState.value
+        if (!state.isRunning || !state.isPaused) return
+
+        updatePlaybackState {
+            state.copy(isPaused = false)
+        }
+    }
+
     override fun stop() {
         playbackJob?.cancel()
         playbackJob = null
@@ -96,6 +114,7 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
                 updatePlaybackState {
                     WorkoutPlaybackState(
                         isRunning = true,
+                        isPaused = false,
                         isPlayingAll = isPlayingAll,
                         activeWorkoutId = workout.id,
                         activeWorkoutName = workout.name,
@@ -132,7 +151,7 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
                         break
                     }
 
-                    delay(1_000L)
+                    delayUntilNextSecond()
                     remainingSeconds--
                 }
             }
@@ -187,8 +206,22 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val pauseResumeIntent = PendingIntent.getService(
+            appContext,
+            2,
+            Intent(appContext, WorkoutPlaybackService::class.java).apply {
+                action = if (state.isPaused) {
+                    WorkoutPlaybackService.ACTION_RESUME
+                } else {
+                    WorkoutPlaybackService.ACTION_PAUSE
+                }
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val title = state.activeWorkoutName ?: appContext.getString(R.string.app_name)
         val message = when {
+            state.activeWorkoutTimer != null && state.isPaused -> "${state.activeWorkoutTimer} paused"
             state.activeWorkoutTimer != null -> "${state.activeWorkoutTimer} remaining"
             else -> "Preparing workout timer"
         }
@@ -197,7 +230,14 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(title)
             .setContentText(message)
-            .setSubText(if (state.isPlayingAll) "Routine in progress" else "Timer in progress")
+            .setSubText(
+                when {
+                    state.isPlayingAll && state.isPaused -> "Routine paused"
+                    state.isPlayingAll -> "Routine in progress"
+                    state.isPaused -> "Timer paused"
+                    else -> "Timer in progress"
+                }
+            )
             .setContentIntent(openAppIntent)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -205,6 +245,11 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .addAction(
+                0,
+                if (state.isPaused) "Resume" else "Pause",
+                pauseResumeIntent
+            )
             .addAction(
                 0,
                 "Stop",
@@ -254,6 +299,22 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
                 val result = imageLoader.execute(request)
                 (result as? SuccessResult)?.drawable?.toBitmap()
             }.getOrNull()
+        }
+    }
+
+    private suspend fun delayUntilNextSecond() {
+        var remainingMs = 1_000L
+        while (remainingMs > 0L) {
+            waitForResumeIfPaused()
+            val chunk = minOf(remainingMs, 100L)
+            delay(chunk)
+            remainingMs -= chunk
+        }
+    }
+
+    private suspend fun waitForResumeIfPaused() {
+        while (_playbackState.value.isPaused) {
+            delay(100L)
         }
     }
 

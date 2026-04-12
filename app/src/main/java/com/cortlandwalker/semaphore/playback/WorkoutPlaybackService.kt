@@ -16,6 +16,14 @@ class WorkoutPlaybackService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
+            ACTION_PAUSE -> {
+                controller.pause()
+                startAsForeground(controller.currentNotification())
+            }
+            ACTION_RESUME -> {
+                controller.resume()
+                startAsForeground(controller.currentNotification())
+            }
             ACTION_STOP -> {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
@@ -45,6 +53,8 @@ class WorkoutPlaybackService : Service() {
 
     companion object {
         const val ACTION_START = "com.cortlandwalker.semaphore.playback.START"
+        const val ACTION_PAUSE = "com.cortlandwalker.semaphore.playback.PAUSE"
+        const val ACTION_RESUME = "com.cortlandwalker.semaphore.playback.RESUME"
         const val ACTION_STOP = "com.cortlandwalker.semaphore.playback.STOP"
     }
 }
