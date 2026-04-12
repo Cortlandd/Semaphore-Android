@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -59,6 +60,7 @@ fun WorkoutListScreen(
 ) {
     val purplePrimary = Color(0xFF6A5ACD)
     val listState = rememberLazyListState()
+    val showRoutineOnly = state.isPlayingAll
 
     // Drag state
     var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
@@ -73,6 +75,16 @@ fun WorkoutListScreen(
         }
     }
 
+    LaunchedEffect(state.isPlayingAll, state.activeWorkoutId, state.workouts) {
+        if (!state.isPlayingAll) return@LaunchedEffect
+
+        val activeWorkoutId = state.activeWorkoutId ?: return@LaunchedEffect
+        val activeIndex = state.workouts.indexOfFirst { it.id == activeWorkoutId }
+        if (activeIndex == -1) return@LaunchedEffect
+
+        listState.animateScrollToItem(index = activeIndex)
+    }
+
     val isListEmpty = state.workouts.isEmpty() && state.displayMode != ViewDisplayMode.Loading
 
     // --- GLOBAL GRID BACKGROUND ---
@@ -84,8 +96,11 @@ fun WorkoutListScreen(
             bottomBar = {
                 CustomBottomBar(
                     isListEmpty = isListEmpty,
+                    isPlayingAll = state.isPlayingAll,
                     onMainAction = {
-                        if (isListEmpty) {
+                        if (state.isPlayingAll) {
+                            reducer.postAction(WorkoutListAction.StopTapped)
+                        } else if (isListEmpty) {
                             reducer.postAction(WorkoutListAction.TappedAddWorkout)
                         } else {
                             reducer.postAction(WorkoutListAction.PlayAllTapped)
@@ -118,42 +133,44 @@ fun WorkoutListScreen(
                         .fillMaxSize()
                         .padding(horizontal = 24.dp)
                 ) {
-                    // 1. Header (Always Visible)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Semaphore",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = Color.Black
-                                )
-                            )
-                            // Hide subtitle in empty state to match design cleanliness
-                            if (!isListEmpty) {
+                    if (!showRoutineOnly) {
+                        // 1. Header (Always Visible)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
                                 Text(
-                                    text = "Ready to work out?",
-                                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                                    text = "Semaphore",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.Black
+                                    )
                                 )
+                                // Hide subtitle in empty state to match design cleanliness
+                                if (!isListEmpty) {
+                                    Text(
+                                        text = "Ready to work out?",
+                                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                                    )
+                                }
+                            }
+
+                            IconButton(
+                                onClick = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White),
+                                colors = IconButtonDefaults.iconButtonColors(contentColor = purplePrimary)
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "Add")
                             }
                         }
 
-                        IconButton(
-                            onClick = { reducer.postAction(WorkoutListAction.TappedAddWorkout) },
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                                .background(Color.White),
-                            colors = IconButtonDefaults.iconButtonColors(contentColor = purplePrimary)
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
-                        }
+                        Spacer(Modifier.height(32.dp))
                     }
-
-                    Spacer(Modifier.height(32.dp))
 
                     if (isListEmpty) {
                         EmptyStateContent(
@@ -162,90 +179,92 @@ fun WorkoutListScreen(
                                 .fillMaxWidth()
                         )
                     } else {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // Total Time Card
-                            Card(
-                                modifier = Modifier.weight(1f).height(110.dp),
-                                shape = RoundedCornerShape(28.dp),
-                                colors = CardDefaults.cardColors(containerColor = purplePrimary),
-                                elevation = CardDefaults.cardElevation(8.dp)
+                        if (!showRoutineOnly) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                Box(Modifier.fillMaxSize()) {
-                                    Column(
-                                        modifier = Modifier.padding(20.dp),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            "TOTAL TIME",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White.copy(alpha = 0.8f)
-                                        )
-                                        Spacer(Modifier.height(4.dp))
+                                // Total Time Card
+                                Card(
+                                    modifier = Modifier.weight(1f).height(110.dp),
+                                    shape = RoundedCornerShape(28.dp),
+                                    colors = CardDefaults.cardColors(containerColor = purplePrimary),
+                                    elevation = CardDefaults.cardElevation(8.dp)
+                                ) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        Column(
+                                            modifier = Modifier.padding(20.dp),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                "TOTAL TIME",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = Color.White.copy(alpha = 0.8f)
+                                            )
+                                            Spacer(Modifier.height(4.dp))
 
-                                        val totalSeconds = state.workouts.sumOf {
-                                            (it.hours * 3600) + (it.minutes * 60) + it.seconds
-                                        }
-                                        val h = totalSeconds / 3600
-                                        val m = (totalSeconds % 3600) / 60
-                                        val s = totalSeconds % 60
+                                            val totalSeconds = state.workouts.sumOf {
+                                                (it.hours * 3600) + (it.minutes * 60) + it.seconds
+                                            }
+                                            val h = totalSeconds / 3600
+                                            val m = (totalSeconds % 3600) / 60
+                                            val s = totalSeconds % 60
 
-                                        val timeString = when {
-                                            h > 0 -> "${h}h ${m}m"
-                                            m > 0 && s > 0 -> "${m}m ${s}s"
-                                            m > 0 -> "${m}m"
-                                            else -> "${s}s"
+                                            val timeString = when {
+                                                h > 0 -> "${h}h ${m}m"
+                                                m > 0 && s > 0 -> "${m}m ${s}s"
+                                                m > 0 -> "${m}m"
+                                                else -> "${s}s"
+                                            }
+                                            val fontSize =
+                                                if (timeString.length > 5) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displaySmall
+                                            Text(
+                                                text = timeString,
+                                                style = fontSize.copy(fontWeight = FontWeight.Bold),
+                                                color = Color.White
+                                            )
                                         }
-                                        val fontSize =
-                                            if (timeString.length > 5) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displaySmall
-                                        Text(
-                                            text = timeString,
-                                            style = fontSize.copy(fontWeight = FontWeight.Bold),
-                                            color = Color.White
+                                    }
+                                }
+
+                                // Workouts Count Card
+                                Card(
+                                    modifier = Modifier.weight(1f).height(110.dp),
+                                    shape = RoundedCornerShape(28.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(2.dp)
+                                ) {
+                                    Box(Modifier.fillMaxSize().padding(20.dp)) {
+                                        Column(modifier = Modifier.align(Alignment.CenterStart)) {
+                                            Text(
+                                                "WORKOUTS",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = Color.Gray
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                "${state.workouts.size}",
+                                                style = MaterialTheme.typography.displaySmall.copy(
+                                                    fontWeight = FontWeight.Bold
+                                                ),
+                                                color = Color.Black
+                                            )
+                                        }
+                                        Icon(
+                                            imageVector = Icons.Default.FitnessCenter,
+                                            contentDescription = null,
+                                            tint = Color.LightGray,
+                                            modifier = Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .size(32.dp)
+                                                .graphicsLayer { rotationZ = -45f }
                                         )
                                     }
                                 }
                             }
 
-                            // Workouts Count Card
-                            Card(
-                                modifier = Modifier.weight(1f).height(110.dp),
-                                shape = RoundedCornerShape(28.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(2.dp)
-                            ) {
-                                Box(Modifier.fillMaxSize().padding(20.dp)) {
-                                    Column(modifier = Modifier.align(Alignment.CenterStart)) {
-                                        Text(
-                                            "WORKOUTS",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.Gray
-                                        )
-                                        Spacer(Modifier.height(4.dp))
-                                        Text(
-                                            "${state.workouts.size}",
-                                            style = MaterialTheme.typography.displaySmall.copy(
-                                                fontWeight = FontWeight.Bold
-                                            ),
-                                            color = Color.Black
-                                        )
-                                    }
-                                    Icon(
-                                        imageVector = Icons.Default.FitnessCenter,
-                                        contentDescription = null,
-                                        tint = Color.LightGray,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterEnd)
-                                            .size(32.dp)
-                                            .graphicsLayer { rotationZ = -45f }
-                                    )
-                                }
-                            }
+                            Spacer(Modifier.height(32.dp))
                         }
-
-                        Spacer(Modifier.height(32.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -258,7 +277,7 @@ fun WorkoutListScreen(
                             )
                         }
 
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(if (showRoutineOnly) 8.dp else 16.dp))
 
                         when (state.displayMode) {
                             ViewDisplayMode.Loading -> {
@@ -394,6 +413,7 @@ fun WorkoutListScreen(
 @Composable
 fun CustomBottomBar(
     isListEmpty: Boolean,
+    isPlayingAll: Boolean,
     onMainAction: () -> Unit,
     onSettings: () -> Unit,
     onTimer: () -> Unit
@@ -445,9 +465,16 @@ fun CustomBottomBar(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    // Switch icon if list is empty
-                    imageVector = if (isListEmpty) Icons.Default.Add else Icons.Default.PlayArrow,
-                    contentDescription = if (isListEmpty) "Add Workout" else "Play All",
+                    imageVector = when {
+                        isPlayingAll -> Icons.Default.Stop
+                        isListEmpty -> Icons.Default.Add
+                        else -> Icons.Default.PlayArrow
+                    },
+                    contentDescription = when {
+                        isPlayingAll -> "Stop routine"
+                        isListEmpty -> "Add Workout"
+                        else -> "Play All"
+                    },
                     tint = Color.White,
                     modifier = Modifier.size(36.dp)
                 )
