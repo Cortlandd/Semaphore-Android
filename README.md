@@ -80,6 +80,12 @@ Recommended checklist:
 3. Verify the support email and FAQ content are current.
 4. Verify the Settings version matches the intended store release.
 
+## Play Store Docs
+
+Draft release materials live in [`docs/play-store/privacy-policy.md`](/Users/cortland/development/android/Semaphore-Android/docs/play-store/privacy-policy.md), [`docs/play-store/store-listing.md`](/Users/cortland/development/android/Semaphore-Android/docs/play-store/store-listing.md), and [`docs/play-store/data-safety-draft.md`](/Users/cortland/development/android/Semaphore-Android/docs/play-store/data-safety-draft.md).
+
+These drafts are meant to be reviewed and finalized before publishing, especially when SDK versions, consent flows, or data handling change.
+
 ## Monetization
 
 Semaphore supports:
