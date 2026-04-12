@@ -100,6 +100,11 @@ fun AnalyticsScreen(
                     item {
                         WeeklyProgressCard(state)
                     }
+                    if (state.topWorkouts.isNotEmpty()) {
+                        item {
+                            TopWorkoutsCard(state)
+                        }
+                    }
                     item {
                         SectionHeader("Individual Workouts", "See All")
                     }
@@ -172,16 +177,67 @@ private fun WeeklyProgressCard(state: AnalyticsState) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Weekly Progress", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
-                    //Text("You're smashing it this week!", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    Text(
+                        text = when {
+                            state.weeklyActiveDays == 0 -> "Start a workout to begin this week's streak."
+                            state.weeklyProgress >= 1f -> "You hit your weekly goal. Keep the momentum going."
+                            else -> "${state.weeklyActiveDays} of ${state.weeklyGoalDays} active days this week."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
                 }
-                // TODO: Figure out when i figure out analytics
-                //CircularProgress(progress = state.weeklyProgress)
+                CircularProgress(progress = state.weeklyProgress)
             }
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
                 SummaryStat("WORKOUTS", state.totalWorkouts.toString())
                 SummaryStat("HOURS", "%.1f".format(state.totalHours))
                 SummaryStat("STREAK", "${state.currentStreak}d")
+            }
+        }
+    }
+}
+
+@Composable
+private fun TopWorkoutsCard(state: AnalyticsState) {
+    val maxValue = state.topWorkouts.maxOfOrNull { it.totalTimeSpentSeconds }?.coerceAtLeast(1L) ?: 1L
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Text(
+                text = "TOP WORKOUTS",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF6A5ACD)
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Most time invested",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF2D3142)
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = "These workouts are ranked by total time spent, using the completions you have already logged.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+            Spacer(Modifier.height(20.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                state.topWorkouts.forEachIndexed { index, workout ->
+                    TopWorkoutRow(
+                        rank = index + 1,
+                        workout = workout,
+                        progress = workout.totalTimeSpentSeconds / maxValue.toFloat()
+                    )
+                }
             }
         }
     }
@@ -206,7 +262,10 @@ private fun CircularProgress(progress: Float) {
                 style = Stroke(width = 15f, cap = StrokeCap.Round)
             )
         }
-        Text("${(progress * 100).toInt()}%", fontWeight = FontWeight.Bold)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("${(progress * 100).toInt()}%", fontWeight = FontWeight.Bold)
+            Text("goal", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+        }
     }
 }
 
@@ -224,6 +283,61 @@ private fun SummaryStat(label: String, value: String) {
 }
 
 @Composable
+private fun TopWorkoutRow(
+    rank: Int,
+    workout: WorkoutAnalyticsEntry,
+    progress: Float
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFFEBE9F8)
+                ) {
+                    Text(
+                        text = rank.toString(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF6A5ACD)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = workout.name,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF2D3142)
+                    )
+                    Text(
+                        text = "${workout.completedCount} completions",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+            }
+            Text(
+                text = formatSeconds(workout.totalTimeSpentSeconds),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF2D3142)
+            )
+        }
+        LinearProgressIndicator(
+            progress = { progress.coerceIn(0f, 1f) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp),
+            color = Color(0xFF6A5ACD),
+            trackColor = Color(0xFFEBE9F8),
+        )
+    }
+}
+
+@Composable
 private fun SectionHeader(title: String, actionText: String) {
     Row(
         modifier = Modifier
@@ -233,7 +347,9 @@ private fun SectionHeader(title: String, actionText: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(title, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
-        Text(actionText, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6A5ACD), fontWeight = FontWeight.Bold)
+        if (actionText.isNotBlank()) {
+            Text(actionText, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6A5ACD), fontWeight = FontWeight.Bold)
+        }
     }
 }
 
