@@ -10,6 +10,12 @@ import androidx.core.content.ContextCompat
 import com.cortlandwalker.semaphore.R
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Single-activity host for Semaphore's fragment-based navigation graph.
+ *
+ * It owns the root layout container and requests runtime notification
+ * permission on Android 13+ so workout playback alerts can be delivered.
+ */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
