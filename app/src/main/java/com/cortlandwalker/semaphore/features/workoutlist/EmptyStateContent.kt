@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cortlandwalker.semaphore.R
 
 @Composable
 fun EmptyStateContent(modifier: Modifier = Modifier) {
@@ -38,6 +40,8 @@ fun EmptyStateContent(modifier: Modifier = Modifier) {
     val accentPurple = Color(0xFFF3E5F5)
     val orangeBg = Color(0xFFFFF3E0)
     val orangeMain = Color(0xFFFF9800)
+    val instructionPrefix = stringResource(R.string.empty_state_add_instruction_prefix)
+    val instructionSuffix = stringResource(R.string.empty_state_add_instruction_suffix)
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         // Background Ambient Blobs
@@ -134,7 +138,7 @@ fun EmptyStateContent(modifier: Modifier = Modifier) {
 
             // Text Content
             Text(
-                text = "No Workouts yet",
+                text = stringResource(R.string.no_workouts_yet),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -143,7 +147,7 @@ fun EmptyStateContent(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(12.dp))
             Text(
                 text = buildAnnotatedString {
-                    append("Tap the ")
+                    append(instructionPrefix)
                     withStyle(style = SpanStyle(
                         fontWeight = FontWeight.Bold,
                         color = purplePrimary
@@ -151,7 +155,7 @@ fun EmptyStateContent(modifier: Modifier = Modifier) {
                     ) {
                         append("+")
                     }
-                    append(" in the top right or use the button below to add your first workout.")
+                    append(instructionSuffix)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,

@@ -43,6 +43,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +73,7 @@ fun WorkoutListScreen(
     reducer: WorkoutListReducer,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val purplePrimary = Color(0xFF6A5ACD)
     val listState = rememberLazyListState()
     val showRoutineOnly = state.isPlayingAll
@@ -178,7 +181,7 @@ fun WorkoutListScreen(
                             ) {
                                 Column {
                                     Text(
-                                        text = "Semaphore",
+                                        text = stringResource(com.cortlandwalker.semaphore.R.string.workout_list_title),
                                         style = MaterialTheme.typography.headlineMedium.copy(
                                             fontWeight = FontWeight.ExtraBold,
                                             color = Color.Black
@@ -187,7 +190,7 @@ fun WorkoutListScreen(
                                     // Hide subtitle in empty state to match design cleanliness
                                     if (!isListEmpty) {
                                         Text(
-                                            text = "Ready to work out?",
+                                            text = stringResource(com.cortlandwalker.semaphore.R.string.workout_list_subtitle),
                                             style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
                                         )
                                     }
@@ -201,7 +204,10 @@ fun WorkoutListScreen(
                                         .background(Color.White),
                                     colors = IconButtonDefaults.iconButtonColors(contentColor = purplePrimary)
                                 ) {
-                                    Icon(Icons.Default.Add, contentDescription = "Add")
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = stringResource(com.cortlandwalker.semaphore.R.string.add_workout_content_description)
+                                    )
                                 }
                             }
 
@@ -239,7 +245,7 @@ fun WorkoutListScreen(
                                                 verticalArrangement = Arrangement.Center
                                             ) {
                                                 Text(
-                                                    "TOTAL TIME",
+                                                    stringResource(com.cortlandwalker.semaphore.R.string.total_time_label),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = Color.White.copy(alpha = 0.8f)
                                                 )
@@ -253,10 +259,10 @@ fun WorkoutListScreen(
                                                 val s = totalSeconds % 60
 
                                                 val timeString = when {
-                                                    h > 0 -> "${h}h ${m}m"
-                                                    m > 0 && s > 0 -> "${m}m ${s}s"
-                                                    m > 0 -> "${m}m"
-                                                    else -> "${s}s"
+                                                    h > 0 -> context.getString(com.cortlandwalker.semaphore.R.string.duration_hours_minutes, h, m)
+                                                    m > 0 && s > 0 -> context.getString(com.cortlandwalker.semaphore.R.string.duration_minutes_seconds, m, s)
+                                                    m > 0 -> context.getString(com.cortlandwalker.semaphore.R.string.duration_minutes_only, m)
+                                                    else -> context.getString(com.cortlandwalker.semaphore.R.string.duration_seconds_only, s)
                                                 }
                                                 val fontSize =
                                                     if (timeString.length > 5) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displaySmall
@@ -279,13 +285,13 @@ fun WorkoutListScreen(
                                         Box(Modifier.fillMaxSize().padding(20.dp)) {
                                             Column(modifier = Modifier.align(Alignment.CenterStart)) {
                                                 Text(
-                                                    "WORKOUTS",
+                                                    stringResource(com.cortlandwalker.semaphore.R.string.workouts_label),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = Color.Gray
                                                 )
                                                 Spacer(Modifier.height(4.dp))
                                                 Text(
-                                                    "${state.workouts.size}",
+                                                    state.workouts.size.toString(),
                                                     style = MaterialTheme.typography.displaySmall.copy(
                                                         fontWeight = FontWeight.Bold
                                                     ),
@@ -315,7 +321,7 @@ fun WorkoutListScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Your Routine",
+                                text = stringResource(com.cortlandwalker.semaphore.R.string.your_routine_title),
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                             )
                         }
@@ -329,7 +335,7 @@ fun WorkoutListScreen(
                                 }
                             }
                             ViewDisplayMode.Error -> {
-                                Text(state.error ?: "Error")
+                                Text(state.error ?: stringResource(com.cortlandwalker.semaphore.R.string.generic_error))
                             }
                             ViewDisplayMode.Content, ViewDisplayMode.Empty -> {
                                 LazyColumn(
@@ -495,11 +501,19 @@ fun CustomBottomBar(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 if (playingAll) Icons.Default.Stop else Icons.Default.Timer,
-                                contentDescription = if (playingAll) "Stop routine" else "Timer",
+                                contentDescription = if (playingAll) {
+                                    stringResource(com.cortlandwalker.semaphore.R.string.stop_routine_content_description)
+                                } else {
+                                    stringResource(com.cortlandwalker.semaphore.R.string.timer_content_description)
+                                },
                                 tint = Color(0xFF6A5ACD)
                             )
                             Text(
-                                if (playingAll) "Stop" else "Timer",
+                                if (playingAll) {
+                                    stringResource(com.cortlandwalker.semaphore.R.string.stop_tab_label)
+                                } else {
+                                    stringResource(com.cortlandwalker.semaphore.R.string.timer_tab_label)
+                                },
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF6A5ACD)
                             )
@@ -512,8 +526,16 @@ fun CustomBottomBar(
 
                 // Settings Item
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onSettings() }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.Gray)
-                    Text("Settings", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = stringResource(com.cortlandwalker.semaphore.R.string.settings_content_description),
+                        tint = Color.Gray
+                    )
+                    Text(
+                        stringResource(com.cortlandwalker.semaphore.R.string.settings_title),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray
+                    )
                 }
             }
         }
@@ -545,10 +567,10 @@ fun CustomBottomBar(
                             else -> Icons.Default.PlayArrow
                         },
                         contentDescription = when {
-                            playingAll && paused -> "Resume routine"
-                            playingAll -> "Pause routine"
-                            listEmpty -> "Add Workout"
-                            else -> "Play All"
+                            playingAll && paused -> stringResource(com.cortlandwalker.semaphore.R.string.resume_routine_content_description)
+                            playingAll -> stringResource(com.cortlandwalker.semaphore.R.string.pause_routine_content_description)
+                            listEmpty -> stringResource(com.cortlandwalker.semaphore.R.string.add_workout_action_content_description)
+                            else -> stringResource(com.cortlandwalker.semaphore.R.string.play_all_content_description)
                         },
                         tint = Color.White,
                         modifier = Modifier.size(36.dp)

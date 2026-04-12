@@ -29,9 +29,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 
 @Composable
@@ -64,7 +66,7 @@ fun UpsertHelpScreen(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.back_content_description),
                                 tint = Color.Black
                             )
                         }
@@ -90,13 +92,13 @@ fun UpsertHelpScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Workout Editor Help",
+                            text = stringResource(R.string.upsert_help_title),
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                             color = Color(0xFF2D3142)
                         )
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            text = "This page uses the same visual components as the workout editor, but explains them in a simple reading order. That keeps the screen helpful visually while still staying clear for accessibility tools.",
+                            text = stringResource(R.string.upsert_help_intro),
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.Gray
                         )
@@ -111,8 +113,8 @@ fun UpsertHelpScreen(
                 ) {
                     HelpSection(
                         number = "1",
-                        title = "Add Cover Media",
-                        description = "This is the large media area near the top of the editor. Tap it to choose a GIF or other visual reference for the workout."
+                        title = stringResource(R.string.upsert_help_add_cover_title),
+                        description = stringResource(R.string.upsert_help_add_cover_description)
                     ) {
                         Box(
                             modifier = Modifier
@@ -129,11 +131,11 @@ fun UpsertHelpScreen(
 
                     HelpSection(
                         number = "2",
-                        title = "Workout Name",
-                        description = "This box is where you type the workout name. Semaphore uses this name in your routine list and during playback."
+                        title = stringResource(R.string.upsert_help_workout_name_title),
+                        description = stringResource(R.string.upsert_help_workout_name_description)
                     ) {
                         WorkoutNameInput(
-                            name = "Workout Name",
+                            name = stringResource(R.string.workout_name_placeholder),
                             speakNameAloud = false,
                             onNameChange = {},
                             onSpeechIconTap = {},
@@ -143,11 +145,11 @@ fun UpsertHelpScreen(
 
                     HelpSection(
                         number = "3",
-                        title = "Speaker Icon",
-                        description = "The speaker icon inside the workout name box turns spoken workout names on or off for that specific workout. When it is on, Semaphore can say the workout name out loud when the timer starts."
+                        title = stringResource(R.string.upsert_help_speaker_title),
+                        description = stringResource(R.string.upsert_help_speaker_description)
                     ) {
                         WorkoutNameInput(
-                            name = "Push Ups",
+                            name = stringResource(R.string.upsert_help_example_push_ups),
                             speakNameAloud = true,
                             onNameChange = {},
                             onSpeechIconTap = {},
@@ -157,8 +159,8 @@ fun UpsertHelpScreen(
 
                     HelpSection(
                         number = "4",
-                        title = "Duration",
-                        description = "The duration area controls how long the workout lasts. The three pickers let you set hours, minutes, and seconds."
+                        title = stringResource(R.string.upsert_help_duration_title),
+                        description = stringResource(R.string.upsert_help_duration_description)
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             DurationHeader()
@@ -173,8 +175,8 @@ fun UpsertHelpScreen(
 
                     HelpSection(
                         number = "5",
-                        title = "Save Workout",
-                        description = "The save button stores your changes. It creates a new workout when you are adding one, or updates the workout when you are editing."
+                        title = stringResource(R.string.upsert_help_save_title),
+                        description = stringResource(R.string.upsert_help_save_description)
                     ) {
                         SaveButtonFooter(
                             isSaving = false,
@@ -185,15 +187,15 @@ fun UpsertHelpScreen(
 
                     HelpSection(
                         number = "6",
-                        title = "Navigation Buttons",
-                        description = "The back button returns to your routine. The question mark button opens this help screen again any time you need a reminder."
+                        title = stringResource(R.string.upsert_help_navigation_title),
+                        description = stringResource(R.string.upsert_help_navigation_description)
                     ) {
                         Surface(
                             color = Color.Transparent,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             UpsertTopBar(
-                                title = "New Workout",
+                                title = stringResource(R.string.upsert_new_workout_title),
                                 onBack = {},
                                 onHelp = {}
                             )
@@ -211,12 +213,12 @@ fun UpsertHelpScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "Accessibility Notes",
+                                text = stringResource(R.string.upsert_help_accessibility_title),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = Color(0xFF2D3142)
                             )
                             Text(
-                                text = "This guide keeps the editor controls in a predictable order with plain-language explanations under each example. That makes it easier to follow visually and easier to move through with a screen reader.",
+                                text = stringResource(R.string.upsert_help_accessibility_description),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.Gray
                             )

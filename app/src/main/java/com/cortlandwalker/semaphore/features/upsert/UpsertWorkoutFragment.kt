@@ -11,6 +11,7 @@ import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.core.KlipyConfig
 import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
@@ -70,7 +71,7 @@ class UpsertWorkoutFragment : ReducerFragment<UpsertWorkoutState, UpsertWorkoutA
         if (klipyApiKey.isBlank()) {
             Toast.makeText(
                 requireContext(),
-                "Klipy is not configured for this build. Set KLIPY_API_KEY before opening the picker.",
+                getString(R.string.toast_klipy_not_configured),
                 Toast.LENGTH_LONG
             ).show()
             return

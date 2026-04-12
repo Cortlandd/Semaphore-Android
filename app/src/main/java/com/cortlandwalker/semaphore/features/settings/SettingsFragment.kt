@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.BuildConfig
 import com.cortlandwalker.ghettoxide.ReducerContent
 import com.cortlandwalker.ghettoxide.ReducerFragment
@@ -77,7 +78,7 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
 
             SettingsEffect.NavFAQ -> {
                 val action = SettingsFragmentDirections.actionSettingsToMarkdown(
-                    title = "FAQ",
+                    title = getString(R.string.settings_faq_title),
                     filename = "faq.md"
                 )
                 findNavController().navigate(action)
@@ -85,7 +86,7 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
             SettingsEffect.LaunchRemoveAdsPurchase -> handleRemoveAdsTapped()
             SettingsEffect.RestorePurchases -> {
                 monetizationManager.restorePurchases()
-                toast("Checking Google Play for previous purchases.")
+                toast(getString(R.string.toast_checking_previous_purchases))
             }
         }
     }
@@ -93,11 +94,11 @@ class SettingsFragment : ReducerFragment<SettingsState, SettingsAction, Settings
     private fun handleRemoveAdsTapped() {
         when (val result = monetizationManager.launchRemoveAdsPurchase(requireActivity())) {
             PurchaseLaunchResult.Launched -> Unit
-            PurchaseLaunchResult.AlreadyOwned -> toast("Ads have already been removed on this account.")
-            PurchaseLaunchResult.BillingUnavailable -> toast("Google Play billing is unavailable right now.")
-            PurchaseLaunchResult.ProductUnavailable -> toast("The remove ads option is still loading. Try again in a moment.")
+            PurchaseLaunchResult.AlreadyOwned -> toast(getString(R.string.toast_ads_already_removed))
+            PurchaseLaunchResult.BillingUnavailable -> toast(getString(R.string.toast_billing_unavailable))
+            PurchaseLaunchResult.ProductUnavailable -> toast(getString(R.string.toast_product_still_loading))
             is PurchaseLaunchResult.Failed -> {
-                toast(result.debugMessage.ifBlank { "Unable to start the purchase flow." })
+                toast(result.debugMessage.ifBlank { getString(R.string.toast_unable_to_start_purchase_flow) })
             }
         }
     }

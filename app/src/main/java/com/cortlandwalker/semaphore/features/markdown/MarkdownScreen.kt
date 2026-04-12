@@ -15,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
@@ -40,9 +42,9 @@ fun MarkdownScreen(
                 .use { it.readText() }
         } catch (e: Exception) {
             markdownContent = if (filename == "PREVIEW_MODE") {
-                "# Preview Content\nThis is how the markdown will look."
+                context.getString(R.string.markdown_preview_content)
             } else {
-                "# Error\nCould not load $filename"
+                context.getString(R.string.markdown_load_error, filename)
             }
         }
     }
@@ -73,7 +75,7 @@ fun MarkdownScreen(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.back_content_description),
                                 tint = Color.Black
                             )
                         }

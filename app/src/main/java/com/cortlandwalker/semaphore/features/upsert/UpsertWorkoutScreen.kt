@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.core.helpers.ViewDisplayMode
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.local.room.WorkoutImageStore
@@ -111,7 +113,11 @@ fun UpsertWorkoutScreen(
                         .padding(horizontal = 24.dp, vertical = 24.dp)
                     ) {
                         UpsertTopBar(
-                            title = if (state.isEdit) "Edit Workout" else "New Workout",
+                            title = if (state.isEdit) {
+                                stringResource(R.string.upsert_edit_workout_title)
+                            } else {
+                                stringResource(R.string.upsert_new_workout_title)
+                            },
                             onBack = { reducer.postAction(UpsertWorkoutAction.Cancel) },
                             onHelp = { reducer.postAction(UpsertWorkoutAction.HelpTapped) }
                         )
@@ -132,7 +138,10 @@ fun UpsertWorkoutScreen(
                             }
                         }
                         ViewDisplayMode.Error -> {
-                            Text("Error: ${state.error}", color = Color.Red)
+                            Text(
+                                stringResource(R.string.upsert_error, state.error.orEmpty()),
+                                color = Color.Red
+                            )
                         }
                         ViewDisplayMode.Content, ViewDisplayMode.Empty -> {
 
@@ -164,10 +173,16 @@ fun UpsertWorkoutScreen(
         AlertDialog(
             onDismissRequest = { showSpeechDialog = false },
             title = {
-                Text(if (state.speakNameAloud) "Turn off workout speech?" else "Turn on workout speech?")
+                Text(
+                    if (state.speakNameAloud) {
+                        stringResource(R.string.upsert_speech_disable_title)
+                    } else {
+                        stringResource(R.string.upsert_speech_enable_title)
+                    }
+                )
             },
             text = {
-                Text("When this is on, everytime a workout begins it will use text to speech to say that specific workout name you gave")
+                Text(stringResource(R.string.upsert_speech_description))
             },
             confirmButton = {
                 TextButton(
@@ -178,12 +193,18 @@ fun UpsertWorkoutScreen(
                         )
                     }
                 ) {
-                    Text(if (state.speakNameAloud) "Turn Off" else "Turn On")
+                    Text(
+                        if (state.speakNameAloud) {
+                            stringResource(R.string.turn_off)
+                        } else {
+                            stringResource(R.string.turn_on)
+                        }
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showSpeechDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -209,7 +230,11 @@ fun UpsertTopBar(title: String, onBack: () -> Unit, onHelp: () -> Unit) {
                 .clickable { onBack() }
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back_content_description),
+                    tint = Color.Black
+                )
             }
         }
 
@@ -314,7 +339,7 @@ fun MediaSelectionArea(
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
-                            contentDescription = "Add Media",
+                            contentDescription = stringResource(R.string.add_media_content_description),
                             tint = Color.White,
                             modifier = Modifier.size(36.dp)
                         )
@@ -326,18 +351,18 @@ fun MediaSelectionArea(
 
             if (imageUri.isNullOrBlank()) {
                 Text(
-                    text = "Add Cover Media",
+                    text = stringResource(R.string.add_cover_media),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color(0xFF2D3142)
                 )
                 Text(
-                    text = "GIF",
+                    text = stringResource(R.string.gif_label),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
             } else {
                 Text(
-                    text = "Tap to Change",
+                    text = stringResource(R.string.tap_to_change),
                     fontStyle = FontStyle.Italic,
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color.LightGray
@@ -358,14 +383,23 @@ fun WorkoutNameInput(
     TextField(
         value = name,
         onValueChange = onNameChange,
-        placeholder = { Text("Workout Name", color = Color.Gray.copy(alpha = 0.7f)) },
+        placeholder = {
+            Text(
+                stringResource(R.string.workout_name_placeholder),
+                color = Color.Gray.copy(alpha = 0.7f)
+            )
+        },
         singleLine = true,
         readOnly = readOnly,
         trailingIcon = {
             IconButton(onClick = onSpeechIconTap) {
                 Icon(
                     imageVector = if (speakNameAloud) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-                    contentDescription = if (speakNameAloud) "Disable workout speech" else "Enable workout speech",
+                    contentDescription = if (speakNameAloud) {
+                        stringResource(R.string.disable_workout_speech)
+                    } else {
+                        stringResource(R.string.enable_workout_speech)
+                    },
                     tint = if (speakNameAloud) Color(0xFF6A5ACD) else Color.Gray
                 )
             }
@@ -394,7 +428,7 @@ fun DurationHeader() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "DURATION",
+            text = stringResource(R.string.duration_label),
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
             color = Color.Gray
         )
@@ -404,7 +438,7 @@ fun DurationHeader() {
             shape = RoundedCornerShape(8.dp)
         ) {
             Text(
-                text = "Target",
+                text = stringResource(R.string.target_label),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF6A5ACD),
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -437,9 +471,9 @@ fun TimePickerCard(
                     .padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text("HR", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
-                Text("MIN", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
-                Text("SEC", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(stringResource(R.string.hours_short), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(stringResource(R.string.minutes_short), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(stringResource(R.string.seconds_short), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
             }
 
             // Pickers
@@ -512,7 +546,7 @@ fun SaveButtonFooter(isSaving: Boolean, isEnabled: Boolean, onSave: () -> Unit) 
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
             } else {
                 Text(
-                    text = "Save Workout",
+                    text = stringResource(R.string.save_workout),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = Color.White
                 )

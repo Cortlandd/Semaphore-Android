@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.data.models.Workout
 
 // --- Design Tokens (Shared) ---
@@ -156,7 +158,7 @@ private fun ExpandedWorkoutContent(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "Current Interval",
+                    text = stringResource(R.string.current_interval),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
@@ -198,7 +200,7 @@ private fun ExpandedWorkoutContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Stop,
-                    contentDescription = "Stop",
+                    contentDescription = stringResource(R.string.stop_content_description),
                     tint = PurplePrimary,
                     modifier = Modifier.size(20.dp)
                 )
@@ -224,7 +226,7 @@ private fun ExpandedWorkoutContent(
                     }
                     .crossfade(true)
                     .build(),
-                contentDescription = "Workout visual",
+                contentDescription = stringResource(R.string.workout_visual_content_description),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -249,7 +251,7 @@ private fun ExpandedWorkoutContent(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        "ACTIVE",
+                        stringResource(R.string.active_badge),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 10.sp
@@ -300,7 +302,7 @@ private fun CollapsedWorkoutContent(
                 // Title & Subtitle
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = workout.name.ifBlank { "Untitled" },
+                        text = workout.name.ifBlank { stringResource(R.string.untitled_workout) },
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = PurplePrimary
@@ -309,7 +311,7 @@ private fun CollapsedWorkoutContent(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Current Interval",
+                        text = stringResource(R.string.current_interval),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
@@ -354,7 +356,7 @@ private fun CollapsedWorkoutContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Stop,
-                        contentDescription = "Stop",
+                        contentDescription = stringResource(R.string.stop_content_description),
                         tint = PurplePrimary,
                         modifier = Modifier.size(20.dp)
                     )
@@ -371,7 +373,7 @@ private fun CollapsedWorkoutContent(
                 // 1. Drag Handle
                 Icon(
                     imageVector = Icons.Rounded.DragIndicator,
-                    contentDescription = "Drag",
+                    contentDescription = stringResource(R.string.drag_content_description),
                     tint = Color.LightGray.copy(alpha = 0.5f),
                     modifier = Modifier.size(24.dp)
                 )
@@ -389,7 +391,7 @@ private fun CollapsedWorkoutContent(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = workout.name.ifBlank { "Untitled" },
+                        text = workout.name.ifBlank { stringResource(R.string.untitled_workout) },
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
@@ -425,7 +427,7 @@ private fun CollapsedWorkoutContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play",
+                        contentDescription = stringResource(R.string.play_content_description),
                         tint = PurplePrimary
                     )
                 }
@@ -449,7 +451,7 @@ private fun WorkoutThumb(uri: String?, size: Int = 64) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                "GIF",
+                stringResource(R.string.gif_label),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color.LightGray
             )
@@ -467,7 +469,7 @@ private fun WorkoutThumb(uri: String?, size: Int = 64) {
                 }
                 .crossfade(true)
                 .build(),
-            contentDescription = "Workout image",
+            contentDescription = stringResource(R.string.workout_image_content_description),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(dim)

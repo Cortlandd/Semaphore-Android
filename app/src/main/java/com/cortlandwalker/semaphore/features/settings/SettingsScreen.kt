@@ -21,9 +21,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.features.settings.SettingsAction.*
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 
@@ -70,7 +72,7 @@ fun SettingsScreen(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back",
+                                    contentDescription = stringResource(R.string.back_content_description),
                                     tint = Color.Black
                                 )
                             }
@@ -83,7 +85,7 @@ fun SettingsScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Settings",
+                            text = stringResource(R.string.settings_title),
                             style = MaterialTheme.typography.displaySmall.copy(
                                 fontWeight = FontWeight.Bold
                             ),
@@ -98,7 +100,7 @@ fun SettingsScreen(
                         .padding(horizontal = 24.dp)
                 ) {
                     // Section: GENERAL
-                    SectionHeader("GENERAL")
+                    SectionHeader(stringResource(R.string.settings_section_general))
 
                     Card(
                         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -110,8 +112,8 @@ fun SettingsScreen(
                             SettingsItem(
                                 icon = Icons.Default.Analytics,
                                 iconTint = purplePrimary,
-                                title = "Analytics",
-                                subtitle = "View your workout stats",
+                                title = stringResource(R.string.settings_analytics_title),
+                                subtitle = stringResource(R.string.settings_analytics_subtitle),
                                 onClick = { reducer.postAction(SettingsAction.TapAnalytics) }
                             )
                         }
@@ -119,7 +121,7 @@ fun SettingsScreen(
 
                     Spacer(Modifier.height(24.dp))
 
-                    SectionHeader("SUPPORT")
+                    SectionHeader(stringResource(R.string.settings_section_support))
 
                     RemoveAdsCard(
                         state = state,
@@ -129,7 +131,7 @@ fun SettingsScreen(
                     Spacer(Modifier.height(24.dp))
 
                     // Section: ABOUT
-                    SectionHeader("ABOUT")
+                    SectionHeader(stringResource(R.string.settings_section_about))
 
                     Card(
                         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -141,8 +143,8 @@ fun SettingsScreen(
                             SettingsItem(
                                 icon = Icons.AutoMirrored.Filled.Help,
                                 iconTint = purplePrimary,
-                                title = "FAQ",
-                                subtitle = "Questions & Answers",
+                                title = stringResource(R.string.settings_faq_title),
+                                subtitle = stringResource(R.string.settings_faq_subtitle),
                                 onClick = { reducer.postAction(TapFAQ) }
                             )
 
@@ -155,8 +157,8 @@ fun SettingsScreen(
                             SettingsItem(
                                 icon = Icons.Default.Star,
                                 iconTint = Color(0xFFFFD700),
-                                title = "Rate App",
-                                subtitle = "Review on Google Play",
+                                title = stringResource(R.string.settings_rate_app_title),
+                                subtitle = stringResource(R.string.settings_rate_app_subtitle),
                                 onClick = { reducer.postAction(TapRateApp) },
                                 showExternalIcon = true
                             )
@@ -168,7 +170,7 @@ fun SettingsScreen(
                     // Footer Version
                     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Semaphore v${state.version}",
+                            text = stringResource(R.string.settings_version, state.version),
                             style = MaterialTheme.typography.labelSmall,
                             color = textSecondary.copy(alpha = 0.5f)
                         )
@@ -199,16 +201,20 @@ private fun RemoveAdsCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = if (monetization.adsRemoved) "Ads removed" else "Remove banner ads",
+                text = if (monetization.adsRemoved) {
+                    stringResource(R.string.ads_removed_title)
+                } else {
+                    stringResource(R.string.remove_ads_title)
+                },
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF2D3142)
             )
             Text(
                 text = when {
-                    monetization.adsRemoved -> "Thanks for supporting Semaphore. Ads stay off on this Google Play account."
-                    monetization.isPurchasePending -> "Your purchase is pending. Ads will be removed automatically when Google Play confirms payment."
-                    monetization.isLoadingPricing -> "Connecting to Google Play to load pricing..."
-                    else -> "Unlock an ad-free workout screen with a one-time purchase."
+                    monetization.adsRemoved -> stringResource(R.string.remove_ads_thanks_copy)
+                    monetization.isPurchasePending -> stringResource(R.string.remove_ads_pending_copy)
+                    monetization.isLoadingPricing -> stringResource(R.string.remove_ads_loading_copy)
+                    else -> stringResource(R.string.remove_ads_support_copy)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
@@ -221,7 +227,13 @@ private fun RemoveAdsCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text("Remove ads ${monetization.removeAdsPrice}")
+                    Text(
+                        if (monetization.removeAdsPrice.isBlank()) {
+                            stringResource(R.string.remove_ads_button)
+                        } else {
+                            stringResource(R.string.remove_ads_button_with_price, monetization.removeAdsPrice)
+                        }
+                    )
                 }
             } else {
                 Surface(
@@ -229,7 +241,7 @@ private fun RemoveAdsCard(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text(
-                        text = "Purchase active",
+                        text = stringResource(R.string.purchase_active),
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                         color = Color(0xFF6A5ACD)
@@ -241,7 +253,7 @@ private fun RemoveAdsCard(
                 onClick = { reducer.postAction(TapRestorePurchases) },
                 enabled = monetization.isBillingAvailable || monetization.adsRemoved
             ) {
-                Text("Restore purchase")
+                Text(stringResource(R.string.restore_purchase))
             }
         }
     }

@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,11 +35,12 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import com.cortlandwalker.semaphore.R
 import com.cortlandwalker.semaphore.data.local.room.InMemoryWorkoutRepository
 import com.cortlandwalker.semaphore.data.models.Workout
 import com.cortlandwalker.semaphore.ui.components.GridBackground
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -74,7 +77,7 @@ fun AnalyticsScreen(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.back_content_description),
                                 tint = Color.Black
                             )
                         }
@@ -106,7 +109,10 @@ fun AnalyticsScreen(
                         }
                     }
                     item {
-                        SectionHeader("Individual Workouts", "See All")
+                        SectionHeader(
+                            stringResource(R.string.analytics_individual_workouts),
+                            stringResource(R.string.analytics_see_all)
+                        )
                     }
                     items(state.workouts) { workout ->
                         IndividualWorkoutCard(workout)
@@ -129,8 +135,18 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("No workouts yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text("Add a workout to see your stats here", style = MaterialTheme.typography.bodyLarge, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
+                Text(
+                    stringResource(R.string.analytics_empty_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    stringResource(R.string.analytics_empty_body),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
             }
         }
     }
@@ -150,7 +166,7 @@ private fun AnalyticsHeader() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Analytics",
+                text = stringResource(R.string.analytics_title),
                 style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF2D3142)
             )
@@ -170,18 +186,25 @@ private fun WeeklyProgressCard(state: AnalyticsState) {
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
-                text = "SUMMARY",
+                text = stringResource(R.string.analytics_summary_label),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF6A5ACD)
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Weekly Progress", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
+                    Text(
+                        stringResource(R.string.analytics_weekly_progress_title),
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                    )
                     Text(
                         text = when {
-                            state.weeklyActiveDays == 0 -> "Start a workout to begin this week's streak."
-                            state.weeklyProgress >= 1f -> "You hit your weekly goal. Keep the momentum going."
-                            else -> "${state.weeklyActiveDays} of ${state.weeklyGoalDays} active days this week."
+                            state.weeklyActiveDays == 0 -> stringResource(R.string.analytics_weekly_progress_empty)
+                            state.weeklyProgress >= 1f -> stringResource(R.string.analytics_weekly_progress_goal_met)
+                            else -> stringResource(
+                                R.string.analytics_weekly_progress_partial,
+                                state.weeklyActiveDays,
+                                state.weeklyGoalDays
+                            )
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
@@ -191,9 +214,12 @@ private fun WeeklyProgressCard(state: AnalyticsState) {
             }
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
-                SummaryStat("WORKOUTS", state.totalWorkouts.toString())
-                SummaryStat("HOURS", "%.1f".format(state.totalHours))
-                SummaryStat("STREAK", "${state.currentStreak}d")
+                SummaryStat(stringResource(R.string.workouts_label), state.totalWorkouts.toString())
+                SummaryStat(stringResource(R.string.analytics_stat_hours), "%.1f".format(state.totalHours))
+                SummaryStat(
+                    stringResource(R.string.analytics_stat_streak),
+                    stringResource(R.string.analytics_streak_value, state.currentStreak)
+                )
             }
         }
     }
@@ -213,19 +239,19 @@ private fun TopWorkoutsCard(state: AnalyticsState) {
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
-                text = "TOP WORKOUTS",
+                text = stringResource(R.string.analytics_top_workouts_label),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF6A5ACD)
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Most time invested",
+                text = stringResource(R.string.analytics_top_workouts_title),
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF2D3142)
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "These workouts are ranked by total time spent, using the completions you have already logged.",
+                text = stringResource(R.string.analytics_top_workouts_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
@@ -264,7 +290,7 @@ private fun CircularProgress(progress: Float) {
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("${(progress * 100).toInt()}%", fontWeight = FontWeight.Bold)
-            Text("goal", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(stringResource(R.string.analytics_goal_label), style = MaterialTheme.typography.labelSmall, color = Color.Gray)
         }
     }
 }
@@ -314,14 +340,18 @@ private fun TopWorkoutRow(
                         color = Color(0xFF2D3142)
                     )
                     Text(
-                        text = "${workout.completedCount} completions",
+                        text = pluralStringResource(
+                            R.plurals.analytics_top_workout_completions,
+                            workout.completedCount,
+                            workout.completedCount
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
                 }
             }
             Text(
-                text = formatSeconds(workout.totalTimeSpentSeconds),
+                text = formatSeconds(LocalContext.current, workout.totalTimeSpentSeconds),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFF2D3142)
             )
@@ -376,14 +406,19 @@ private fun IndividualWorkoutCard(workout: Workout) {
                             }
                         }
                         .crossfade(true)
-                        .build(),
-                    contentDescription = workout.name,
+                    .build(),
+                contentDescription = workout.name,
                     modifier = Modifier.height(150.dp).fillMaxWidth(),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(modifier = Modifier.height(150.dp).fillMaxWidth().background(Color(0xFFF8F8FA))) {
-                    Icon(imageVector = iconForDuration(durationInSeconds), contentDescription = "Intensity", tint = if (durationInSeconds >= 60) Color.Red else Color.Green, modifier = Modifier.size(48.dp).align(Alignment.Center))
+                    Icon(
+                        imageVector = iconForDuration(durationInSeconds),
+                        contentDescription = stringResource(R.string.analytics_intensity_content_description),
+                        tint = if (durationInSeconds >= 60) Color.Red else Color.Green,
+                        modifier = Modifier.size(48.dp).align(Alignment.Center)
+                    )
                 }
             }
             Column(modifier = Modifier.padding(24.dp)) {
@@ -391,19 +426,39 @@ private fun IndividualWorkoutCard(workout: Workout) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(workout.name, style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = iconForDuration(durationInSeconds), contentDescription = "Intensity", tint = if (durationInSeconds > 30) Color.Red else Color.Green, modifier = Modifier.size(16.dp))
+                            Icon(
+                                imageVector = iconForDuration(durationInSeconds),
+                                contentDescription = stringResource(R.string.analytics_intensity_content_description),
+                                tint = if (durationInSeconds > 30) Color.Red else Color.Green,
+                                modifier = Modifier.size(16.dp)
+                            )
                             Spacer(Modifier.width(8.dp))
-                            Text(if (durationInSeconds > 30) "High Intensity" else "Regular Routine", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                            Text(
+                                if (durationInSeconds > 30) {
+                                    stringResource(R.string.analytics_high_intensity)
+                                } else {
+                                    stringResource(R.string.analytics_regular_routine)
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
                         }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    MetricItem("TIMES COMPLETED", "${workout.completedCount} sessions")
-                    MetricItem("TOTAL TIME", formatSeconds(workout.totalTimeSpentSeconds))
+                    MetricItem(
+                        stringResource(R.string.analytics_times_completed_label),
+                        pluralStringResource(
+                            R.plurals.analytics_sessions_count,
+                            workout.completedCount,
+                            workout.completedCount
+                        )
+                    )
+                    MetricItem(stringResource(R.string.total_time_label), formatSeconds(LocalContext.current, workout.totalTimeSpentSeconds))
                 }
                 Spacer(Modifier.height(12.dp))
-                MetricItem("LAST PERFORMED", formatDate(workout.lastPerformedAt))
+                MetricItem(stringResource(R.string.analytics_last_performed_label), formatDate(workout.lastPerformedAt))
             }
         }
     }
@@ -421,20 +476,20 @@ private fun MetricItem(label: String, value: String) {
     }
 }
 
-private fun formatSeconds(seconds: Long): String {
+private fun formatSeconds(context: android.content.Context, seconds: Long): String {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
     return when {
-        hours > 0 -> "${hours}h ${minutes}m"
-        minutes > 0 -> "${minutes}m"
-        else -> "${seconds}s"
+        hours > 0 -> context.getString(R.string.duration_hours_minutes, hours, minutes)
+        minutes > 0 -> context.getString(R.string.duration_minutes_only, minutes)
+        else -> context.getString(R.string.duration_seconds_only, seconds)
     }
 }
 
+@Composable
 private fun formatDate(timestamp: Long?): String {
-    if (timestamp == null || timestamp == 0L) return "Never"
-    val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
-    return sdf.format(Date(timestamp))
+    if (timestamp == null || timestamp == 0L) return stringResource(R.string.analytics_never)
+    return DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault()).format(Date(timestamp))
 }
 
 @Preview(showBackground = true, name = "Analytics Screen with Data")

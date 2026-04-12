@@ -132,8 +132,8 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
 
                 if (previousWorkoutName != null) {
                     notifyTransition(
-                        title = "$previousWorkoutName finished",
-                        message = "Starting ${workout.name}"
+                        title = appContext.getString(R.string.notification_transition_title, previousWorkoutName),
+                        message = appContext.getString(R.string.notification_transition_message, workout.name)
                     )
                 }
 
@@ -157,8 +157,12 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             }
 
             notifyTransition(
-                title = "Routine complete",
-                message = if (isPlayingAll) "All workout timers finished." else "Workout timer finished."
+                title = appContext.getString(R.string.notification_routine_complete_title),
+                message = if (isPlayingAll) {
+                    appContext.getString(R.string.notification_routine_complete_message)
+                } else {
+                    appContext.getString(R.string.notification_single_complete_message)
+                }
             )
             stop()
         }
@@ -221,9 +225,15 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
 
         val title = state.activeWorkoutName ?: appContext.getString(R.string.app_name)
         val message = when {
-            state.activeWorkoutTimer != null && state.isPaused -> "${state.activeWorkoutTimer} paused"
-            state.activeWorkoutTimer != null -> "${state.activeWorkoutTimer} remaining"
-            else -> "Preparing workout timer"
+            state.activeWorkoutTimer != null && state.isPaused -> appContext.getString(
+                R.string.notification_timer_paused_message,
+                state.activeWorkoutTimer
+            )
+            state.activeWorkoutTimer != null -> appContext.getString(
+                R.string.notification_timer_remaining_message,
+                state.activeWorkoutTimer
+            )
+            else -> appContext.getString(R.string.notification_preparing_workout_timer)
         }
 
         return NotificationCompat.Builder(appContext, ONGOING_CHANNEL_ID)
@@ -232,10 +242,10 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             .setContentText(message)
             .setSubText(
                 when {
-                    state.isPlayingAll && state.isPaused -> "Routine paused"
-                    state.isPlayingAll -> "Routine in progress"
-                    state.isPaused -> "Timer paused"
-                    else -> "Timer in progress"
+                    state.isPlayingAll && state.isPaused -> appContext.getString(R.string.notification_subtext_routine_paused)
+                    state.isPlayingAll -> appContext.getString(R.string.notification_subtext_routine_in_progress)
+                    state.isPaused -> appContext.getString(R.string.notification_subtext_timer_paused)
+                    else -> appContext.getString(R.string.notification_subtext_timer_in_progress)
                 }
             )
             .setContentIntent(openAppIntent)
@@ -247,12 +257,16 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .addAction(
                 0,
-                if (state.isPaused) "Resume" else "Pause",
+                if (state.isPaused) {
+                    appContext.getString(R.string.notification_resume_action)
+                } else {
+                    appContext.getString(R.string.notification_pause_action)
+                },
                 pauseResumeIntent
             )
             .addAction(
                 0,
-                "Stop",
+                appContext.getString(R.string.notification_stop_action),
                 stopIntent
             )
             .apply {
@@ -325,19 +339,19 @@ class ForegroundWorkoutPlaybackController @Inject constructor(
         manager.createNotificationChannel(
             NotificationChannel(
                 ONGOING_CHANNEL_ID,
-                "Workout timer",
+                appContext.getString(R.string.notification_ongoing_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Shows active Semaphore workout timers."
+                description = appContext.getString(R.string.notification_ongoing_channel_description)
             }
         )
         manager.createNotificationChannel(
             NotificationChannel(
                 ALERTS_CHANNEL_ID,
-                "Workout alerts",
+                appContext.getString(R.string.notification_alerts_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Alerts when a timer finishes or the next timer begins."
+                description = appContext.getString(R.string.notification_alerts_channel_description)
             }
         )
     }
