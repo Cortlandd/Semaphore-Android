@@ -3,10 +3,11 @@ package com.cortlandwalker.semaphore.core
 import com.cortlandwalker.semaphore.BuildConfig
 
 /**
- * App-level Klipy configuration.
+ * Centralizes how Semaphore resolves its Klipy API key.
  *
- * Klipy 0.1.9 supports direct hardcoded API keys again, so we keep a baked-in
- * fallback here and still allow Gradle/env overrides for local testing.
+ * Gradle-provided configuration wins when present, but this object also keeps
+ * a baked-in fallback so media picking still works in builds where the key is
+ * intentionally hardcoded instead of supplied through local properties.
  */
 object KlipyConfig {
     private const val HARDCODED_API_KEY = "fNkmHZ257SEs5hOBeRF6XKSynwsVGodDUzMKzVBObkGgu2cb9vN0YDsHKh7ZyXQl"
