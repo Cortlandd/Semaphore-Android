@@ -6,7 +6,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.security.MessageDigest
 import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,30 +19,51 @@ class WorkoutImageStore @Inject constructor(
 ) {
 
     /**
-     * Download the GIF at [remoteUrl] into app storage and return a file URI (file://...).
+     * Download the media at [remoteUrl] into app storage for a specific workout and return a
+     * file URI (file://...).
      */
-    suspend fun cacheFromRemote(remoteUrl: String): String = withContext(Dispatchers.IO) {
-        val gifsDir = File(context.filesDir, "workout_media").apply { mkdirs() }
+    suspend fun cacheFromRemote(remoteUrl: String, ownerId: String): String = withContext(Dispatchers.IO) {
+        val mediaDir = File(context.filesDir, "workout_media").apply { mkdirs() }
 
         val ext = runCatching {
             val raw = Uri.parse(remoteUrl).lastPathSegment ?: ""
             raw.substringAfterLast('.', missingDelimiterValue = "bin")
         }.getOrDefault("bin")
 
-        val fileName = "${remoteUrl.sha256()}.$ext"
-        val dest = File(gifsDir, fileName)
+        val destination = File(mediaDir, "$ownerId.$ext")
+        val tempFile = File.createTempFile("${ownerId}_", ".$ext", mediaDir)
 
-        if (dest.exists() && dest.length() > 0L) {
-            return@withContext dest.toURI().toString()
-        }
-
-        URL(remoteUrl).openStream().use { input ->
-            dest.outputStream().use { output ->
-                input.copyTo(output)
+        try {
+            URL(remoteUrl).openStream().use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
             }
-        }
 
-        dest.toURI().toString()
+            deleteOwnedLocalImages(ownerId, exceptFileName = tempFile.name)
+            if (!tempFile.renameTo(destination)) {
+                tempFile.copyTo(destination, overwrite = true)
+                tempFile.delete()
+            }
+
+            destination.toURI().toString()
+        } catch (t: Throwable) {
+            tempFile.delete()
+            throw t
+        }
+    }
+
+    suspend fun deleteOwnedLocalImages(ownerId: String, exceptFileName: String? = null) = withContext(Dispatchers.IO) {
+        val mediaDir = File(context.filesDir, "workout_media")
+        val prefix = "$ownerId."
+
+        mediaDir.listFiles()
+            ?.filter { file ->
+                file.isFile &&
+                    file.name.startsWith(prefix) &&
+                    file.name != exceptFileName
+            }
+            ?.forEach { file -> file.delete() }
     }
 
     /**
@@ -70,9 +90,4 @@ class WorkoutImageStore @Inject constructor(
             canonicalTarget.delete()
         }
     }
-}
-
-private fun String.sha256(): String {
-    val bytes = MessageDigest.getInstance("SHA-256").digest(toByteArray())
-    return bytes.joinToString(separator = "") { byte -> "%02x".format(byte) }
 }

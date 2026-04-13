@@ -16,8 +16,6 @@ interface WorkoutDao {
     suspend fun hasAnySpokenWorkouts(): Boolean
     @Query("SELECT * FROM workouts WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): Workout?
-    @Query("SELECT COUNT(*) FROM workouts WHERE imageUri = :imageUri")
-    suspend fun countByImageUri(imageUri: String): Int
     @Query("SELECT COALESCE(MAX(position), -1) FROM workouts")
     suspend fun maxPosition(): Int
     @Query("UPDATE workouts SET position = :position WHERE id = :id")

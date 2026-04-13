@@ -178,7 +178,7 @@ class UpsertWorkoutReducerTest {
         val localUri = "file:///data/user/0/com.cortlandwalker.semaphore/files/workout_media/workout.gif"
         val insertedWorkout = slot<Workout>()
 
-        coEvery { mockImageStore.cacheFromRemote(remoteUrl) } returns localUri
+        coEvery { mockImageStore.cacheFromRemote(eq(remoteUrl), any()) } returns localUri
         coEvery { mockRepo.insert(capture(insertedWorkout)) } returns Unit
 
         reducer = UpsertWorkoutReducer(mockRepo, mockImageStore, mockWorkoutNameSpeaker)
@@ -197,5 +197,38 @@ class UpsertWorkoutReducerTest {
         assertThat(insertedWorkout.captured.imageUri).isEqualTo(localUri)
         assertThat(insertedWorkout.captured.remoteImageUri).isEqualTo(remoteUrl)
         assertThat(effects).contains(UpsertWorkoutEffect.Back)
+    }
+
+    @Test
+    fun `SaveClicked when editing with remote media should cache it using the workout id`() = runTest {
+        val workoutId = "1"
+        val remoteUrl = "https://static.klipy.com/example/plank.gif"
+        val existingLocalUri = "file:///data/user/0/com.cortlandwalker.semaphore/files/workout_media/$workoutId.gif"
+        val existingWorkout = Workout(
+            id = workoutId,
+            createdAt = 0L,
+            name = "Plank",
+            imageUri = existingLocalUri,
+            hours = 0,
+            minutes = 1,
+            seconds = 0,
+            position = 0,
+            orderId = 0,
+            remoteImageUri = remoteUrl
+        )
+        val updatedWorkout = slot<Workout>()
+
+        coEvery { mockRepo.getById(workoutId) } returns existingWorkout
+        coEvery { mockImageStore.cacheFromRemote(remoteUrl, workoutId) } returns existingLocalUri
+        coEvery { mockRepo.update(capture(updatedWorkout)) } returns Unit
+
+        reducer.accept(UpsertWorkoutAction.Init(workoutId))
+        reducer.accept(UpsertWorkoutAction.NameChanged("Updated Plank"))
+        reducer.accept(UpsertWorkoutAction.TimeSet(0, 1, 0))
+        reducer.accept(UpsertWorkoutAction.SaveClicked)
+
+        coVerify { mockImageStore.cacheFromRemote(remoteUrl, workoutId) }
+        assertThat(updatedWorkout.captured.imageUri).isEqualTo(existingLocalUri)
+        assertThat(updatedWorkout.captured.remoteImageUri).isEqualTo(remoteUrl)
     }
 }

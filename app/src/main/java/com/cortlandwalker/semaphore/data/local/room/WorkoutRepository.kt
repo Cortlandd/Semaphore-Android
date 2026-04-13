@@ -42,12 +42,9 @@ class RoomWorkoutRepository @Inject constructor(
     override suspend fun deleteById(id: String) {
         val workout = dao.getById(id)
         dao.delete(id)
-
-        val localImageUri = workout?.imageUri?.takeIf { it.isNotBlank() } ?: return
-        val remainingReferences = dao.countByImageUri(localImageUri)
-        if (remainingReferences == 0) {
-            imageStore.deleteCachedLocalImage(localImageUri)
-        }
+        workout?.imageUri
+            ?.takeIf { it.isNotBlank() }
+            ?.let { imageStore.deleteCachedLocalImage(it) }
     }
 
     override suspend fun update(workout: Workout) = dao.update(workout)

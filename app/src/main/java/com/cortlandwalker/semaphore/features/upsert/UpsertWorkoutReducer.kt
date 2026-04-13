@@ -87,13 +87,17 @@ class UpsertWorkoutReducer @Inject constructor(
 
                 state { it.copy(isSaving = true) }
 
-                val resolvedImage = resolveImageForSave(s)
-
                 if (!s.isEdit) {
                     // Create
+                    val newWorkoutId = UUID.randomUUID().toString()
                     val position = runCatching { repo.maxPosition() }.getOrDefault(-1) + 1
+                    val resolvedImage = resolveImageForSave(
+                        ownerId = newWorkoutId,
+                        state = s,
+                        existingLocalImageUri = null
+                    )
                     val new = Workout(
-                        id = UUID.randomUUID().toString(),
+                        id = newWorkoutId,
                         createdAt = System.currentTimeMillis(),
                         name = s.name.trim(),
                         imageUri = resolvedImage.localImageUri,
@@ -115,6 +119,11 @@ class UpsertWorkoutReducer @Inject constructor(
                         state { it.copy(isSaving = false) }
                         emit(UpsertWorkoutEffect.ShowError("Internal error")); return
                     }
+                    val resolvedImage = resolveImageForSave(
+                        ownerId = base.id,
+                        state = s,
+                        existingLocalImageUri = base.imageUri
+                    )
                     val updated = base.copy(
                         name = s.name.trim(),
                         imageUri = resolvedImage.localImageUri,
@@ -139,27 +148,38 @@ class UpsertWorkoutReducer @Inject constructor(
 
     override fun onLoadAction(): UpsertWorkoutAction = UpsertWorkoutAction.Init(currentState.workoutId)
 
-    private suspend fun resolveImageForSave(state: UpsertWorkoutState): ResolvedWorkoutImage {
+    private suspend fun resolveImageForSave(
+        ownerId: String,
+        state: UpsertWorkoutState,
+        existingLocalImageUri: String?
+    ): ResolvedWorkoutImage {
         val imageUri = state.imageUri?.ifBlank { null }
         val remoteImageUri = state.remoteImageUri?.ifBlank { null }
 
         if (remoteImageUri != null) {
             return ResolvedWorkoutImage(
-                localImageUri = runCatching { imageStore.cacheFromRemote(remoteImageUri) }
+                localImageUri = runCatching { imageStore.cacheFromRemote(remoteImageUri, ownerId) }
                     .getOrElse { imageUri?.takeUnless(::isRemoteUri) },
                 remoteImageUri = remoteImageUri
             )
         }
 
         if (imageUri == null) {
+            if (existingLocalImageUri != null) {
+                imageStore.deleteCachedLocalImage(existingLocalImageUri)
+            }
             return ResolvedWorkoutImage(localImageUri = null, remoteImageUri = null)
         }
 
         if (isRemoteUri(imageUri)) {
             return ResolvedWorkoutImage(
-                localImageUri = runCatching { imageStore.cacheFromRemote(imageUri) }.getOrNull(),
+                localImageUri = runCatching { imageStore.cacheFromRemote(imageUri, ownerId) }.getOrNull(),
                 remoteImageUri = imageUri
             )
+        }
+
+        if (existingLocalImageUri != null && existingLocalImageUri != imageUri) {
+            imageStore.deleteCachedLocalImage(existingLocalImageUri)
         }
 
         return ResolvedWorkoutImage(localImageUri = imageUri, remoteImageUri = null)
