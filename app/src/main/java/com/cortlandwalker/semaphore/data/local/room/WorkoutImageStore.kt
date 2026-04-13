@@ -45,6 +45,31 @@ class WorkoutImageStore @Inject constructor(
 
         dest.toURI().toString()
     }
+
+    /**
+     * Deletes a cached workout media file only if it lives inside the app-managed workout_media
+     * directory. This avoids removing unrelated local files referenced by a workout.
+     */
+    suspend fun deleteCachedLocalImage(imageUri: String?) = withContext(Dispatchers.IO) {
+        if (imageUri.isNullOrBlank()) return@withContext
+
+        val uri = runCatching { Uri.parse(imageUri) }.getOrNull() ?: return@withContext
+        if (!uri.scheme.equals("file", ignoreCase = true)) return@withContext
+
+        val targetPath = uri.path ?: return@withContext
+        val target = File(targetPath)
+        val mediaDir = File(context.filesDir, "workout_media")
+
+        val canonicalTarget = runCatching { target.canonicalFile }.getOrNull() ?: return@withContext
+        val canonicalMediaDir = runCatching { mediaDir.canonicalFile }.getOrNull() ?: return@withContext
+
+        val mediaDirPath = canonicalMediaDir.path + File.separator
+        if (!canonicalTarget.path.startsWith(mediaDirPath)) return@withContext
+
+        if (canonicalTarget.exists()) {
+            canonicalTarget.delete()
+        }
+    }
 }
 
 private fun String.sha256(): String {

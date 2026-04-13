@@ -24,7 +24,8 @@ interface WorkoutRepository {
 
 @Singleton
 class RoomWorkoutRepository @Inject constructor(
-    private val dao: WorkoutDao
+    private val dao: WorkoutDao,
+    private val imageStore: WorkoutImageStore
 ) : WorkoutRepository {
 
     override fun observeAllOrderedByPosition(): Flow<List<Workout>> =
@@ -38,7 +39,16 @@ class RoomWorkoutRepository @Inject constructor(
 
     override suspend fun insert(workout: Workout) { dao.insert(workout) }
 
-    override suspend fun deleteById(id: String) { dao.delete(id) }
+    override suspend fun deleteById(id: String) {
+        val workout = dao.getById(id)
+        dao.delete(id)
+
+        val localImageUri = workout?.imageUri?.takeIf { it.isNotBlank() } ?: return
+        val remainingReferences = dao.countByImageUri(localImageUri)
+        if (remainingReferences == 0) {
+            imageStore.deleteCachedLocalImage(localImageUri)
+        }
+    }
 
     override suspend fun update(workout: Workout) = dao.update(workout)
 
