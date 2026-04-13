@@ -76,7 +76,12 @@ class WorkoutListReducer @Inject constructor(
             WorkoutListAction.TappedAddWorkout -> {
                 emit(WorkoutListEffect.NavAddWorkout)
             }
-            is WorkoutListAction.DeleteTapped -> { repo.deleteById(action.id) }
+            is WorkoutListAction.DeleteTapped -> {
+                if (currentState.activeWorkoutId == action.id) {
+                    playbackController.stop()
+                }
+                repo.deleteById(action.id)
+            }
             is WorkoutListAction.ReorderCommit -> {
                 scope.launch {
                     repo.updatePositions(action.orderedIds)

@@ -94,6 +94,24 @@ class WorkoutListReducerTest {
     }
 
     @Test
+    fun `DeleteTapped should stop playback before deleting the active workout`() = runTest {
+        val workout = Workout("1", 0, "Active Workout", "", 0, 0, 30, 0, 0)
+        setUpReducer(
+            initialState = WorkoutListState(
+                workouts = listOf(workout),
+                activeWorkoutId = workout.id,
+                activeWorkoutTimer = "00:30",
+                displayMode = ViewDisplayMode.Content
+            )
+        )
+
+        reducer.accept(WorkoutListAction.DeleteTapped(workout.id))
+
+        verify { playbackController.stop() }
+        coVerify { mockRepo.deleteById(workout.id) }
+    }
+
+    @Test
     fun `TappedWorkout should emit NavEditWorkout effect`() = runTest {
         setUpReducer()
 

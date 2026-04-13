@@ -59,6 +59,8 @@
     <string name="workout_image_content_description">Workout image</string>
     <string name="active_badge">ACTIVE</string>
     <string name="gif_label">GIF</string>
+    <string name="delete">Delete</string>
+    <string name="delete_workout_content_description">Delete workout</string>
 
     <string name="upsert_new_workout_title">New Workout</string>
     <string name="upsert_edit_workout_title">Edit Workout</string>

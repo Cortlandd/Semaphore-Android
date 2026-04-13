@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -42,6 +43,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -348,106 +350,131 @@ fun WorkoutListScreen(
                                         val isExpanded = state.activeWorkoutId == workout.id
                                         val isDragging = draggingItem?.id == workout.id
                                         val latestWorkout by rememberUpdatedState(workout)
-
-                                        WorkoutRow(
-                                            workout = workout,
-                                            isExpanded = isExpanded,
-                                            activeProgress = if (isExpanded) state.activeWorkoutTimer else null,
-                                            onPlayClicked = { reducer.postAction(SinglePlayTapped(workout.id)) },
-                                            onClick = { reducer.postAction(TappedWorkout(workout)) },
-                                            modifier = Modifier
-                                                .animateItem()
-                                                .zIndex(if (isDragging) 1f else 0f)
-                                                .graphicsLayer {
-                                                    if (isDragging) {
-                                                        val currentInfo =
-                                                            listState.layoutInfo.visibleItemsInfo
-                                                                .firstOrNull { it.key == workout.id }
-                                                        val currentOffset =
-                                                            currentInfo?.offset ?: draggingItemInitialOffset
-                                                        translationY =
-                                                            dragOffset + (draggingItemInitialOffset - currentOffset).toFloat()
-                                                        scaleX = 1.03f
-                                                        scaleY = 1.03f
-                                                        shadowElevation = 16f
-                                                    }
+                                        val canSwipeToDelete = !isDragging && state.activeWorkoutId == null
+                                        val dismissState = rememberSwipeToDismissBoxState(
+                                            confirmValueChange = { value ->
+                                                if (value == SwipeToDismissBoxValue.EndToStart) {
+                                                    reducer.postAction(DeleteTapped(workout.id))
+                                                    true
+                                                } else {
+                                                    false
                                                 }
-                                                .pointerInput(Unit) {
-                                                    detectDragGesturesAfterLongPress(
-                                                        onDragStart = {
-                                                            draggingItem = latestWorkout
-                                                            draggingItemIndex =
-                                                                latestWorkouts.indexOfFirst { it.id == latestWorkout.id }
-                                                            val info =
-                                                                listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == latestWorkout.id }
-                                                            draggingItemInitialOffset = info?.offset ?: 0
-                                                            dragOffset = 0f
-                                                        },
-                                                        onDrag = { change, dragAmount ->
-                                                            change.consume()
-                                                            dragOffset += dragAmount.y
-                                                            val currentDraggingIndex =
-                                                                draggingItemIndex
-                                                                    ?: return@detectDragGesturesAfterLongPress
-                                                            if (currentDraggingIndex !in state.workouts.indices) return@detectDragGesturesAfterLongPress
-
-                                                            val itemsInfo =
-                                                                listState.layoutInfo.visibleItemsInfo
-                                                            val currentItemInfo =
-                                                                itemsInfo.firstOrNull { it.key == draggingItem?.id }
-                                                                    ?: return@detectDragGesturesAfterLongPress
-
-                                                            val targetIndex = targetIndexForDragReorder(
-                                                                currentIndex = currentDraggingIndex,
-                                                                draggingItemInitialOffset = draggingItemInitialOffset,
-                                                                dragOffset = dragOffset,
-                                                                currentItemSize = currentItemInfo.size,
-                                                                orderedIds = latestWorkouts.map { it.id },
-                                                                visibleItems = itemsInfo.mapNotNull { item ->
-                                                                    (item.key as? String)?.let { id ->
-                                                                        VisibleWorkoutItem(
-                                                                            id = id,
-                                                                            offset = item.offset,
-                                                                            size = item.size
-                                                                        )
-                                                                    }
-                                                                }
-                                                            )
-
-                                                            if (targetIndex != null && targetIndex != currentDraggingIndex) {
-                                                                reducer.postAction(
-                                                                    UpdatePosition(
-                                                                        latestWorkout,
-                                                                        targetIndex
-                                                                    )
-                                                                )
-                                                                draggingItemIndex = targetIndex
-                                                            }
-                                                        },
-                                                        onDragEnd = {
-                                                            if (draggingItem != null) {
-                                                                val finalOrder =
-                                                                    latestWorkouts.map { it.id }
-                                                                reducer.postAction(
-                                                                    ReorderCommit(
-                                                                        finalOrder
-                                                                    )
-                                                                )
-                                                            }
-                                                            draggingItem = null
-                                                            draggingItemIndex = null
-                                                            draggingItemInitialOffset = 0
-                                                            dragOffset = 0f
-                                                        },
-                                                        onDragCancel = {
-                                                            draggingItem = null
-                                                            draggingItemIndex = null
-                                                            draggingItemInitialOffset = 0
-                                                            dragOffset = 0f
-                                                        }
-                                                    )
-                                                }
+                                            },
+                                            positionalThreshold = { distance -> distance * 0.35f }
                                         )
+
+                                        SwipeToDismissBox(
+                                            state = dismissState,
+                                            enableDismissFromStartToEnd = false,
+                                            gesturesEnabled = canSwipeToDelete,
+                                            backgroundContent = {
+                                                DeleteWorkoutBackground(
+                                                    modifier = Modifier.animateItem(),
+                                                    progress = dismissState.progress,
+                                                    isDismissedToDelete = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
+                                                )
+                                            }
+                                        ) {
+                                            WorkoutRow(
+                                                workout = workout,
+                                                isExpanded = isExpanded,
+                                                activeProgress = if (isExpanded) state.activeWorkoutTimer else null,
+                                                onPlayClicked = { reducer.postAction(SinglePlayTapped(workout.id)) },
+                                                onClick = { reducer.postAction(TappedWorkout(workout)) },
+                                                modifier = Modifier
+                                                    .animateItem()
+                                                    .zIndex(if (isDragging) 1f else 0f)
+                                                    .graphicsLayer {
+                                                        if (isDragging) {
+                                                            val currentInfo =
+                                                                listState.layoutInfo.visibleItemsInfo
+                                                                    .firstOrNull { it.key == workout.id }
+                                                            val currentOffset =
+                                                                currentInfo?.offset ?: draggingItemInitialOffset
+                                                            translationY =
+                                                                dragOffset + (draggingItemInitialOffset - currentOffset).toFloat()
+                                                            scaleX = 1.03f
+                                                            scaleY = 1.03f
+                                                            shadowElevation = 16f
+                                                        }
+                                                    }
+                                                    .pointerInput(Unit) {
+                                                        detectDragGesturesAfterLongPress(
+                                                            onDragStart = {
+                                                                draggingItem = latestWorkout
+                                                                draggingItemIndex =
+                                                                    latestWorkouts.indexOfFirst { it.id == latestWorkout.id }
+                                                                val info =
+                                                                    listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == latestWorkout.id }
+                                                                draggingItemInitialOffset = info?.offset ?: 0
+                                                                dragOffset = 0f
+                                                            },
+                                                            onDrag = { change, dragAmount ->
+                                                                change.consume()
+                                                                dragOffset += dragAmount.y
+                                                                val currentDraggingIndex =
+                                                                    draggingItemIndex
+                                                                        ?: return@detectDragGesturesAfterLongPress
+                                                                if (currentDraggingIndex !in state.workouts.indices) return@detectDragGesturesAfterLongPress
+
+                                                                val itemsInfo =
+                                                                    listState.layoutInfo.visibleItemsInfo
+                                                                val currentItemInfo =
+                                                                    itemsInfo.firstOrNull { it.key == draggingItem?.id }
+                                                                        ?: return@detectDragGesturesAfterLongPress
+
+                                                                val targetIndex = targetIndexForDragReorder(
+                                                                    currentIndex = currentDraggingIndex,
+                                                                    draggingItemInitialOffset = draggingItemInitialOffset,
+                                                                    dragOffset = dragOffset,
+                                                                    currentItemSize = currentItemInfo.size,
+                                                                    orderedIds = latestWorkouts.map { it.id },
+                                                                    visibleItems = itemsInfo.mapNotNull { item ->
+                                                                        (item.key as? String)?.let { id ->
+                                                                            VisibleWorkoutItem(
+                                                                                id = id,
+                                                                                offset = item.offset,
+                                                                                size = item.size
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                )
+
+                                                                if (targetIndex != null && targetIndex != currentDraggingIndex) {
+                                                                    reducer.postAction(
+                                                                        UpdatePosition(
+                                                                            latestWorkout,
+                                                                            targetIndex
+                                                                        )
+                                                                    )
+                                                                    draggingItemIndex = targetIndex
+                                                                }
+                                                            },
+                                                            onDragEnd = {
+                                                                if (draggingItem != null) {
+                                                                    val finalOrder =
+                                                                        latestWorkouts.map { it.id }
+                                                                    reducer.postAction(
+                                                                        ReorderCommit(
+                                                                            finalOrder
+                                                                        )
+                                                                    )
+                                                                }
+                                                                draggingItem = null
+                                                                draggingItemIndex = null
+                                                                draggingItemInitialOffset = 0
+                                                                dragOffset = 0f
+                                                            },
+                                                            onDragCancel = {
+                                                                draggingItem = null
+                                                                draggingItemIndex = null
+                                                                draggingItemInitialOffset = 0
+                                                                dragOffset = 0f
+                                                            }
+                                                        )
+                                                    }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -455,6 +482,49 @@ fun WorkoutListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DeleteWorkoutBackground(
+    progress: Float,
+    isDismissedToDelete: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(28.dp)
+    val clampedProgress = progress.coerceIn(0f, 1f)
+    val backgroundColor = lerp(
+        Color(0xFFF6D6D9),
+        Color(0xFFD6455D),
+        clampedProgress
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .clip(shape)
+            .background(backgroundColor)
+            .padding(horizontal = 24.dp),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (isDismissedToDelete || clampedProgress > 0.2f) {
+                Text(
+                    text = stringResource(com.cortlandwalker.semaphore.R.string.delete),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = stringResource(com.cortlandwalker.semaphore.R.string.delete_workout_content_description),
+                tint = Color.White
+            )
         }
     }
 }
